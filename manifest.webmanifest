@@ -1,0 +1,16 @@
+{
+  "name": "Quality Life - Ginástica Laboral",
+  "short_name": "Quality Life",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F6F4EF",
+  "theme_color": "#184F4B",
+  "icons": [
+    {
+      "src": "assets/quality-life-logo-dark-arc-small.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
