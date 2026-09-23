@@ -26,22 +26,21 @@ except ImportError:
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
 class AssessmentBrowserTests(LiveServerTestCase):
-    serialized_rollback = True
-
     def setUp(self):
-        user = get_user_model().objects.create_user(
-            email="browser@example.test", password="browser-test-password"
-        )
         primary = Organization.objects.create(name="QA Principal", slug="qa-principal")
         secondary = Organization.objects.create(
             name="QA Secundária", slug="qa-secondary"
         )
-        Membership.objects.create(
-            user=user, organization=primary, role=Membership.Role.COLLABORATOR
-        )
-        Membership.objects.create(
-            user=user, organization=secondary, role=Membership.Role.COLLABORATOR
-        )
+        for email in ("browser-390@example.test", "browser-430@example.test"):
+            user = get_user_model().objects.create_user(
+                email=email, password="browser-test-password"
+            )
+            for organization in (primary, secondary):
+                Membership.objects.create(
+                    user=user,
+                    organization=organization,
+                    role=Membership.Role.COLLABORATOR,
+                )
         version = QuestionnaireVersion.objects.create(
             code="browser-test-only",
             version=1,
@@ -82,13 +81,13 @@ class AssessmentBrowserTests(LiveServerTestCase):
             path.mkdir(parents=True, exist_ok=True)
             page.screenshot(path=str(path / f"{viewport}-{stage}.png"), full_page=True)
 
-    def _flow(self, width, height):
+    def _flow(self, width, height, email):
         viewport = f"{width}x{height}"
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch()
             page = browser.new_page(viewport={"width": width, "height": height})
             page.goto(f"{self.live_server_url}/login/")
-            page.locator("#id_username").fill("browser@example.test")
+            page.locator("#id_username").fill(email)
             page.locator("#id_password").fill("browser-test-password")
             page.get_by_role("button", name="Entrar").click()
             page.get_by_role("button", name="QA Principal").click()
@@ -120,8 +119,6 @@ class AssessmentBrowserTests(LiveServerTestCase):
             page.get_by_role("heading", name="Avaliação concluída").wait_for()
             browser.close()
 
-    def test_flow_390x844(self):
-        self._flow(390, 844)
-
-    def test_flow_430x932(self):
-        self._flow(430, 932)
+    def test_flow_both_viewports(self):
+        self._flow(390, 844, "browser-390@example.test")
+        self._flow(430, 932, "browser-430@example.test")
