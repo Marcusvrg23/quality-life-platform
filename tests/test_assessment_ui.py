@@ -181,7 +181,9 @@ class AssessmentUITests(TestCase):
             reverse("assessment_complete", args=[assessment.pk])
         )
         self.assertRedirects(
-            response, reverse("assessment_completed", args=[assessment.pk])
+            response,
+            reverse("assessment_completed", args=[assessment.pk]),
+            fetch_redirect_response=False,
         )
         assessment.refresh_from_db()
         self.assertEqual(assessment.status, Assessment.Status.COMPLETED)

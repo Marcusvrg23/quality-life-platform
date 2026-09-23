@@ -8,7 +8,7 @@
         <a class="button" href="{% url 'assessment_detail' current.pk %}">Retomar avaliação</a>
     {% elif latest_completed %}
         <p>Sua avaliação foi concluída.</p>
-        <a class="button" href="{% url 'assessment_completed' latest_completed.pk %}">Ver confirmação</a>
+        <a class="button" href="{% url 'assessment_completed' latest_completed.pk %}">Ver Mapa de Qualidade de Vida</a>
     {% elif available %}
         <p>Uma avaliação está disponível para você.</p>
         <form method="post" action="{% url 'assessment_start' %}">

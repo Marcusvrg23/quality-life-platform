@@ -11,7 +11,7 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from config.tenant import resolve_tenant_context
 from identity.models import Membership
 
-from .models import Assessment, Question, QuestionnaireVersion
+from .models import Assessment, AssessmentResult, Question, QuestionnaireVersion
 from .services import complete_assessment, record_answer, start_assessment
 
 
@@ -253,8 +253,25 @@ def completed(request, assessment_id):
     assessment = _assessment(request, tenant, assessment_id)
     if assessment.status != Assessment.Status.COMPLETED:
         raise Http404
+    result = (
+        AssessmentResult.objects.filter(assessment=assessment)
+        .prefetch_related("pillars__pillar")
+        .first()
+    )
+    if result is None:
+        raise Http404
+    pillars = sorted(result.pillars.all(), key=lambda item: item.pillar.display_order)
+    if len(pillars) != 9:
+        raise Http404
+    segments = zip(pillars, range(30, 255, 25), range(48, 273, 25), strict=True)
     return render(
         request,
         "assessments/completed.html",
-        {"tenant": tenant, "assessment": assessment},
+        {
+            "tenant": tenant,
+            "assessment": assessment,
+            "result": result,
+            "pillars": pillars,
+            "segments": segments,
+        },
     )

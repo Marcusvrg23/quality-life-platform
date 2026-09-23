@@ -7,8 +7,10 @@ from unittest import skipIf
 
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.utils.formats import localize
 
 from assessments.models import (
+    Assessment,
     Pillar,
     Question,
     QuestionnairePillar,
@@ -31,7 +33,11 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
         secondary = Organization.objects.create(
             name="QA Secundária", slug="qa-secondary"
         )
-        for email in ("browser-390@example.test", "browser-430@example.test"):
+        for email in (
+            "browser-390@example.test",
+            "browser-430@example.test",
+            "browser-desktop@example.test",
+        ):
             user = get_user_model().objects.create_user(
                 email=email, password="browser-test-password"
             )
@@ -47,21 +53,21 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             title="TEST ONLY — NOT PRODUCTION CONTENT",
             scoring_version="browser-test",
         )
-        configured = QuestionnairePillar.objects.create(
-            questionnaire=version,
-            pillar=Pillar.objects.get(display_order=1),
-            weight=Decimal(1),
-            display_order=1,
-        )
-        for order in (1, 2):
+        for order, pillar in enumerate(Pillar.objects.order_by("display_order"), 1):
+            configured = QuestionnairePillar.objects.create(
+                questionnaire=version,
+                pillar=pillar,
+                weight=Decimal(1),
+                display_order=order,
+            )
             question = Question.objects.create(
                 questionnaire_pillar=configured,
                 code=f"qa-{order}",
                 text=f"TEST ONLY — pergunta {order}?",
                 weight=Decimal(1),
-                display_order=order,
+                display_order=1,
             )
-            for option_order, score in enumerate((0, 100), 1):
+            for option_order, score in enumerate(range(0, 101, 10), 1):
                 QuestionOption.objects.create(
                     question=question,
                     code=f"qa-{option_order}",
@@ -101,7 +107,7 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             )
             self._capture(page, viewport, "hub")
             page.get_by_role("button", name="Iniciar avaliação").click()
-            page.get_by_role("heading", name="Pergunta 1 de 2").wait_for()
+            page.get_by_role("heading", name="Pergunta 1 de 9").wait_for()
             self._capture(page, viewport, "question")
             first = page.locator('input[name="option"]').first
             first.focus()
@@ -109,22 +115,56 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             page.keyboard.press("Space")
             assert first.is_checked()
             page.get_by_role("button", name="Salvar e próxima").click()
-            page.get_by_role("heading", name="Pergunta 2 de 2").wait_for()
+            page.get_by_role("heading", name="Pergunta 2 de 9").wait_for()
             page.get_by_role("link", name="Pergunta anterior").click()
             page.reload()
             assert page.locator('input[name="option"]').first.is_checked()
             page.get_by_role("link", name="Próxima pergunta sem salvar").click()
-            page.locator('input[name="option"]').last.check()
-            page.get_by_role("button", name="Salvar e revisar").click()
+            for question_number in range(2, 10):
+                page.locator('input[name="option"]').nth(question_number - 1).check()
+                if question_number == 9:
+                    page.get_by_role("button", name="Salvar e revisar").click()
+                else:
+                    page.get_by_role("button", name="Salvar e próxima").click()
             page.get_by_role("heading", name="Revisar respostas").wait_for()
             self._capture(page, viewport, "review")
             page.get_by_role("button", name="Concluir avaliação").click()
-            page.get_by_role("heading", name="Avaliação concluída").wait_for()
-            self._capture(page, viewport, "completed")
+            page.get_by_role("heading", name="Mapa de Qualidade de Vida").wait_for()
+            assessment = Assessment.objects.get(user__email=email)
+            result = assessment.result
+            pillars = list(
+                result.pillars.select_related("pillar").order_by(
+                    "pillar__display_order"
+                )
+            )
+            assert len(pillars) == 9
+            assert len({pillar.score for pillar in pillars}) == 9
+            assert page.locator(".overall-score strong").inner_text() == localize(
+                result.overall_score
+            )
+            assert page.locator(".overall-band").inner_text() == result.overall_band
+            assert page.locator(".heart-segment").count() == 9
+            assert page.locator(".pillar-row").count() == 9
+            for pillar in pillars:
+                row = page.locator(
+                    f'.pillar-row[data-pillar="{pillar.pillar.display_order}"]'
+                )
+                assert row.locator(".pillar-score strong").inner_text() == localize(
+                    pillar.score
+                )
+                assert row.locator(".pillar-band").inner_text() == pillar.band
+                assert (
+                    page.locator(
+                        f'.heart-segment[data-pillar="{pillar.pillar.display_order}"]'
+                    ).get_attribute("data-band")
+                    == pillar.band
+                )
+            self._capture(page, viewport, "result")
             page.reload()
-            page.get_by_role("heading", name="Avaliação concluída").wait_for()
+            page.get_by_role("heading", name="Mapa de Qualidade de Vida").wait_for()
             browser.close()
 
     def test_flow_both_viewports(self):
         self._flow(390, 844, "browser-390@example.test")
         self._flow(430, 932, "browser-430@example.test")
+        self._flow(1280, 800, "browser-desktop@example.test")
