@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest import skipIf
 
 from django.contrib.auth import get_user_model
-from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from assessments.models import (
     Pillar,
@@ -25,7 +25,7 @@ except ImportError:
 
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
-class AssessmentBrowserTests(LiveServerTestCase):
+class AssessmentBrowserTests(StaticLiveServerTestCase):
     def setUp(self):
         primary = Organization.objects.create(name="QA Principal", slug="qa-principal")
         secondary = Organization.objects.create(
@@ -93,6 +93,12 @@ class AssessmentBrowserTests(LiveServerTestCase):
             page.get_by_role("button", name="QA Principal").click()
             page.get_by_role("link", name="Minha avaliação").click()
             page.get_by_role("heading", name="Minha avaliação").wait_for()
+            assert (
+                page.locator(".site-header").evaluate(
+                    "element => getComputedStyle(element).backgroundColor"
+                )
+                == "rgb(22, 77, 73)"
+            )
             self._capture(page, viewport, "hub")
             page.get_by_role("button", name="Iniciar avaliação").click()
             page.get_by_role("heading", name="Pergunta 1 de 2").wait_for()
