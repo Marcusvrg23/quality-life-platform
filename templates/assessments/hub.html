@@ -1,0 +1,24 @@
+{% extends 'assessments/base.html' %}
+{% block content %}
+<section class="card" aria-labelledby="page-title">
+    <p class="eyebrow">Seu espaço</p>
+    <h1 id="page-title">Minha avaliação</h1>
+    {% if current %}
+        <p>Sua avaliação está em andamento. Suas respostas foram salvas.</p>
+        <a class="button" href="{% url 'assessment_detail' current.pk %}">Retomar avaliação</a>
+    {% elif latest_completed %}
+        <p>Sua avaliação foi concluída.</p>
+        <a class="button" href="{% url 'assessment_completed' latest_completed.pk %}">Ver confirmação</a>
+    {% elif available %}
+        <p>Uma avaliação está disponível para você.</p>
+        <form method="post" action="{% url 'assessment_start' %}">
+            {% csrf_token %}
+            <button type="submit">Iniciar avaliação</button>
+        </form>
+    {% elif multiple %}
+        <p role="status">A avaliação ainda não está disponível. A configuração precisa ser concluída.</p>
+    {% else %}
+        <p role="status">A avaliação ainda não está disponível.</p>
+    {% endif %}
+</section>
+{% endblock %}

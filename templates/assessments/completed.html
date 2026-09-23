@@ -1,0 +1,10 @@
+{% extends 'assessments/base.html' %}
+{% block title %}Avaliação concluída{% endblock %}
+{% block content %}
+<section class="card completion" role="status">
+    <p class="eyebrow">Tudo pronto</p>
+    <h1>Avaliação concluída</h1>
+    <p>Suas respostas foram registradas com segurança. Obrigado por participar.</p>
+    <a class="button" href="{% url 'assessment_hub' %}">Voltar para Minha avaliação</a>
+</section>
+{% endblock %}

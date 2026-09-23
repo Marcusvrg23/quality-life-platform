@@ -13,6 +13,7 @@
         <p class="foundation__eyebrow">Quality Life</p>
         <h1>{{ tenant.organization.name }}</h1>
         <p>Você entrou no contexto desta organização.</p>
+        <p><a href="{% url 'assessment_hub' %}">Minha avaliação</a></p>
         <form method="post" action="{% url 'logout' %}">
             {% csrf_token %}
             <button type="submit">Sair</button>
