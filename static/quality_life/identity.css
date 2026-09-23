@@ -1,0 +1,24 @@
+form { margin-top: 1.5rem; }
+label { display: block; margin: 1rem 0 0.35rem; font-weight: 700; }
+input:not([type="hidden"]) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 0.8rem;
+    border: 1px solid #a7c4bb;
+    border-radius: 0.6rem;
+    font: inherit;
+}
+button {
+    max-width: 100%;
+    padding: 0.8rem 1.3rem;
+    border: 0;
+    border-radius: 0.6rem;
+    background: #29806f;
+    color: white;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.organizations { padding: 0; list-style: none; }
+.organizations form { margin: 0.75rem 0; }

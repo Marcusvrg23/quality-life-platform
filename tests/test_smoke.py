@@ -78,10 +78,22 @@ class FoundationSurfaceTests(SimpleTestCase):
 
         self.assertEqual(response.status_code, 404)
 
-    def test_only_foundation_routes_are_registered(self):
+    def test_foundation_and_identity_routes_are_registered(self):
         route_names = {pattern.name for pattern in get_resolver().url_patterns}
 
-        self.assertEqual(route_names, {"foundation", "health"})
+        self.assertEqual(
+            route_names,
+            {
+                None,
+                "foundation",
+                "health",
+                "login",
+                "logout",
+                "app",
+                "select_organization",
+                "organization_home",
+            },
+        )
 
     def test_foundation_routes_reject_non_get_methods(self):
         for route in ("/", "/health/"):
