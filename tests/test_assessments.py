@@ -122,6 +122,8 @@ class AssessmentCoreTests(TestCase):
             Pillar.objects.create(
                 code="physical_health", name="Duplicate", display_order=10
             )
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Pillar.objects.create(code="tenth", name="Tenth", display_order=10)
 
     def test_versioning_and_publication_validation(self):
         with self.assertRaises(ValidationError):

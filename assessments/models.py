@@ -15,6 +15,12 @@ class Pillar(models.Model):
 
     class Meta:
         ordering = ["display_order"]  # noqa: RUF012
+        constraints = [  # noqa: RUF012
+            models.CheckConstraint(
+                condition=Q(display_order__gte=1, display_order__lte=9),
+                name="assessment_pillar_order_nine_range",
+            ),
+        ]
 
     def save(self, *args, **kwargs):
         if self.pk:
