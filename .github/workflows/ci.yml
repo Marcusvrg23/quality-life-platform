@@ -1,4 +1,4 @@
-name: Django foundation
+name: Django M2 quality gates
 
 on:
   pull_request:
