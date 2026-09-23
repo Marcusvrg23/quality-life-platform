@@ -6,6 +6,7 @@ from django.core.management import call_command
 from django.db import connection
 from django.test import SimpleTestCase, TestCase
 from django.urls import get_resolver
+from django.urls.resolvers import URLPattern
 
 
 class ProjectSmokeTests(SimpleTestCase):
@@ -79,12 +80,15 @@ class FoundationSurfaceTests(SimpleTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_foundation_and_identity_routes_are_registered(self):
-        route_names = {pattern.name for pattern in get_resolver().url_patterns}
+        route_names = {
+            pattern.name
+            for pattern in get_resolver().url_patterns
+            if isinstance(pattern, URLPattern)
+        }
 
         self.assertEqual(
             route_names,
             {
-                None,
                 "foundation",
                 "health",
                 "login",
