@@ -201,6 +201,7 @@ class AssessmentUITests(TestCase):
         self.assertRedirects(
             self.client.get(question_url),
             reverse("assessment_completed", args=[assessment.pk]),
+            fetch_redirect_response=False,
         )
         self.client.post(question_url, {"option": options[0].pk})
         self.assertEqual(

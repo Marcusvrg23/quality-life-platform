@@ -52,6 +52,10 @@ class AssessmentResultPageTests(TestCase):
             user=self.owner, organization=self.org, questionnaire_version=self.version
         )
         self.url = reverse("assessment_completed", args=[self.assessment.pk])
+        self.client.force_login(self.owner)
+        session = self.client.session
+        session[SESSION_ORGANIZATION_KEY] = self.org.pk
+        session.save()
 
     def persist_result(self):
         result = AssessmentResult.objects.create(
@@ -81,7 +85,6 @@ class AssessmentResultPageTests(TestCase):
         return result
 
     def test_missing_result_and_in_progress_fail_safely(self):
-        self.client.force_login(self.owner)
         self.assertEqual(self.client.get(self.url).status_code, 404)
         result = AssessmentResult.objects.create(
             assessment=self.assessment,
@@ -98,7 +101,6 @@ class AssessmentResultPageTests(TestCase):
 
     def test_persisted_result_and_nine_ordered_pillars(self):
         result = self.persist_result()
-        self.client.force_login(self.owner)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Mapa de Qualidade de Vida")
@@ -129,6 +131,7 @@ class AssessmentResultPageTests(TestCase):
 
     def test_owner_only_and_active_tenant(self):
         self.persist_result()
+        self.client.logout()
         self.assertEqual(self.client.get(self.url).status_code, 302)
         self.client.force_login(self.other)
         self.assertEqual(self.client.get(self.url).status_code, 404)

@@ -1,6 +1,7 @@
 """TEST ONLY — NOT PRODUCTION CONTENT. Ephemeral PostgreSQL browser QA."""
 
 import os
+from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 from pathlib import Path
 from unittest import skipIf
@@ -28,6 +29,22 @@ except ImportError:
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
 class AssessmentBrowserTests(StaticLiveServerTestCase):
+    @staticmethod
+    def _stored_result(email):
+        assessment = Assessment.objects.get(user__email=email)
+        result = assessment.result
+        pillars = list(
+            result.pillars.select_related("pillar").order_by("pillar__display_order")
+        )
+        return (
+            result.overall_score,
+            result.overall_band,
+            [
+                (pillar.pillar.display_order, pillar.score, pillar.band)
+                for pillar in pillars
+            ],
+        )
+
     def setUp(self):
         primary = Organization.objects.create(name="QA Principal", slug="qa-principal")
         secondary = Organization.objects.create(
@@ -130,34 +147,29 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             self._capture(page, viewport, "review")
             page.get_by_role("button", name="Concluir avaliação").click()
             page.get_by_role("heading", name="Mapa de Qualidade de Vida").wait_for()
-            assessment = Assessment.objects.get(user__email=email)
-            result = assessment.result
-            pillars = list(
-                result.pillars.select_related("pillar").order_by(
-                    "pillar__display_order"
-                )
-            )
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                overall_score, overall_band, pillars = pool.submit(
+                    self._stored_result, email
+                ).result()
             assert len(pillars) == 9
-            assert len({pillar.score for pillar in pillars}) == 9
+            assert len({score for _, score, _ in pillars}) == 9
             assert page.locator(".overall-score strong").inner_text() == localize(
-                result.overall_score
+                overall_score
             )
-            assert page.locator(".overall-band").inner_text() == result.overall_band
+            assert page.locator(".overall-band").inner_text() == overall_band
             assert page.locator(".heart-segment").count() == 9
             assert page.locator(".pillar-row").count() == 9
-            for pillar in pillars:
-                row = page.locator(
-                    f'.pillar-row[data-pillar="{pillar.pillar.display_order}"]'
-                )
+            for order, score, band in pillars:
+                row = page.locator(f'.pillar-row[data-pillar="{order}"]')
                 assert row.locator(".pillar-score strong").inner_text() == localize(
-                    pillar.score
+                    score
                 )
-                assert row.locator(".pillar-band").inner_text() == pillar.band
+                assert row.locator(".pillar-band").inner_text() == band
                 assert (
                     page.locator(
-                        f'.heart-segment[data-pillar="{pillar.pillar.display_order}"]'
+                        f'.heart-segment[data-pillar="{order}"]'
                     ).get_attribute("data-band")
-                    == pillar.band
+                    == band
                 )
             self._capture(page, viewport, "result")
             page.reload()
