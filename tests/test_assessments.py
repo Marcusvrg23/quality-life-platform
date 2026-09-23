@@ -21,6 +21,7 @@ from assessments.models import (
 )
 from assessments.services import (
     calculate_assessment_scores,
+    canonical_score,
     classify_score,
     complete_assessment,
     publish_questionnaire,
@@ -211,7 +212,7 @@ class AssessmentCoreTests(TestCase):
             complete_assessment(self.user, self.org_a, a.pk).overall_score, D("50.00")
         )
 
-    def test_classification_uses_unrounded_score(self):
+    def test_persisted_band_uses_canonical_score(self):
         q1, _ = self.add_question(self.questionnaire, 1, "q1")
         q2, _ = self.add_question(self.questionnaire, 1, "q2")
         low = QuestionOption.objects.create(
@@ -232,9 +233,54 @@ class AssessmentCoreTests(TestCase):
         a = start_assessment(self.user, self.org_a, self.questionnaire.pk)
         record_answer(self.user, self.org_a, a.pk, q1.pk, low.pk)
         record_answer(self.user, self.org_a, a.pk, q2.pk, high.pk)
+        calculated = calculate_assessment_scores(a)
+        self.assertEqual(calculated, calculate_assessment_scores(a))
         result = complete_assessment(self.user, self.org_a, a.pk)
         self.assertEqual(result.overall_score, D("85.00"))
-        self.assertEqual(result.overall_band, "BOM")
+        self.assertEqual(result.overall_band, "EXCELENTE")
+        self.assertEqual(result.overall_score, calculated.overall_score)
+        self.assertEqual(result.overall_band, calculated.overall_band)
+        self.assertEqual(classify_score(result.overall_score), result.overall_band)
+        for pillar in result.pillars.all():
+            self.assertEqual(pillar.score, D("85.00"))
+            self.assertEqual(classify_score(pillar.score), pillar.band)
+
+    def test_overall_and_pillars_use_same_canonical_policy(self):
+        q1, _ = self.add_question(self.questionnaire, 1, "q1")
+        q2, _ = self.add_question(self.questionnaire, 2, "q2")
+        low = QuestionOption.objects.create(
+            question=q1,
+            code="low",
+            label="TEST ONLY",
+            score_value=D("84.99"),
+            display_order=4,
+        )
+        high = QuestionOption.objects.create(
+            question=q2,
+            code="high",
+            label="TEST ONLY",
+            score_value=D("85.00"),
+            display_order=4,
+        )
+        self.publish()
+        a = start_assessment(self.user, self.org_a, self.questionnaire.pk)
+        record_answer(self.user, self.org_a, a.pk, q1.pk, low.pk)
+        record_answer(self.user, self.org_a, a.pk, q2.pk, high.pk)
+        result = complete_assessment(self.user, self.org_a, a.pk)
+        self.assertEqual(
+            (result.overall_score, result.overall_band), (D("85.00"), "EXCELENTE")
+        )
+        self.assertEqual(classify_score(result.overall_score), result.overall_band)
+        self.assertEqual(
+            list(
+                result.pillars.order_by("pillar__display_order").values_list(
+                    "score", "band"
+                )
+            ),
+            [(D("84.99"), "BOM"), (D("85.00"), "EXCELENTE")],
+        )
+        for pillar in result.pillars.all():
+            self.assertEqual(classify_score(pillar.score), pillar.band)
 
     def test_non_scorable_optional_and_required(self):
         scored, options = self.add_question(self.questionnaire, 1, "scored")
@@ -423,7 +469,7 @@ class AssessmentCoreTests(TestCase):
 
 
 class ScoreBandTests(TestCase):
-    def test_boundaries_without_rounding(self):
+    def test_official_boundaries(self):
         cases = (
             ("0", "PRIORIDADE"),
             ("39.99", "PRIORIDADE"),
@@ -433,7 +479,6 @@ class ScoreBandTests(TestCase):
             ("84.99", "BOM"),
             ("85", "EXCELENTE"),
             ("100", "EXCELENTE"),
-            ("84.999", "BOM"),
         )
         for score, band in cases:
             with self.subTest(score=score):
@@ -441,3 +486,23 @@ class ScoreBandTests(TestCase):
         for score in ("-0.01", "100.01", "NaN"):
             with self.assertRaises(ValidationError):
                 classify_score(D(score))
+
+    def test_canonical_quantization_at_band_boundaries(self):
+        cases = (
+            ("39.994", "39.99", "PRIORIDADE"),
+            ("39.995", "40.00", "ATENÇÃO"),
+            ("40.00", "40.00", "ATENÇÃO"),
+            ("69.994", "69.99", "ATENÇÃO"),
+            ("69.995", "70.00", "BOM"),
+            ("70.00", "70.00", "BOM"),
+            ("84.99", "84.99", "BOM"),
+            ("84.994", "84.99", "BOM"),
+            ("84.995", "85.00", "EXCELENTE"),
+            ("84.999", "85.00", "EXCELENTE"),
+            ("85.00", "85.00", "EXCELENTE"),
+        )
+        for raw, expected_score, expected_band in cases:
+            with self.subTest(raw=raw):
+                persisted_score = canonical_score(D(raw))
+                self.assertEqual(persisted_score, D(expected_score))
+                self.assertEqual(classify_score(persisted_score), expected_band)

@@ -35,7 +35,7 @@ def classify_score(score):
     return "EXCELENTE"
 
 
-def _rounded(score):
+def canonical_score(score):
     return score.quantize(CENT, rounding=ROUND_HALF_UP)
 
 
@@ -147,7 +147,7 @@ class CalculatedScores:
 
 
 def calculate_assessment_scores(assessment):
-    """Pure calculation over validated persisted answers; classification uses raw scores."""
+    """Calculate with Decimal and classify the same canonical scores we persist."""
     questionnaire = assessment.questionnaire_version
     validate_questionnaire(questionnaire)
     configured_pillars = list(
@@ -185,9 +185,10 @@ def calculate_assessment_scores(assessment):
         if denominator <= 0:
             raise ValidationError("Scored pillar has no answered scorable questions.")
         raw_score = numerator / denominator
+        pillar_score = canonical_score(raw_score)
         results.append(
             CalculatedPillar(
-                configured.pillar_id, _rounded(raw_score), classify_score(raw_score)
+                configured.pillar_id, pillar_score, classify_score(pillar_score)
             )
         )
         weighted_overall += raw_score * configured.weight
@@ -197,8 +198,9 @@ def calculate_assessment_scores(assessment):
     if total_pillar_weight <= 0:
         raise ValidationError("Questionnaire has no scored pillars.")
     raw_overall = weighted_overall / total_pillar_weight
+    overall_score = canonical_score(raw_overall)
     return CalculatedScores(
-        _rounded(raw_overall), classify_score(raw_overall), tuple(results)
+        overall_score, classify_score(overall_score), tuple(results)
     )
 
 
