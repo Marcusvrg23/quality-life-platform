@@ -26,6 +26,8 @@ except ImportError:
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
 class AssessmentBrowserTests(LiveServerTestCase):
+    serialized_rollback = True
+
     def setUp(self):
         user = get_user_model().objects.create_user(
             email="browser@example.test", password="browser-test-password"

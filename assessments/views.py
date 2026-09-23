@@ -1,5 +1,6 @@
 """Server-rendered assessment flow backed by the M3 services."""
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
@@ -94,7 +95,7 @@ def start(request):
     tenant = _tenant(request)
     # Lock the user row so parallel submissions cannot create two current assessments.
     with transaction.atomic():
-        type(request.user).objects.select_for_update().get(pk=request.user.pk)
+        get_user_model().objects.select_for_update().get(pk=request.user.pk)
         own = Assessment.objects.filter(
             user=request.user, organization=tenant.organization
         )
