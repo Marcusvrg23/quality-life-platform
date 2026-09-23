@@ -42,7 +42,12 @@ python manage.py test --settings=config.settings.test
 python manage.py runserver
 ```
 
-O comando de conexão deve imprimir `postgresql`. O servidor Django não publica as telas do protótipo estático nesta milestone; a configuração de URLs permanece vazia até uma milestone funcional.
+O comando de conexão deve imprimir `postgresql`. O servidor Django publica somente duas rotas de fundação nesta milestone:
+
+- `GET /`: página mínima que comprova routing, templates e arquivos estáticos;
+- `GET /health/`: resposta `{"status": "ok"}` que comprova a disponibilidade do processo sem consultar o banco.
+
+Essas rotas não publicam as telas do protótipo estático nem implementam funcionalidades de produto.
 
 Para encerrar o PostgreSQL iniciado pelo Compose sem apagar o volume local:
 
