@@ -271,7 +271,7 @@ class Assessment(models.Model):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        if self.status == self.Status.COMPLETED:
+        if type(self).objects.get(pk=self.pk).status == self.Status.COMPLETED:
             raise ValidationError("Completed assessment is immutable.")
         return super().delete(*args, **kwargs)
 
@@ -314,13 +314,17 @@ class Answer(models.Model):
             == Assessment.Status.COMPLETED
         ):
             raise ValidationError("Completed assessment answers are immutable.")
-        if self.assessment.status != Assessment.Status.IN_PROGRESS:
+        if not Assessment.objects.filter(
+            pk=self.assessment_id, status=Assessment.Status.IN_PROGRESS
+        ).exists():
             raise ValidationError("Completed assessment answers are immutable.")
         self.full_clean()
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        if self.assessment.status != Assessment.Status.IN_PROGRESS:
+        if not Assessment.objects.filter(
+            pk=self.assessment_id, status=Assessment.Status.IN_PROGRESS
+        ).exists():
             raise ValidationError("Completed assessment answers are immutable.")
         return super().delete(*args, **kwargs)
 
