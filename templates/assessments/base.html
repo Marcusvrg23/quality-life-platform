@@ -1,0 +1,25 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Minha avaliação{% endblock %} · Quality Life</title>
+    <link rel="stylesheet" href="{% static 'quality_life/assessment.css' %}">
+</head>
+<body>
+    <header class="site-header">
+        <div class="site-header__inner">
+            <a class="brand" href="{% url 'app' %}">Quality Life</a>
+            <span class="organization">{{ tenant.organization.name }}</span>
+        </div>
+    </header>
+    <main id="main" class="assessment-shell">
+        <nav aria-label="Navegação da avaliação" class="breadcrumb">
+            <a href="{% url 'app' %}">Início</a><span aria-hidden="true">/</span>
+            <a href="{% url 'assessment_hub' %}">Minha avaliação</a>
+        </nav>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{% extends 'assessments/base.html' %}
+{% block title %}Pergunta {{ position }} de {{ total }}{% endblock %}
+{% block content %}
+<section class="card">
+    <p class="eyebrow">{{ question.questionnaire_pillar.pillar.name }}</p>
+    <h1>Pergunta {{ position }} de {{ total }}</h1>
+    <p class="progress-text">{{ answered }} de {{ total }} perguntas respondidas</p>
+    <progress value="{{ answered }}" max="{{ total }}" aria-label="Progresso da avaliação">{{ answered }} de {{ total }}</progress>
+    <form method="post" action="{% url 'assessment_question' assessment.pk question.pk %}">
+        {% csrf_token %}
+        <fieldset {% if error %}aria-describedby="answer-error"{% endif %}>
+            <legend>{{ question.text }}</legend>
+            {% if error %}<p id="answer-error" class="error" role="alert">{{ error }}</p>{% endif %}
+            {% for option in question.options.all %}
+                <label class="option">
+                    <input type="radio" name="option" value="{{ option.pk }}" {% if selected.pk == option.pk %}checked{% endif %} {% if error %}aria-describedby="answer-error"{% endif %}>
+                    <span>{{ option.label }}</span>
+                </label>
+            {% endfor %}
+        </fieldset>
+        <div class="actions">
+            <button type="submit">Salvar e {% if following %}próxima{% else %}revisar{% endif %}</button>
+            <button class="button-secondary" type="submit" name="destination" value="review">Salvar e ir para revisão</button>
+        </div>
+    </form>
+    <nav class="step-links" aria-label="Navegação entre perguntas">
+        {% if previous %}<a href="{% url 'assessment_question' assessment.pk previous.pk %}">Pergunta anterior</a>{% endif %}
+        {% if following %}<a href="{% url 'assessment_question' assessment.pk following.pk %}">Próxima pergunta sem salvar</a>{% endif %}
+        <a href="{% url 'assessment_review' assessment.pk %}">Revisar respostas</a>
+    </nav>
+</section>
+{% endblock %}

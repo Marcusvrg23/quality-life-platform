@@ -1,4 +1,4 @@
-name: Django M3 quality gates
+name: Django M4 quality gates
 
 on:
   pull_request:
@@ -50,6 +50,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip check
+      - name: Install browser QA
+        run: |
+          python -m pip install -r requirements-browser.txt
+          python -m playwright install --with-deps chromium
       - name: Run lint and format checks
         run: |
           ruff check .
@@ -67,3 +71,12 @@ jobs:
           python manage.py migrate --check --settings=config.settings.test
       - name: Run tests
         run: python manage.py test --settings=config.settings.test
+        env:
+          QA_ARTIFACT_DIR: qa-artifacts
+      - name: Upload browser QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m4-browser-qa
+          path: qa-artifacts/
+          if-no-files-found: ignore

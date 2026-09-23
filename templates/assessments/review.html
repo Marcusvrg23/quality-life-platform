@@ -1,0 +1,31 @@
+{% extends 'assessments/base.html' %}
+{% block title %}Revisar respostas{% endblock %}
+{% block content %}
+<section class="card">
+    <p class="eyebrow">Antes de concluir</p>
+    <h1>Revisar respostas</h1>
+    <p>{{ answered }} de {{ total }} perguntas respondidas</p>
+    <progress value="{{ answered }}" max="{{ total }}" aria-label="Progresso da avaliação">{{ answered }} de {{ total }}</progress>
+    {% if error %}<p class="error" role="alert">Não foi possível concluir. Responda às perguntas obrigatórias e verifique as respostas.</p>{% endif %}
+    <ul class="review-list">
+        {% for item in items %}
+        <li>
+            <h2>{{ item.question.questionnaire_pillar.pillar.name }}</h2>
+            <p>{{ item.question.text }}</p>
+            {% if item.answer %}
+                <p><strong>Resposta:</strong> {{ item.answer.label }}</p>
+            {% elif item.question.required %}
+                <p class="missing"><strong>Obrigatória sem resposta</strong></p>
+            {% else %}
+                <p>Opcional sem resposta</p>
+            {% endif %}
+            <a href="{% url 'assessment_question' assessment.pk item.question.pk %}">{% if item.answer %}Alterar resposta{% else %}Responder{% endif %}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <form method="post" action="{% url 'assessment_complete' assessment.pk %}">
+        {% csrf_token %}
+        <button type="submit">Concluir avaliação</button>
+    </form>
+</section>
+{% endblock %}
