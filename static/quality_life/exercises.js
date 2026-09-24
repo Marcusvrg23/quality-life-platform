@@ -24,6 +24,7 @@
         dialog.querySelector('[data-previous]').disabled = index === 0;
         dialog.querySelector('[data-next]').disabled = index === cards.length - 1;
         dialog.scrollTop = 0;
+        dialog.querySelector('.exercise-detail').scrollTop = 0;
         dialog.querySelector('#exercise-title').focus({ preventScroll: true });
         if (window.gsap && !motion.matches) window.gsap.fromTo('.exercise-detail', { opacity: .4, y: 8 }, { opacity: 1, y: 0, duration: .3, overwrite: true, clearProps: 'all' });
     }

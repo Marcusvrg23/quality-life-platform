@@ -98,7 +98,7 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
 
     def _capture(self, page, viewport, stage):
         page.wait_for_function(
-            "!window.gsap || gsap.globalTimeline.getChildren(true, true, false).every(t => !t.isActive())"
+            "!window.gsap || gsap.globalTimeline.getChildren(true, true, false).every(t => t.totalProgress() === 1)"
         )
         assert page.evaluate(
             "document.documentElement.scrollWidth <= window.innerWidth"
@@ -107,7 +107,10 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
         if artifact_dir:
             path = Path(artifact_dir)
             path.mkdir(parents=True, exist_ok=True)
-            page.screenshot(path=str(path / f"{viewport}-{stage}.png"), full_page=True)
+            page.screenshot(
+                path=str(path / f"{viewport}-{stage}.png"),
+                full_page=stage != "exercise-open",
+            )
 
     def _agent_checkpoint(self, viewport, stage):
         """Inspect the same live Django page through the required agent-browser CLI."""
@@ -184,6 +187,9 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             )
             page.get_by_role("button", name="Anterior").click()
             self._capture(page, viewport, "exercise-open")
+            assert page.get_by_role("button", name="Próximo").evaluate(
+                "el => { const r=el.getBoundingClientRect(); return r.bottom <= innerHeight && r.top >= 0; }"
+            )
             assert page.get_by_role("button", name="Anterior").is_disabled()
             for index in range(1, 8):
                 page.get_by_role("button", name="Próximo").click()
