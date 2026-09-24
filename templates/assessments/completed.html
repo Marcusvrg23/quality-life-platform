@@ -1,47 +1,57 @@
-{% extends 'assessments/base.html' %}
+﻿{% extends 'assessments/base.html' %}
+{% load static %}
 {% block title %}Mapa de Qualidade de Vida{% endblock %}
+{% block page_title %}Minha avaliação{% endblock %}
+{% block extra_css %}{{ block.super }}<link rel="stylesheet" href="{% static 'quality_life/quality-map.css' %}">{% endblock %}
 {% block content %}
-<section class="card result" aria-labelledby="result-title">
-    <p class="eyebrow">Avaliação concluída</p>
-    <h1 id="result-title">Mapa de Qualidade de Vida</h1>
-    <p class="result-intro">Seu resultado reúne os nove pilares da avaliação.</p>
-    <div class="result-overview">
-        <svg class="heart" viewBox="0 0 300 280" role="img" aria-labelledby="heart-title heart-desc" xmlns="http://www.w3.org/2000/svg">
-            <title id="heart-title">Coração dos nove pilares</title>
-            <desc id="heart-desc">Nove faixas numeradas de cima para baixo. Cada número corresponde a um pilar na lista abaixo, que apresenta seu score e status.</desc>
-            <defs>
-                <clipPath id="heart-shape">
-                    <path d="M150 265 C130 245 25 180 20 105 C10 40 70 10 120 45 C135 55 145 70 150 80 C155 70 165 55 180 45 C230 10 290 40 280 105 C275 180 170 245 150 265 Z"/>
-                </clipPath>
-            </defs>
-            <g clip-path="url(#heart-shape)">
-                {% for pillar, y, label_y in segments %}
-                    <rect class="heart-segment" data-band="{{ pillar.band }}" data-pillar="{{ pillar.pillar.display_order }}" x="0" y="{% if forloop.first %}20{% else %}{{ y }}{% endif %}" width="300" height="{% if forloop.first or forloop.last %}35{% else %}25{% endif %}"/>
-                    <text class="heart-number" x="{% if forloop.first or forloop.counter == 2 %}85{% else %}150{% endif %}" y="{{ label_y }}">{{ pillar.pillar.display_order }}</text>
-                {% endfor %}
-            </g>
-            <path class="heart-outline" d="M150 265 C130 245 25 180 20 105 C10 40 70 10 120 45 C135 55 145 70 150 80 C155 70 165 55 180 45 C230 10 290 40 280 105 C275 180 170 245 150 265 Z"/>
-        </svg>
-        <div class="overall">
-            <p class="overall-label">Score geral</p>
-            <p class="overall-score"><strong>{{ result.overall_score }}</strong><span>/ 100</span></p>
-            <p class="overall-band" data-band="{{ result.overall_band }}">{{ result.overall_band }}</p>
-        </div>
+<section class="quality-map" aria-labelledby="result-title">
+  <header class="map-heading">
+    <div><p class="eyebrow">UM OLHAR PARA VOCÊ</p><h1 id="result-title">Seu mapa de qualidade de vida</h1><p>Resultado da sua avaliação</p></div>
+    <div class="map-date"><span>Avaliação concluída em</span><strong>{{ assessment.completed_at|date:"d/m/Y" }}</strong></div>
+  </header>
+  <div class="map-layout">
+    <div class="map-canvas">
+      <svg class="quality-heart" viewBox="-12 -12 784 734" role="group" aria-labelledby="heart-title heart-desc" xmlns="http://www.w3.org/2000/svg">
+        <title id="heart-title">Coração dos nove pilares</title>
+        <desc id="heart-desc">Nove regiões representam os resultados persistidos. Explore cada pilar por toque, mouse ou teclado. A lista completa está abaixo.</desc>
+        {% for segment in segments %}
+        <g class="heart-segment" data-pillar="{{ segment.pillar.pillar.display_order }}" data-band="{{ segment.pillar.band }}" data-name="{{ segment.pillar.pillar.name }}" data-score="{{ segment.pillar.score }}" tabindex="0" role="button" aria-pressed="false" aria-label="{{ segment.pillar.pillar.name }}, {{ segment.pillar.score }} de 100, {{ segment.pillar.band }}">
+          <path d="{{ segment.path }}"/>
+          <text class="segment-label" x="{{ segment.x }}" y="{{ segment.y }}" text-anchor="middle">
+            <tspan class="segment-number" x="{{ segment.x }}">{{ segment.pillar.pillar.display_order }}</tspan>
+            {% for line in segment.lines %}<tspan x="{{ segment.x }}" dy="19">{{ line }}</tspan>{% endfor %}
+            <tspan class="segment-score" x="{{ segment.x }}" dy="31">{{ segment.pillar.score }}<tspan class="segment-total"> /100</tspan></tspan>
+            <tspan class="segment-band" x="{{ segment.x }}" dy="20">{{ segment.pillar.band }}</tspan>
+          </text>
+        </g>
+        {% endfor %}
+        <path class="inner-heart" d="M380 278 C339 208 242 210 234 298 C225 384 305 454 380 512 C455 454 535 384 526 298 C518 210 421 208 380 278 Z"/>
+        <foreignObject x="263" y="293" width="234" height="180">
+          <div xmlns="http://www.w3.org/1999/xhtml" class="heart-center" aria-live="polite" aria-atomic="true">
+            <p class="heart-center-name">SUA QUALIDADE<br/>DE VIDA GERAL</p>
+            <p class="overall-score"><strong class="heart-center-score">{{ result.overall_score }}</strong><span>/100</span></p>
+            <p class="overall-band heart-center-band" data-band="{{ result.overall_band }}">{{ result.overall_band }}</p>
+          </div>
+        </foreignObject>
+      </svg>
+      <div class="map-controls"><p>Explore um pilar para ver seu resultado.</p><button type="button" class="quality-map-reset button-secondary">Ver resultado geral</button></div>
     </div>
-    <div class="pillar-section">
-        <h2>Nove pilares</h2>
-        <p>Os números seguem as faixas do coração, de cima para baixo.</p>
-        <ol class="pillar-list">
-            {% for pillar in pillars %}
-                <li class="pillar-row" data-pillar="{{ pillar.pillar.display_order }}">
-                    <span class="pillar-number" aria-hidden="true">{{ pillar.pillar.display_order }}</span>
-                    <span class="pillar-name">{{ pillar.pillar.name }}</span>
-                    <span class="pillar-score"><strong>{{ pillar.score }}</strong><small>/ 100</small></span>
-                    <span class="pillar-band" data-band="{{ pillar.band }}">{{ pillar.band }}</span>
-                </li>
-            {% endfor %}
-        </ol>
-    </div>
-    <a class="button button-secondary" href="{% url 'assessment_hub' %}">Voltar para Minha avaliação</a>
+    <aside class="map-aside" aria-label="Como ler seu resultado">
+      <section class="map-panel"><p class="eyebrow">COMO LER SEU MAPA</p><h2>Legenda de pontuação</h2><ul class="score-legend">
+        <li><i data-band="EXCELENTE"></i><span><strong>EXCELENTE</strong><small>Você está indo muito bem.</small></span><b>85–100</b></li>
+        <li><i data-band="BOM"></i><span><strong>BOM</strong><small>Continue assim.</small></span><b>70–84</b></li>
+        <li><i data-band="ATENÇÃO"></i><span><strong>ATENÇÃO</strong><small>Pontos que merecem cuidado.</small></span><b>40–69</b></li>
+        <li><i data-band="PRIORIDADE"></i><span><strong>PRIORIDADE</strong><small>Áreas de maior atenção.</small></span><b>0–39</b></li>
+      </ul></section>
+      <section class="map-panel attention-panel"><p class="eyebrow">SEU PRÓXIMO OLHAR</p><h2>Suas 3 áreas de maior atenção</h2><ol class="attention-list">
+        {% for pillar in attention_pillars %}<li class="attention-item" data-pillar="{{ pillar.pillar.display_order }}"><span class="attention-rank">{{ forloop.counter }}</span><div><strong>{{ pillar.pillar.name }}</strong><p><b>{{ pillar.score }}</b><small>/100</small> <span class="pillar-band" data-band="{{ pillar.band }}">{{ pillar.band }}</span></p></div></li>{% endfor %}
+      </ol></section>
+    </aside>
+  </div>
+  <section class="pillar-section"><p class="eyebrow">SEUS RESULTADOS EM DETALHE</p><h2>Nove pilares, uma visão completa</h2><p>As cores e pontuações representam esta avaliação.</p><ol class="pillar-list">
+    {% for pillar in pillars %}<li class="pillar-row" data-pillar="{{ pillar.pillar.display_order }}"><span class="pillar-number" aria-hidden="true">{{ pillar.pillar.display_order }}</span><span class="pillar-name">{{ pillar.pillar.name }}</span><span class="pillar-score"><strong>{{ pillar.score }}</strong><small>/100</small></span><span class="pillar-band" data-band="{{ pillar.band }}">{{ pillar.band }}</span></li>{% endfor %}
+  </ol></section>
+  <div class="map-footer"><p>Uma pausa para olhar para você e acompanhar seu bem-estar.</p><a class="button button-secondary" href="{% url 'assessment_hub' %}">Voltar para Minha avaliação</a></div>
 </section>
 {% endblock %}
+{% block extra_js %}{{ block.super }}<script src="{% static 'quality_life/vendor/gsap-3.13.0.min.js' %}" defer></script><script src="{% static 'quality_life/quality-map.js' %}" defer></script>{% endblock %}

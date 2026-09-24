@@ -1,0 +1,48 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Exercícios{% endblock %}
+{% block page_title %}Exercícios{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/exercises.css' %}">{% endblock %}
+{% block content %}
+<div class="exercise-page">
+    <header class="exercise-heading">
+        <div><p class="eyebrow">GINÁSTICA LABORAL</p><h1>Exercícios</h1><p>Movimentos guiados para pequenas pausas durante o seu dia.</p></div>
+        <div class="exercise-guide"><img src="{% static 'quality_life/images/exercise-guide.webp' %}" alt="Mascote oficial Quality Life, seu guia de mobilidade"><span>Vamos alongar?</span></div>
+    </header>
+    <details class="exercise-safety" open>
+        <summary>Antes de começar</summary>
+        <p>Evite movimentos abruptos. Faça movimentos suaves e lentos, inclusive ao trocar de exercício. Respeite seu corpo: a dor é um sinal de alerta; reduza a intensidade e não insista se houver dor. Mantenha a respiração profunda e lenta.</p>
+        <p>Evite exercícios logo depois de uma contusão aguda. Consulte o médico se a dor persistir por mais de dois dias ou se os sintomas piorarem após os exercícios, sem recuperação no dia seguinte. Procure orientação de um profissional de fisioterapia ou educação física para aprender a execução.</p>
+        <small>Orientações do material Quality Life · páginas 1 e 28.</small>
+    </details>
+    <section id="exercise-library" aria-labelledby="library-title">
+        <div class="exercise-library-top"><div><h2 id="library-title">Uma pausa para se movimentar</h2><p>Explore os movimentos do material Quality Life.</p></div><button class="button exercise-enhanced" type="button" data-start-sequence hidden>Começar sequência <span aria-hidden="true">→</span></button></div>
+        <div class="exercise-filters exercise-enhanced" aria-label="Filtrar exercícios" hidden>
+            <button type="button" data-category="all" aria-pressed="true">Todos <span>{{ exercises|length }}</span></button>
+            {% for category in categories %}<button type="button" data-category="{{ category }}" aria-pressed="false">{{ category }}</button>{% endfor %}
+        </div>
+        <div class="exercise-grid">
+            {% for exercise in exercises %}
+            <article class="exercise-card" data-exercise="{{ exercise.slug }}" data-category="{{ exercise.category }}">
+                <div class="exercise-card-visual"><img src="{% static 'quality_life/images/exercises/' %}{{ exercise.slug }}.webp" alt="{{ exercise.title }}: demonstração extraída do material Quality Life" loading="lazy" width="710" height="525"><span class="exercise-index">{{ forloop.counter|stringformat:'02d' }}</span></div>
+                <div class="exercise-card-body"><p class="eyebrow">{{ exercise.category }}</p><h3>{{ exercise.title }}</h3><p>{{ exercise.summary }}</p>
+                <details class="exercise-instructions"><summary>Ver exercício</summary>
+                    {% if exercise.position %}<p><strong>Posição inicial</strong><br>{{ exercise.position }}</p>{% endif %}
+                    <p>{{ exercise.instruction }}</p><small>Fonte: {{ source }} · p. {{ exercise.page }}.</small>
+                </details>
+                <button type="button" class="exercise-open exercise-enhanced" data-open-exercise="{{ forloop.counter0 }}" aria-label="Ver exercício: {{ exercise.title }}" hidden>Ver exercício <span aria-hidden="true">↗</span></button>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    <dialog class="exercise-dialog" aria-labelledby="exercise-title">
+        <div class="exercise-dialog-bar"><button type="button" data-close-exercise>← Voltar aos exercícios</button><span data-sequence-position aria-live="polite" aria-atomic="true"></span></div>
+        <progress class="exercise-progress" max="{{ exercises|length }}" value="1" aria-label="Posição na sequência"></progress>
+        <div class="exercise-detail"><div class="exercise-detail-image"><img data-detail-image alt=""></div><div class="exercise-detail-content"><p class="eyebrow" data-detail-category></p><h2 id="exercise-title" tabindex="-1"></h2><div data-detail-instruction></div><p class="exercise-detail-note">Movimentos suaves, respiração lenta. Respeite seu corpo.</p></div></div>
+        <nav class="exercise-sequence" aria-label="Sequência de exercícios"><button type="button" class="button button-secondary" data-previous>← Anterior</button><button type="button" class="button" data-next>Próximo →</button></nav>
+    </dialog>
+    <p class="exercise-source">Seleção do material {{ source }}. A sequência indica apenas sua navegação nesta sessão.</p>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/vendor/gsap-3.13.0.min.js' %}" defer></script><script src="{% static 'quality_life/exercises.js' %}" defer></script>{% endblock %}

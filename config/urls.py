@@ -10,6 +10,7 @@ from .auth_views import (
     organization_home,
     select_organization,
 )
+from .exercise_views import exercises
 from .views import foundation, health
 
 urlpatterns = [
@@ -17,6 +18,7 @@ urlpatterns = [
     path("login/", EmailLoginView.as_view(), name="login"),
     path("logout/", SessionLogoutView.as_view(), name="logout"),
     path("app/", app_home, name="app"),
+    path("app/exercises/", exercises, name="exercises"),
     path("app/assessment/", include("assessments.urls")),
     path("app/select-organization/", select_organization, name="select_organization"),
     path("app/organizations/<slug:slug>/", organization_home, name="organization_home"),
