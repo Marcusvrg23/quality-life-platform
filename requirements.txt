@@ -1,4 +1,6 @@
 Django==5.2.17
 django-environ==0.12.0
 psycopg[binary]==3.2.13
+gunicorn==23.0.0
+whitenoise==6.11.0
 ruff==0.16.8
