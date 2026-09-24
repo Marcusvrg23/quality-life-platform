@@ -54,6 +54,7 @@ jobs:
         run: |
           python -m pip install -r requirements-browser.txt
           python -m playwright install --with-deps chromium
+          npm install --global agent-browser@0.36.0
       - name: Run lint and format checks
         run: |
           ruff check .
@@ -73,6 +74,7 @@ jobs:
         run: python manage.py test --settings=config.settings.test
         env:
           QA_ARTIFACT_DIR: qa-artifacts
+          QA_AGENT_BROWSER: "1"
       - name: Upload browser QA screenshots
         if: always()
         uses: actions/upload-artifact@v4

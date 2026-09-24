@@ -263,7 +263,34 @@ def completed(request, assessment_id):
     pillars = sorted(result.pillars.all(), key=lambda item: item.pillar.display_order)
     if len(pillars) != 9:
         raise Http404
-    segments = zip(pillars, range(30, 255, 25), range(48, 273, 25), strict=True)
+    # Fixed presentation geometry only. Scores and bands remain persisted values.
+    geometry = (
+        ("M380 330 L380 115 C280 -30 95 -25 32 150 Z", 232, 105),
+        ("M380 330 L728 150 C665 -25 480 -30 380 115 Z", 524, 105),
+        ("M380 330 L728 150 C750 205 757 265 742 320 Z", 637, 220),
+        ("M380 330 L742 320 C728 392 695 452 652 500 Z", 634, 384),
+        ("M380 330 L652 500 C601 559 536 609 493 638 Z", 530, 490),
+        (
+            "M380 330 L493 638 C450 666 414 686 380 702 C346 686 310 666 267 638 Z",
+            380,
+            567,
+        ),
+        ("M380 330 L267 638 C224 609 159 559 108 500 Z", 236, 478),
+        ("M380 330 L108 500 C65 452 32 392 18 320 Z", 126, 384),
+        ("M380 330 L18 320 C3 265 10 205 32 150 Z", 122, 213),
+    )
+    segments = []
+    for pillar, (path, x, y) in zip(pillars, geometry, strict=True):
+        words = pillar.pillar.name.split()
+        lines = [""]
+        for word in words:
+            if lines[-1] and len(lines[-1]) + len(word) > 19:
+                lines.append(word)
+            else:
+                lines[-1] = f"{lines[-1]} {word}".strip()
+        segments.append(
+            {"pillar": pillar, "path": path, "x": x, "y": y, "lines": lines}
+        )
     return render(
         request,
         "assessments/completed.html",
@@ -273,5 +300,8 @@ def completed(request, assessment_id):
             "result": result,
             "pillars": pillars,
             "segments": segments,
+            "attention_pillars": sorted(
+                pillars, key=lambda item: (item.score, item.pillar.display_order)
+            )[:3],
         },
     )

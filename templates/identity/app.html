@@ -1,23 +1,39 @@
+{% extends 'app_shell.html' %}
 {% load static %}
-<!doctype html>
-<html lang="pt-BR">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Quality Life · {{ tenant.organization.name }}</title>
-    <link rel="stylesheet" href="{% static 'quality_life/foundation.css' %}">
-    <link rel="stylesheet" href="{% static 'quality_life/identity.css' %}">
-</head>
-<body>
-    <main class="foundation">
-        <p class="foundation__eyebrow">Quality Life</p>
-        <h1>{{ tenant.organization.name }}</h1>
-        <p>Você entrou no contexto desta organização.</p>
-        <p><a href="{% url 'assessment_hub' %}">Minha avaliação</a></p>
-        <form method="post" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit">Sair</button>
-        </form>
-    </main>
-</body>
-</html>
+{% block title %}Hoje{% endblock %}
+{% block page_title %}Hoje{% endblock %}
+{% block header_title %}Hoje{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/dashboard.css' %}">{% endblock %}
+{% block content %}
+<section class="dashboard" aria-labelledby="dashboard-title">
+    <header class="dashboard-intro">
+        <p class="ql-eyebrow">MINHA ÁREA</p>
+        <h1 id="dashboard-title">Escolha sua atividade</h1>
+        <p>Rotinas rápidas de ginástica laboral organizadas para o seu dia.</p>
+    </header>
+    <article class="dashboard-hero">
+        <div class="dashboard-hero__copy">
+            <span class="dashboard-tag"><span aria-hidden="true">●</span> Uma pausa para você</span>
+            <h2>Seu bem-estar<br>também faz parte<br>da rotina.</h2>
+            <p>Encontre movimentos guiados para suas pausas e acompanhe sua avaliação de qualidade de vida.</p>
+            <a class="ql-button" href="{% url 'exercises' %}">Explorar exercícios <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="dashboard-hero__visual">
+            <img src="{% static 'quality_life/images/dashboard-mobility.webp' %}" alt="Mascote oficial Quality Life com os braços elevados" width="948" height="1664">
+        </div>
+    </article>
+    <div class="dashboard-links">
+        <a class="dashboard-link" href="{% url 'exercises' %}">
+            <span class="dashboard-link__icon" aria-hidden="true">↗</span>
+            <span><strong>Exercícios</strong><small>Movimentos guiados para pequenas pausas.</small></span>
+            <span class="dashboard-link__arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="dashboard-link" href="{% url 'assessment_hub' %}">
+            <span class="dashboard-link__icon dashboard-link__icon--purple" aria-hidden="true">♡</span>
+            <span><strong>Minha avaliação</strong><small>Conheça seu mapa de qualidade de vida.</small></span>
+            <span class="dashboard-link__arrow" aria-hidden="true">→</span>
+        </a>
+    </div>
+    <p class="dashboard-note">Cada pausa é uma oportunidade de cuidar de você.</p>
+</section>
+{% endblock %}

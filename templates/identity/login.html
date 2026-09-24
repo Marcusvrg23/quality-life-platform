@@ -5,23 +5,40 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Entrar · Quality Life</title>
-    <link rel="stylesheet" href="{% static 'quality_life/foundation.css' %}">
-    <link rel="stylesheet" href="{% static 'quality_life/identity.css' %}">
+    <link rel="stylesheet" href="{% static 'quality_life/login.css' %}">
 </head>
-<body>
-    <main class="foundation">
-        <p class="foundation__eyebrow">Quality Life</p>
-        <h1>Entrar</h1>
-        {% if form.errors %}<p role="alert">Email ou senha inválidos.</p>{% endif %}
-        <form method="post" action="{% url 'login' %}">
-            {% csrf_token %}
-            <label for="id_username">Email</label>
-            {{ form.username }}
-            <label for="id_password">Senha</label>
-            {{ form.password }}
-            <input type="hidden" name="next" value="{{ next }}">
-            <button type="submit">Entrar</button>
-        </form>
+<body class="login-page">
+    <main class="login-layout">
+        <section class="login-story" aria-labelledby="story-title">
+            <div class="login-story__content">
+                <p class="login-eyebrow">GINÁSTICA LABORAL · BEM-ESTAR · SAÚDE</p>
+                <h1 id="story-title">Sua pausa também faz parte do trabalho.</h1>
+                <p class="login-story__description">Atividades curtas, acompanhamento profissional e uma rotina de cuidado pensada para o seu dia.</p>
+                <div class="login-story__line" aria-hidden="true"></div>
+                <p class="login-story__note">Pequenas pausas. Mais cuidado com você.</p>
+            </div>
+            <span class="login-orbit login-orbit--one" aria-hidden="true"></span>
+            <span class="login-orbit login-orbit--two" aria-hidden="true"></span>
+        </section>
+        <section class="login-form-panel" aria-labelledby="login-title">
+            <div class="login-form-wrap">
+                <img class="login-logo" src="{% static 'quality_life/images/quality-life-logo.png' %}" alt="Quality Life" width="120" height="120">
+                <p class="login-eyebrow">QUALITY LIFE</p>
+                <h2 id="login-title">Bem-vindo de volta</h2>
+                <p class="login-description">Acesse sua rotina personalizada de ginástica laboral e bem-estar.</p>
+                {% if form.errors %}<p class="login-error" role="alert">Email ou senha inválidos.</p>{% endif %}
+                <form method="post" action="{% url 'login' %}" class="login-form">
+                    {% csrf_token %}
+                    <label for="id_username">E-mail</label>
+                    {{ form.username }}
+                    <label for="id_password">Senha</label>
+                    {{ form.password }}
+                    <input type="hidden" name="next" value="{{ next }}">
+                    <button type="submit">Entrar <span aria-hidden="true">→</span></button>
+                </form>
+                <p class="login-footer">Seu espaço de cuidado no trabalho.</p>
+            </div>
+        </section>
     </main>
 </body>
 </html>

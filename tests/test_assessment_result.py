@@ -57,7 +57,7 @@ class AssessmentResultPageTests(TestCase):
         session[SESSION_ORGANIZATION_KEY] = self.org.pk
         session.save()
 
-    def persist_result(self):
+    def persist_result(self, equal_scores=False):
         result = AssessmentResult.objects.create(
             assessment=self.assessment,
             overall_score=Decimal("63.25"),
@@ -68,9 +68,11 @@ class AssessmentResultPageTests(TestCase):
             PillarResult.objects.create(
                 assessment_result=result,
                 pillar=pillar,
-                score=Decimal(index * 10),
+                score=Decimal("50.00") if equal_scores else Decimal(index * 10),
                 band=(
-                    "PRIORIDADE"
+                    "ATENÇÃO"
+                    if equal_scores
+                    else "PRIORIDADE"
                     if index < 4
                     else "ATENÇÃO"
                     if index < 7
@@ -119,15 +121,46 @@ class AssessmentResultPageTests(TestCase):
         content = response.content.decode()
         self.assertEqual(content.count('class="heart-segment"'), 9)
         self.assertEqual(content.count('class="pillar-row"'), 9)
-        self.assertIn('role="img" aria-labelledby="heart-title heart-desc"', content)
+        self.assertIn('role="group" aria-labelledby="heart-title heart-desc"', content)
         self.assertIn(localize(result.overall_score), content)
         self.assertIn("ATENÇÃO", content)
+        self.assertContains(response, 'class="heart-center-score"')
+        self.assertContains(response, 'class="quality-map-reset button-secondary"')
+        self.assertContains(response, 'class="attention-item"', count=3)
+        self.assertContains(response, 'tabindex="0" role="button"', count=9)
+        self.assertContains(response, self.assessment.completed_at.strftime("%d/%m/%Y"))
+        segments = response.context["segments"]
+        self.assertEqual(len({segment["path"] for segment in segments}), 9)
+        self.assertTrue(
+            all(segment["path"].startswith("M380 330") for segment in segments)
+        )
+        self.assertEqual(
+            [segment["pillar"].pk for segment in segments],
+            [item.pk for item in expected],
+        )
+        self.assertNotIn("<rect", content)
+        self.assertEqual(
+            [item.pk for item in response.context["attention_pillars"]],
+            [item.pk for item in sorted(expected, key=lambda item: item.score)[:3]],
+        )
         self.client.get(self.url)
         result.refresh_from_db()
         self.assessment.refresh_from_db()
         self.assertEqual(result.overall_score, Decimal("63.25"))
         self.assertEqual(self.assessment.status, Assessment.Status.COMPLETED)
         self.assertEqual(result.pillars.count(), 9)
+
+    def test_equal_scores_use_persisted_display_order_for_attention(self):
+        result = self.persist_result(equal_scores=True)
+        response = self.client.get(self.url)
+        self.assertEqual(
+            [
+                item.pillar.display_order
+                for item in response.context["attention_pillars"]
+            ],
+            [1, 2, 3],
+        )
+        self.assertEqual(result.overall_score, Decimal("63.25"))
 
     def test_owner_only_and_active_tenant(self):
         self.persist_result()

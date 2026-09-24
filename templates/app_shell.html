@@ -1,0 +1,42 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Quality Life{% endblock %} · Quality Life</title>
+    {% block extra_css %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'quality_life/app-shell.css' %}">
+    <script src="{% static 'quality_life/app-shell.js' %}" defer></script>
+</head>
+<body class="ql-app">
+    <a class="ql-skip" href="#main">Ir para o conteúdo</a>
+    <aside class="ql-sidebar" id="app-navigation" aria-label="Menu principal">
+        <button class="ql-drawer-close" type="button" aria-label="Fechar menu" data-drawer-close>×</button>
+        <a class="ql-brand" href="{% url 'app' %}">
+            <span class="ql-brand__logo"><img src="{% static 'quality_life/images/quality-life-logo.png' %}" width="88" height="88" alt=""></span>
+            <strong>Quality Life</strong><span>Ginástica laboral</span>
+        </a>
+        <nav class="ql-nav" aria-label="Navegação principal">
+            <a href="{% url 'app' %}" {% if request.resolver_match.url_name == 'app' or request.resolver_match.url_name == 'organization_home' %}aria-current="page"{% endif %}><span aria-hidden="true">⌂</span>Hoje</a>
+            <a href="{% url 'exercises' %}" {% if request.resolver_match.url_name == 'exercises' %}aria-current="page"{% endif %}><span aria-hidden="true">↗</span>Exercícios</a>
+            <a href="{% url 'assessment_hub' %}" {% if 'assessment' in request.resolver_match.url_name %}aria-current="page"{% endif %}><span aria-hidden="true">♡</span>Minha avaliação</a>
+        </nav>
+        <div class="ql-sidebar__bottom">
+            <div class="ql-user"><span class="ql-avatar" aria-hidden="true">{{ request.user.email|first|upper }}</span><div><strong title="{{ request.user.email }}">{{ request.user.email }}</strong><small>{{ tenant.organization.name }}</small></div></div>
+            <form method="post" action="{% url 'logout' %}" class="ql-logout">{% csrf_token %}<button type="submit">Sair <span aria-hidden="true">↗</span></button></form>
+        </div>
+    </aside>
+    <button class="ql-backdrop" type="button" aria-label="Fechar menu" tabindex="-1" hidden></button>
+    <div class="ql-workspace">
+        <header class="ql-topbar">
+            <button class="ql-menu-toggle" type="button" aria-label="Abrir menu" aria-controls="app-navigation" aria-expanded="false"><span aria-hidden="true">☰</span></button>
+            <div class="ql-page-heading"><p>Quality Life / <span>{% block page_title %}Minha avaliação{% endblock %}</span></p><strong>{% block header_title %}Seu espaço de bem-estar{% endblock %}</strong></div>
+            <span class="ql-topbar__organization">{{ tenant.organization.name }}</span>
+            <span class="ql-avatar ql-avatar--topbar" title="{{ request.user.email }}" aria-label="Conta: {{ request.user.email }}">{{ request.user.email|first|upper }}</span>
+        </header>
+        <main id="main" class="ql-main {% block shell_content_class %}{% endblock %}" tabindex="-1">{% block content %}{% endblock %}</main>
+    </div>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
