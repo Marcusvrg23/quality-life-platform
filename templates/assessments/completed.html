@@ -1,10 +1,47 @@
 {% extends 'assessments/base.html' %}
-{% block title %}Avaliação concluída{% endblock %}
+{% block title %}Mapa de Qualidade de Vida{% endblock %}
 {% block content %}
-<section class="card completion" role="status">
-    <p class="eyebrow">Tudo pronto</p>
-    <h1>Avaliação concluída</h1>
-    <p>Suas respostas foram registradas com segurança. Obrigado por participar.</p>
-    <a class="button" href="{% url 'assessment_hub' %}">Voltar para Minha avaliação</a>
+<section class="card result" aria-labelledby="result-title">
+    <p class="eyebrow">Avaliação concluída</p>
+    <h1 id="result-title">Mapa de Qualidade de Vida</h1>
+    <p class="result-intro">Seu resultado reúne os nove pilares da avaliação.</p>
+    <div class="result-overview">
+        <svg class="heart" viewBox="0 0 300 280" role="img" aria-labelledby="heart-title heart-desc" xmlns="http://www.w3.org/2000/svg">
+            <title id="heart-title">Coração dos nove pilares</title>
+            <desc id="heart-desc">Nove faixas numeradas de cima para baixo. Cada número corresponde a um pilar na lista abaixo, que apresenta seu score e status.</desc>
+            <defs>
+                <clipPath id="heart-shape">
+                    <path d="M150 265 C130 245 25 180 20 105 C10 40 70 10 120 45 C135 55 145 70 150 80 C155 70 165 55 180 45 C230 10 290 40 280 105 C275 180 170 245 150 265 Z"/>
+                </clipPath>
+            </defs>
+            <g clip-path="url(#heart-shape)">
+                {% for pillar, y, label_y in segments %}
+                    <rect class="heart-segment" data-band="{{ pillar.band }}" data-pillar="{{ pillar.pillar.display_order }}" x="0" y="{% if forloop.first %}20{% else %}{{ y }}{% endif %}" width="300" height="{% if forloop.first or forloop.last %}35{% else %}25{% endif %}"/>
+                    <text class="heart-number" x="{% if forloop.first or forloop.counter == 2 %}85{% else %}150{% endif %}" y="{{ label_y }}">{{ pillar.pillar.display_order }}</text>
+                {% endfor %}
+            </g>
+            <path class="heart-outline" d="M150 265 C130 245 25 180 20 105 C10 40 70 10 120 45 C135 55 145 70 150 80 C155 70 165 55 180 45 C230 10 290 40 280 105 C275 180 170 245 150 265 Z"/>
+        </svg>
+        <div class="overall">
+            <p class="overall-label">Score geral</p>
+            <p class="overall-score"><strong>{{ result.overall_score }}</strong><span>/ 100</span></p>
+            <p class="overall-band" data-band="{{ result.overall_band }}">{{ result.overall_band }}</p>
+        </div>
+    </div>
+    <div class="pillar-section">
+        <h2>Nove pilares</h2>
+        <p>Os números seguem as faixas do coração, de cima para baixo.</p>
+        <ol class="pillar-list">
+            {% for pillar in pillars %}
+                <li class="pillar-row" data-pillar="{{ pillar.pillar.display_order }}">
+                    <span class="pillar-number" aria-hidden="true">{{ pillar.pillar.display_order }}</span>
+                    <span class="pillar-name">{{ pillar.pillar.name }}</span>
+                    <span class="pillar-score"><strong>{{ pillar.score }}</strong><small>/ 100</small></span>
+                    <span class="pillar-band" data-band="{{ pillar.band }}">{{ pillar.band }}</span>
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+    <a class="button button-secondary" href="{% url 'assessment_hub' %}">Voltar para Minha avaliação</a>
 </section>
 {% endblock %}
