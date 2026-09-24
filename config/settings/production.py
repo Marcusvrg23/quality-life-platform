@@ -1,4 +1,4 @@
-"""Production-oriented settings. Deployment is outside M1."""
+"""Production settings for the isolated Render deployment."""
 
 import os
 
@@ -31,4 +31,11 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = _boolean(
     "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=False
 )
 SECURE_HSTS_PRELOAD = _boolean("DJANGO_SECURE_HSTS_PRELOAD", default=False)
-SECURE_PROXY_SSL_HEADER = None
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
