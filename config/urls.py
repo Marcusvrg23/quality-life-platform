@@ -20,6 +20,7 @@ urlpatterns = [
     path("app/", app_home, name="app"),
     path("app/exercises/", exercises, name="exercises"),
     path("app/assessment/", include("assessments.urls")),
+    path("app/report/", include("reports.urls")),
     path("app/select-organization/", select_organization, name="select_organization"),
     path("app/organizations/<slug:slug>/", organization_home, name="organization_home"),
     path("", foundation, name="foundation"),
