@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Quality Life{% endblock %} · Quality Life</title>
+    {# Critical inline rule: keeps width/height attributes from widening the page while stylesheets are still loading. #}
+    <style>img { max-width: 100%; height: auto; }</style>
     {% block extra_css %}{% endblock %}
     <link rel="stylesheet" href="{% static 'quality_life/app-shell.css' %}">
     <script src="{% static 'quality_life/app-shell.js' %}" defer></script>
