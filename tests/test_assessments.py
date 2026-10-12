@@ -303,13 +303,12 @@ class AssessmentCoreTests(TestCase):
             Answer.objects.filter(assessment=a, question=optional).exists()
         )
 
-    def test_unanswered_optional_only_pillar_fails_explicitly(self):
+    def test_optional_only_pillar_is_rejected_at_publication(self):
         self.add_question(self.questionnaire, 1, "optional", required=False)
-        self.publish()
-        a = start_assessment(self.user, self.org_a, self.questionnaire.pk)
         with self.assertRaises(ValidationError):
-            complete_assessment(self.user, self.org_a, a.pk)
-        self.assertFalse(AssessmentResult.objects.filter(assessment=a).exists())
+            self.publish()
+        self.questionnaire.refresh_from_db()
+        self.assertEqual(self.questionnaire.status, QuestionnaireVersion.Status.DRAFT)
 
     def test_wrong_question_option_version_and_duplicate_answer(self):
         q1, o1 = self.add_question(self.questionnaire, 1, "q1")

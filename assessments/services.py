@@ -59,8 +59,20 @@ def validate_questionnaire(questionnaire):
         for question in questions:
             if question.scorable and question.weight <= 0:
                 raise ValidationError("Scorable question needs positive weight.")
-            if not list(question.options.all()):
+            options = list(question.options.all())
+            if not options:
                 raise ValidationError("Active question needs options.")
+            if question.scorable and not any(o.counts_for_score for o in options):
+                raise ValidationError("Scorable question needs a scoring option.")
+        if not any(
+            q.required
+            and q.scorable
+            and all(o.counts_for_score for o in q.options.all())
+            for q in questions
+        ):
+            raise ValidationError(
+                "Active pillar needs a required question whose options all score."
+            )
 
 
 @transaction.atomic
@@ -175,6 +187,8 @@ def calculate_assessment_scores(assessment):
                 continue
             if answer.selected_option.question_id != question.pk:
                 raise ValidationError("Option does not belong to question.")
+            if not answer.selected_option.counts_for_score:
+                continue
             if not question.scorable:
                 continue
             normalized = answer.selected_option.score_value

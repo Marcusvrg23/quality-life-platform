@@ -213,6 +213,7 @@ class QuestionOption(PublishedConfigurationGuard):
     code = models.SlugField(max_length=64)
     label = models.CharField(max_length=255)
     score_value = models.DecimalField(max_digits=5, decimal_places=2)
+    counts_for_score = models.BooleanField(default=True)
     display_order = models.PositiveSmallIntegerField()
 
     @property
