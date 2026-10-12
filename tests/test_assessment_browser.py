@@ -104,17 +104,42 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
         print(
             f"[overflow-debug] {viewport} {stage}",
             page.evaluate(
-                """() => ({
-                    scrollWidth: document.documentElement.scrollWidth,
-                    innerWidth: window.innerWidth,
-                    wide: [...document.querySelectorAll('*')]
-                        .map(e => [e, e.getBoundingClientRect()])
-                        .filter(([, r]) => r.right > window.innerWidth)
-                        .slice(0, 20)
-                        .map(([e, r]) => [e.tagName, e.getAttribute('class'),
-                            Math.round(r.left), Math.round(r.width),
-                            Math.round(r.right), getComputedStyle(e).position]),
-                })"""
+                """() => {
+                    const max = window.innerWidth;
+                    const text = [];
+                    const walker = document.createTreeWalker(
+                        document.body, NodeFilter.SHOW_TEXT);
+                    while (walker.nextNode()) {
+                        const range = document.createRange();
+                        range.selectNodeContents(walker.currentNode);
+                        const r = range.getBoundingClientRect();
+                        if (r.right > max) text.push([
+                            walker.currentNode.parentElement.tagName,
+                            walker.currentNode.parentElement.getAttribute('class'),
+                            walker.currentNode.textContent.trim().slice(0, 40),
+                            Math.round(r.right)]);
+                    }
+                    return {
+                        scrollWidth: document.documentElement.scrollWidth,
+                        bodyScrollWidth: document.body.scrollWidth,
+                        innerWidth: max,
+                        clientWidth: document.documentElement.clientWidth,
+                        readyState: document.readyState,
+                        gsap: !!window.gsap,
+                        enhanced: !document.querySelector('.exercise-enhanced[hidden]'),
+                        images: [...document.images].filter(i => !i.complete).length,
+                        fonts: document.fonts.status,
+                        bodyClass: document.body.className,
+                        wide: [...document.querySelectorAll('*')]
+                            .map(e => [e, e.getBoundingClientRect()])
+                            .filter(([, r]) => r.right > max)
+                            .slice(0, 20)
+                            .map(([e, r]) => [e.tagName, e.getAttribute('class'),
+                                Math.round(r.left), Math.round(r.width),
+                                Math.round(r.right), getComputedStyle(e).position]),
+                        text: text.slice(0, 20),
+                    };
+                }"""
             ),
             flush=True,
         )
