@@ -1,0 +1,116 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Relatório da empresa{% endblock %}
+{% block page_title %}Relatório da empresa{% endblock %}
+{% block header_title %}Diagnóstico de qualidade de vida{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/assessment.css' %}"><link rel="stylesheet" href="{% static 'quality_life/report.css' %}">{% endblock %}
+{% block content %}
+<article class="exec-report" aria-labelledby="report-title">
+  <header class="card report-header">
+    <p class="eyebrow">Relatório executivo</p>
+    <h1 id="report-title">Diagnóstico de Qualidade de Vida</h1>
+    <dl class="report-facts">
+      <div><dt>Empresa</dt><dd>{{ tenant.organization.name }}</dd></div>
+      <div><dt>Período</dt><dd>{{ report.start_date|date:"d/m/Y" }} a {{ report.end_date|date:"d/m/Y" }}</dd></div>
+      <div><dt>Avaliados</dt><dd>{{ report.evaluated }} de {{ report.population }} colaboradores</dd></div>
+      <div><dt>Participação</dt><dd>{{ report.participation_percent }}%</dd></div>
+    </dl>
+    <p class="report-note">Gerado em {{ generated_at|date:"d/m/Y H:i" }}. Dados agregados: considera a avaliação concluída mais recente de cada colaborador no período e exige no mínimo {{ min_group }} avaliações.</p>
+    <form class="report-period no-print" method="get" action="{% url 'executive_report' %}">
+      <label>Início <input type="date" name="inicio" value="{{ report.start_date|date:'Y-m-d' }}"></label>
+      <label>Fim <input type="date" name="fim" value="{{ report.end_date|date:'Y-m-d' }}"></label>
+      <button type="submit" class="button button-secondary">Atualizar período</button>
+      <button type="button" class="button" data-print>Imprimir ou salvar PDF</button>
+    </form>
+  </header>
+
+  {% if report.insufficient_data %}
+  <p class="card report-insufficient" role="status">São necessárias pelo menos 5 avaliações concluídas no período para gerar o relatório.</p>
+  {% else %}
+  <section class="card report-section" aria-labelledby="summary-title">
+    <h2 id="summary-title">Resumo</h2>
+    <div class="report-summary">
+      <div class="overall">
+        <p class="overall-label">Índice geral de qualidade de vida</p>
+        <p class="overall-score"><strong>{{ report.overall_average }}</strong><span>/100</span></p>
+        <p class="overall-band" data-band="{{ report.overall_band }}">{{ report.overall_band }}</p>
+      </div>
+      <div>
+        <h3>Pontos fortes</h3>
+        <ul class="report-list">{% for item in report.strengths %}<li><span>{{ item.pillar.name }}</span><b>{{ item.average }}</b></li>{% endfor %}</ul>
+      </div>
+      <div>
+        <h3>Pontos de atenção</h3>
+        <ul class="report-list">{% for item in report.attention %}<li><span>{{ item.pillar.name }}</span><b>{{ item.average }}</b></li>{% empty %}<li>Nenhum pilar com média abaixo de 70.</li>{% endfor %}</ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card report-section" aria-labelledby="map-title">
+    <h2 id="map-title">Mapa por pilar</h2>
+    <p class="report-note">Distribuição: percentual de avaliados em cada faixa. Valores arredondados; a soma pode variar 1 ponto.</p>
+    <table class="report-table">
+      <thead><tr><th scope="col">Pilar</th><th scope="col">Média</th><th scope="col">Faixa</th><th scope="col">EXCELENTE</th><th scope="col">BOM</th><th scope="col">ATENÇÃO</th><th scope="col">PRIORIDADE</th></tr></thead>
+      <tbody>
+        {% for item in report.pillars %}
+        <tr>
+          <th scope="row">{{ item.pillar.name }}</th>
+          <td data-label="Média">{{ item.average }}</td>
+          <td data-label="Faixa"><span class="pillar-band" data-band="{{ item.band }}">{{ item.band }}</span></td>
+          {% for band, share in item.distribution %}<td data-label="{{ band }}">{{ share }}%</td>{% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card report-section" aria-labelledby="priorities-title">
+    <h2 id="priorities-title">Prioridades</h2>
+    <ol class="report-priorities">
+      {% for item in report.priorities %}
+      <li><span class="report-rank">{{ forloop.counter }}</span><div><h3>{{ item.pillar.name }}</h3><p>Média <b>{{ item.average }}</b> · <b>{{ item.affected_percent }}%</b> afetados (Atenção + Prioridade)</p><p>Investimento recomendado: {{ item.catalog.investment }}</p></div></li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section class="card report-section" aria-labelledby="invest-title">
+    <h2 id="invest-title">Onde investir</h2>
+    <ol class="report-invest">
+      {% for item in report.investments %}
+      <li><span class="report-priority" data-priority="{{ item.priority }}">{{ item.priority }}</span><strong>{{ item.pillar.name }}</strong><span>{{ item.catalog.investment }}</span></li>
+      {% endfor %}
+    </ol>
+  </section>
+
+  <section class="card report-section" aria-labelledby="plan-title">
+    <h2 id="plan-title">Plano de ação</h2>
+    {% for item in report.action_plan %}
+    <div class="report-plan">
+      <h3>{{ item.pillar.name }} <span class="report-priority" data-priority="{{ item.priority }}">{{ item.priority }}</span></h3>
+      <ul class="report-actions">{% for action in item.catalog.actions %}<li>{{ action }}</li>{% endfor %}</ul>
+      {% if item.catalog.indicator %}<p><b>Indicador:</b> {{ item.catalog.indicator }}</p>{% endif %}
+    </div>
+    {% empty %}
+    <p>Nenhum pilar em prioridade imediata ou alta no período.</p>
+    {% endfor %}
+  </section>
+
+  <section class="card report-section" aria-labelledby="matrix-title">
+    <h2 id="matrix-title">Matriz de priorização</h2>
+    <ul class="report-matrix">
+      {% for row in report.matrix %}
+      <li><span class="report-priority" data-priority="{{ row.level }}">{{ row.level }}</span><small>{{ row.criterion }}</small><p>{% for item in row.pillars %}{{ item.pillar.name }}{% if not forloop.last %} · {% endif %}{% empty %}Nenhum pilar{% endfor %}</p></li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card report-section" aria-labelledby="cycle-title">
+    <h2 id="cycle-title">Recomendação</h2>
+    <p>Trate o diagnóstico como um ciclo contínuo de melhoria:</p>
+    <ol class="report-cycle"><li>Diagnosticar</li><li>Intervir</li><li>Acompanhar</li><li>Reavaliar</li><li>Melhorar</li></ol>
+    <p class="report-note">Os dados descrevem o período avaliado e não indicam relações de causa e efeito.</p>
+  </section>
+  {% endif %}
+</article>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/report.js' %}" defer></script>{% endblock %}
