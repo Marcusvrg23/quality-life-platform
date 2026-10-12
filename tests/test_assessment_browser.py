@@ -100,6 +100,24 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
         page.wait_for_function(
             "!window.gsap || gsap.globalTimeline.getChildren(true, true, false).every(t => t.totalProgress() === 1)"
         )
+        # TEMPORARY overflow diagnostics; remove before merge.
+        print(
+            f"[overflow-debug] {viewport} {stage}",
+            page.evaluate(
+                """() => ({
+                    scrollWidth: document.documentElement.scrollWidth,
+                    innerWidth: window.innerWidth,
+                    wide: [...document.querySelectorAll('*')]
+                        .map(e => [e, e.getBoundingClientRect()])
+                        .filter(([, r]) => r.right > window.innerWidth)
+                        .slice(0, 20)
+                        .map(([e, r]) => [e.tagName, e.getAttribute('class'),
+                            Math.round(r.left), Math.round(r.width),
+                            Math.round(r.right), getComputedStyle(e).position]),
+                })"""
+            ),
+            flush=True,
+        )
         assert page.evaluate(
             "document.documentElement.scrollWidth <= window.innerWidth"
         ), f"Horizontal overflow at {viewport}: {stage}"
