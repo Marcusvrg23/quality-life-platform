@@ -51,6 +51,12 @@ class AppShellTests(SimpleTestCase):
         self.assertIn(f'action="{reverse("assessment_start")}"', html)
         self.assertIn(f'href="{reverse("assessment_hub")}" aria-current="page"', html)
 
+    def test_images_are_capped_before_any_stylesheet_loads(self):
+        html = self.render("exercises/library.html", exercises=EXERCISES, source=SOURCE)
+        rule = "<style>img { max-width: 100%; height: auto; }</style>"
+        self.assertIn(rule, html)
+        self.assertLess(html.index(rule), html.index('rel="stylesheet"'))
+
     def test_drawer_has_control_relationship_and_focusable_close(self):
         html = self.render()
         self.assertIn('aria-controls="app-navigation"', html)
