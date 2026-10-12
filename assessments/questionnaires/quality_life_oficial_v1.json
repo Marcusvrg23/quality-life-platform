@@ -1,0 +1,3838 @@
+{
+  "code": "quality-life-oficial",
+  "version": 1,
+  "title": "Questionário de Qualidade de Vida do Colaborador",
+  "scoring_version": "oficial-v1",
+  "status_note": "PROPOSTA DE PONTUAÇÃO — aguardando aprovação da Quality Life",
+  "pillar_weight": 1,
+  "question_weight": 1,
+  "pillars": [
+    {
+      "pillar_code": "physical_health",
+      "name": "Saúde Física",
+      "questions": [
+        {
+          "code": "q2-1",
+          "source_number": "2.1",
+          "text": "Como você avalia sua saúde atualmente?",
+          "required": true,
+          "display_order": 1,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Excelente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Muito boa",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Boa",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Regular",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Ruim",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q2-2",
+          "source_number": "2.2",
+          "text": "Nos últimos 12 meses, como esteve sua saúde?",
+          "required": true,
+          "display_order": 2,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Muito boa",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Boa",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Regular",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Ruim",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Muito ruim",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q2-4",
+          "source_number": "2.4",
+          "text": "Você faz acompanhamento médico preventivo?",
+          "required": true,
+          "display_order": 3,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Regularmente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Às vezes",
+              "score_value": 66.67,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Raramente",
+              "score_value": 33.33,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 4
+            }
+          ]
+        },
+        {
+          "code": "q2-5",
+          "source_number": "2.5",
+          "text": "Você realiza exames preventivos de acordo com sua faixa etária e orientação profissional?",
+          "required": true,
+          "display_order": 4,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q2-7",
+          "source_number": "2.7",
+          "text": "Nos últimos 12 meses, você precisou se afastar do trabalho por motivo de saúde?",
+          "required": true,
+          "display_order": 5,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Não",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Sim, uma vez",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Sim, duas ou mais vezes",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Prefiro não responder",
+              "score_value": 0,
+              "counts_for_score": false,
+              "display_order": 4
+            }
+          ]
+        },
+        {
+          "code": "q2-8",
+          "source_number": "2.8",
+          "text": "Com que frequência você sente dores ou desconfortos físicos?",
+          "required": true,
+          "display_order": 6,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q2-10",
+          "source_number": "2.10",
+          "text": "Você considera que algum desconforto físico pode estar relacionado ao seu trabalho?",
+          "required": true,
+          "display_order": 7,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Não",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Talvez",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Sim",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Não sei",
+              "score_value": 0,
+              "counts_for_score": false,
+              "display_order": 4
+            }
+          ]
+        },
+        {
+          "code": "q11-1",
+          "source_number": "11.1",
+          "text": "De 0 a 10, qual nota você daria para sua saúde física?",
+          "required": true,
+          "display_order": 8,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_code": "preventive_behavior",
+      "name": "Comportamento Preventivo",
+      "questions": [
+        {
+          "code": "q3-1",
+          "source_number": "3.1",
+          "text": "Com que frequência você procura cuidar da sua saúde antes que apareça algum problema?",
+          "required": true,
+          "display_order": 1,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q3-2",
+          "source_number": "3.2",
+          "text": "Você realiza consultas e exames preventivos?",
+          "required": true,
+          "display_order": 2,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q3-3",
+          "source_number": "3.3",
+          "text": "Você mantém suas vacinas atualizadas?",
+          "required": true,
+          "display_order": 3,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sim",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Parcialmente",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Não",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Não sei",
+              "score_value": 0,
+              "counts_for_score": false,
+              "display_order": 4
+            }
+          ]
+        },
+        {
+          "code": "q3-4",
+          "source_number": "3.4",
+          "text": "Você realiza acompanhamento odontológico?",
+          "required": true,
+          "display_order": 4,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Pelo menos uma vez ao ano",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Eventualmente",
+              "score_value": 66.67,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Somente quando tenho algum problema",
+              "score_value": 33.33,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Não realizo",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 4
+            }
+          ]
+        },
+        {
+          "code": "q3-5",
+          "source_number": "3.5",
+          "text": "Você costuma ignorar sintomas de saúde e continuar sua rotina?",
+          "required": true,
+          "display_order": 5,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q3-6",
+          "source_number": "3.6",
+          "text": "Quando percebe alguma alteração importante na sua saúde, você procura orientação profissional?",
+          "required": true,
+          "display_order": 6,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q3-7",
+          "source_number": "3.7",
+          "text": "Você conhece os principais riscos relacionados à sua atividade profissional?",
+          "required": true,
+          "display_order": 7,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sim, completamente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Conheço parcialmente",
+              "score_value": 66.67,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Conheço pouco",
+              "score_value": 33.33,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Não conheço",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 4
+            }
+          ]
+        },
+        {
+          "code": "q3-8",
+          "source_number": "3.8",
+          "text": "Você adota medidas para prevenir acidentes e problemas relacionados ao trabalho?",
+          "required": true,
+          "display_order": 8,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q11-2",
+          "source_number": "11.2",
+          "text": "De 0 a 10, qual nota você daria para seu comportamento preventivo?",
+          "required": true,
+          "display_order": 9,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_code": "physical_activity",
+      "name": "Atividade Física",
+      "questions": [
+        {
+          "code": "q4-2",
+          "source_number": "4.2",
+          "text": "Quantos dias por semana você pratica atividade física?",
+          "required": true,
+          "display_order": 1,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nenhum",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1 dia",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2 dias",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3 dias",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4 dias",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5 dias ou mais",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 6
+            }
+          ]
+        },
+        {
+          "code": "q4-3",
+          "source_number": "4.3",
+          "text": "Em média, quanto tempo dura cada sessão?",
+          "required": true,
+          "display_order": 2,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Menos de 20 minutos",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "20 a 29 minutos",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "30 a 44 minutos",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "45 a 59 minutos",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "60 minutos ou mais",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "Não pratico atividade física",
+              "score_value": 0,
+              "counts_for_score": false,
+              "display_order": 6
+            }
+          ]
+        },
+        {
+          "code": "q4-5",
+          "source_number": "4.5",
+          "text": "Durante o trabalho, você permanece sentado(a) por longos períodos?",
+          "required": true,
+          "display_order": 3,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q4-6",
+          "source_number": "4.6",
+          "text": "Você costuma fazer pausas ou levantar-se durante o expediente?",
+          "required": true,
+          "display_order": 4,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Frequentemente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Algumas vezes",
+              "score_value": 66.67,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Raramente",
+              "score_value": 33.33,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 4
+            }
+          ]
+        },
+        {
+          "code": "q11-3",
+          "source_number": "11.3",
+          "text": "De 0 a 10, qual nota você daria para sua atividade física?",
+          "required": true,
+          "display_order": 5,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_code": "nutrition_hydration",
+      "name": "Alimentação e Hidratação",
+      "questions": [
+        {
+          "code": "q5-1",
+          "source_number": "5.1",
+          "text": "Como você avalia sua alimentação atualmente?",
+          "required": true,
+          "display_order": 1,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Excelente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Muito boa",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Boa",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Regular",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Ruim",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q5-2",
+          "source_number": "5.2",
+          "text": "Você costuma fazer refeições em horários regulares?",
+          "required": true,
+          "display_order": 2,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q5-3",
+          "source_number": "5.3",
+          "text": "Você consome frutas diariamente?",
+          "required": true,
+          "display_order": 3,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Todos os dias",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "4 a 6 dias por semana",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "1 a 3 dias por semana",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q5-4",
+          "source_number": "5.4",
+          "text": "Você consome verduras e legumes regularmente?",
+          "required": true,
+          "display_order": 4,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Todos os dias",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "4 a 6 dias por semana",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "1 a 3 dias por semana",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q5-5",
+          "source_number": "5.5",
+          "text": "Com que frequência você consome alimentos ultraprocessados?",
+          "required": true,
+          "display_order": 5,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca ou quase nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1 a 2 vezes por semana",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "3 a 4 vezes por semana",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "5 a 6 vezes por semana",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Todos os dias",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q5-6",
+          "source_number": "5.6",
+          "text": "Com que frequência consome doces, refrigerantes ou bebidas açucaradas?",
+          "required": true,
+          "display_order": 6,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca ou quase nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1 a 2 vezes por semana",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "3 a 4 vezes por semana",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "5 a 6 vezes por semana",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Todos os dias",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q5-7",
+          "source_number": "5.7",
+          "text": "Aproximadamente quanto de água você bebe por dia?",
+          "required": true,
+          "display_order": 7,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Menos de 500 ml",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "500 ml a 1 litro",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "1 a 1,5 litro",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "1,5 a 2 litros",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Mais de 2 litros",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "Não sei",
+              "score_value": 0,
+              "counts_for_score": false,
+              "display_order": 6
+            }
+          ]
+        },
+        {
+          "code": "q5-8",
+          "source_number": "5.8",
+          "text": "Você costuma lembrar de beber água durante o trabalho?",
+          "required": true,
+          "display_order": 8,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q5-9",
+          "source_number": "5.9",
+          "text": "Você costuma substituir água por outras bebidas?",
+          "required": true,
+          "display_order": 9,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q5-10",
+          "source_number": "5.10",
+          "text": "Você costuma comer enquanto trabalha ou em frente ao computador?",
+          "required": true,
+          "display_order": 10,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q11-4",
+          "source_number": "11.4",
+          "text": "De 0 a 10, qual nota você daria para sua alimentação?",
+          "required": true,
+          "display_order": 11,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        },
+        {
+          "code": "q11-5",
+          "source_number": "11.5",
+          "text": "De 0 a 10, qual nota você daria para sua hidratação?",
+          "required": true,
+          "display_order": 12,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_code": "relationships",
+      "name": "Relacionamentos",
+      "questions": [
+        {
+          "code": "q6-1",
+          "source_number": "6.1",
+          "text": "Como você avalia seus relacionamentos familiares?",
+          "required": true,
+          "display_order": 1,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Excelente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Muito bons",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Bons",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Regulares",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Ruins",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "Prefiro não responder",
+              "score_value": 0,
+              "counts_for_score": false,
+              "display_order": 6
+            }
+          ]
+        },
+        {
+          "code": "q6-2",
+          "source_number": "6.2",
+          "text": "Você sente que possui apoio de pessoas próximas quando precisa?",
+          "required": true,
+          "display_order": 2,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q6-3",
+          "source_number": "6.3",
+          "text": "Você consegue conciliar sua vida profissional com sua vida pessoal?",
+          "required": true,
+          "display_order": 3,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q6-4",
+          "source_number": "6.4",
+          "text": "Como você avalia seu relacionamento com os colegas de trabalho?",
+          "required": true,
+          "display_order": 4,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Excelente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Muito bom",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Bom",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Regular",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Ruim",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q6-5",
+          "source_number": "6.5",
+          "text": "Você se sente respeitado(a) no ambiente de trabalho?",
+          "required": true,
+          "display_order": 5,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q6-6",
+          "source_number": "6.6",
+          "text": "Você sente que faz parte da equipe?",
+          "required": true,
+          "display_order": 6,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q6-7",
+          "source_number": "6.7",
+          "text": "Você sente que pode conversar com alguém no trabalho quando enfrenta uma dificuldade?",
+          "required": true,
+          "display_order": 7,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q6-8",
+          "source_number": "6.8",
+          "text": "Com que frequência você vivencia conflitos no ambiente de trabalho?",
+          "required": true,
+          "display_order": 8,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q11-6",
+          "source_number": "11.6",
+          "text": "De 0 a 10, qual nota você daria para seus relacionamentos?",
+          "required": true,
+          "display_order": 9,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_code": "mental_emotional_health",
+      "name": "Saúde Mental e Emocional",
+      "questions": [
+        {
+          "code": "q7-1",
+          "source_number": "7.1",
+          "text": "Como você avalia seu estado emocional atualmente?",
+          "required": true,
+          "display_order": 1,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Excelente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Muito bom",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Bom",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Regular",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Ruim",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-2",
+          "source_number": "7.2",
+          "text": "Nas últimas semanas, com que frequência você se sentiu emocionalmente cansado(a)?",
+          "required": true,
+          "display_order": 2,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-3",
+          "source_number": "7.3",
+          "text": "Com que frequência você se sentiu sobrecarregado(a)?",
+          "required": true,
+          "display_order": 3,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-4",
+          "source_number": "7.4",
+          "text": "Você tem tido dificuldade para se concentrar?",
+          "required": true,
+          "display_order": 4,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-5",
+          "source_number": "7.5",
+          "text": "Você tem se sentido irritado(a) ou impaciente com frequência?",
+          "required": true,
+          "display_order": 5,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-6",
+          "source_number": "7.6",
+          "text": "Você sente dificuldade para relaxar depois do trabalho?",
+          "required": true,
+          "display_order": 6,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-7",
+          "source_number": "7.7",
+          "text": "Você sente que não consegue “desligar” das preocupações do trabalho?",
+          "required": true,
+          "display_order": 7,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-8",
+          "source_number": "7.8",
+          "text": "Você tem conseguido sentir prazer nas atividades que normalmente gosta?",
+          "required": true,
+          "display_order": 8,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-9",
+          "source_number": "7.9",
+          "text": "Você sente que consegue lidar adequadamente com as dificuldades do dia a dia?",
+          "required": true,
+          "display_order": 9,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-10",
+          "source_number": "7.10",
+          "text": "Você possui alguém com quem possa conversar quando está passando por um momento difícil?",
+          "required": true,
+          "display_order": 10,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sim, sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Na maioria das vezes",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Não",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q7-11",
+          "source_number": "7.11",
+          "text": "Você considera que seu trabalho interfere negativamente no seu bem-estar emocional?",
+          "required": true,
+          "display_order": 11,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q11-7",
+          "source_number": "11.7",
+          "text": "De 0 a 10, qual nota você daria para sua saúde mental e emocional?",
+          "required": true,
+          "display_order": 12,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_code": "ergonomics_workplace",
+      "name": "Ergonomia e Ambiente de Trabalho",
+      "questions": [
+        {
+          "code": "q8-2",
+          "source_number": "8.2",
+          "text": "Como você avalia sua postura durante o trabalho?",
+          "required": true,
+          "display_order": 1,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Excelente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Boa",
+              "score_value": 66.67,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Regular",
+              "score_value": 33.33,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Ruim",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Não sei avaliar",
+              "score_value": 0,
+              "counts_for_score": false,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q8-3",
+          "source_number": "8.3",
+          "text": "Sua cadeira oferece conforto e suporte adequado?",
+          "required": true,
+          "display_order": 2,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sim",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Parcialmente",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Não",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Não sei avaliar",
+              "score_value": 0,
+              "counts_for_score": false,
+              "display_order": 4
+            }
+          ]
+        },
+        {
+          "code": "q8-4",
+          "source_number": "8.4",
+          "text": "A posição do monitor/tela é adequada para você?",
+          "required": true,
+          "display_order": 3,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sim",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Parcialmente",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Não",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Não sei avaliar",
+              "score_value": 0,
+              "counts_for_score": false,
+              "display_order": 4
+            }
+          ]
+        },
+        {
+          "code": "q8-5",
+          "source_number": "8.5",
+          "text": "Com que frequência você faz pausas durante o trabalho?",
+          "required": true,
+          "display_order": 4,
+          "options": [
+            {
+              "code": "o1",
+              "label": "A cada hora ou menos",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "A cada 1–2 horas",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Algumas vezes ao dia",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q8-6",
+          "source_number": "8.6",
+          "text": "Você sente desconforto físico durante ou após o trabalho?",
+          "required": true,
+          "display_order": 5,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q8-7",
+          "source_number": "8.7",
+          "text": "Você considera seu ambiente de trabalho confortável?",
+          "required": true,
+          "display_order": 6,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Muito confortável",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Confortável",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Regular",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Pouco confortável",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Desconfortável",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q11-8",
+          "source_number": "11.8",
+          "text": "De 0 a 10, qual nota você daria para seu ambiente de trabalho?",
+          "required": true,
+          "display_order": 7,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_code": "sleep_recovery",
+      "name": "Sono e Recuperação",
+      "questions": [
+        {
+          "code": "q9-1",
+          "source_number": "9.1",
+          "text": "Quantas horas você dorme, em média, por noite?",
+          "required": true,
+          "display_order": 1,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Menos de 5 horas",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "5 a 6 horas",
+              "score_value": 33.33,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "6 a 7 horas",
+              "score_value": 66.67,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "7 a 8 horas",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Mais de 8 horas",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q9-2",
+          "source_number": "9.2",
+          "text": "Como você avalia a qualidade do seu sono?",
+          "required": true,
+          "display_order": 2,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Excelente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Muito boa",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Boa",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Regular",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Ruim",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q9-3",
+          "source_number": "9.3",
+          "text": "Você acorda sentindo-se descansado(a)?",
+          "required": true,
+          "display_order": 3,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q9-4",
+          "source_number": "9.4",
+          "text": "Você tem dificuldade para iniciar ou manter o sono?",
+          "required": true,
+          "display_order": 4,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q9-5",
+          "source_number": "9.5",
+          "text": "Você sente sono ou cansaço durante o dia?",
+          "required": true,
+          "display_order": 5,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q9-6",
+          "source_number": "9.6",
+          "text": "O trabalho interfere na qualidade ou duração do seu sono?",
+          "required": true,
+          "display_order": 6,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q11-9",
+          "source_number": "11.9",
+          "text": "De 0 a 10, qual nota você daria para seu sono?",
+          "required": true,
+          "display_order": 7,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pillar_code": "work_life_balance",
+      "name": "Equilíbrio Vida × Trabalho",
+      "questions": [
+        {
+          "code": "q10-1",
+          "source_number": "10.1",
+          "text": "Você consegue separar o trabalho da sua vida pessoal?",
+          "required": true,
+          "display_order": 1,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q10-2",
+          "source_number": "10.2",
+          "text": "Você costuma levar preocupações do trabalho para casa?",
+          "required": true,
+          "display_order": 2,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q10-3",
+          "source_number": "10.3",
+          "text": "Você trabalha fora do seu horário habitual?",
+          "required": true,
+          "display_order": 3,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Nunca",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Raramente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Frequentemente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Sempre",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q10-4",
+          "source_number": "10.4",
+          "text": "Você consegue reservar tempo para lazer?",
+          "required": true,
+          "display_order": 4,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q10-5",
+          "source_number": "10.5",
+          "text": "Você consegue reservar tempo para família e amigos?",
+          "required": true,
+          "display_order": 5,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q10-6",
+          "source_number": "10.6",
+          "text": "Você consegue descansar de verdade durante suas férias ou períodos de folga?",
+          "required": true,
+          "display_order": 6,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Sempre",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Frequentemente",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Às vezes",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Raramente",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Nunca",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q10-7",
+          "source_number": "10.7",
+          "text": "Como você avalia seu equilíbrio entre vida pessoal e trabalho?",
+          "required": true,
+          "display_order": 7,
+          "options": [
+            {
+              "code": "o1",
+              "label": "Excelente",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "Muito bom",
+              "score_value": 75,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "Bom",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "Regular",
+              "score_value": 25,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "Ruim",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 5
+            }
+          ]
+        },
+        {
+          "code": "q11-10",
+          "source_number": "11.10",
+          "text": "De 0 a 10, qual nota você daria para seu equilíbrio entre vida pessoal e trabalho?",
+          "required": true,
+          "display_order": 8,
+          "options": [
+            {
+              "code": "o1",
+              "label": "0",
+              "score_value": 0,
+              "counts_for_score": true,
+              "display_order": 1
+            },
+            {
+              "code": "o2",
+              "label": "1",
+              "score_value": 10,
+              "counts_for_score": true,
+              "display_order": 2
+            },
+            {
+              "code": "o3",
+              "label": "2",
+              "score_value": 20,
+              "counts_for_score": true,
+              "display_order": 3
+            },
+            {
+              "code": "o4",
+              "label": "3",
+              "score_value": 30,
+              "counts_for_score": true,
+              "display_order": 4
+            },
+            {
+              "code": "o5",
+              "label": "4",
+              "score_value": 40,
+              "counts_for_score": true,
+              "display_order": 5
+            },
+            {
+              "code": "o6",
+              "label": "5",
+              "score_value": 50,
+              "counts_for_score": true,
+              "display_order": 6
+            },
+            {
+              "code": "o7",
+              "label": "6",
+              "score_value": 60,
+              "counts_for_score": true,
+              "display_order": 7
+            },
+            {
+              "code": "o8",
+              "label": "7",
+              "score_value": 70,
+              "counts_for_score": true,
+              "display_order": 8
+            },
+            {
+              "code": "o9",
+              "label": "8",
+              "score_value": 80,
+              "counts_for_score": true,
+              "display_order": 9
+            },
+            {
+              "code": "o10",
+              "label": "9",
+              "score_value": 90,
+              "counts_for_score": true,
+              "display_order": 10
+            },
+            {
+              "code": "o11",
+              "label": "10",
+              "score_value": 100,
+              "counts_for_score": true,
+              "display_order": 11
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
