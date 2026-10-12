@@ -23,3 +23,19 @@ Configure as variáveis de ambiente no serviço, sem gravar valores no Git:
 Os logins são `demo1@example.com` para ensaio, `demo2@example.com` para apresentação e `demo3@example.com` para backup. O seed é idempotente, não reinicia avaliações e recusa mudanças de senha em contas existentes. Para substituir uma senha, faça uma operação administrativa explícita; não use o seed como reset.
 
 O endpoint `/health/` confirma apenas a disponibilidade do processo. Após o primeiro start, confira também o login, a seleção da organização, o fluxo de avaliação até o resultado e um asset CSS em `/static/quality_life/`.
+
+## Produção
+
+Em produção **não** rode `seed_quality_life_demo` e não defina `QUALITY_LIFE_DEMO_SEED_ENABLED` nem `QUALITY_LIFE_DEMO_PASSWORD`. O questionário oficial versionado no repositório é carregado com `load_official_questionnaire`:
+
+- Start: `python manage.py migrate --noinput && python manage.py load_official_questionnaire --file assessments/questionnaires/quality_life_oficial_v1.json && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
+
+Antes de usar um arquivo em produção, confirme que a Quality Life aprovou formalmente perguntas e pontuação. O comando:
+
+- valida o arquivo inteiro antes de gravar (os 9 pilares ativos, códigos slug de até 64 caracteres, `score_value` entre 0 e 100 com até 2 casas); qualquer erro aborta sem gravar nada;
+- cria o questionário como rascunho e o publica na mesma transação, imprimindo o total de pilares, perguntas e opções;
+- é idempotente: rodar de novo com o mesmo arquivo informa "já carregado" e não altera o banco;
+- recusa um arquivo com o mesmo `code` e `version` de um questionário existente, mas com conteúdo diferente. Questionário publicado é imutável: para mudar perguntas ou pontuação, crie um novo arquivo com `version` maior;
+- recusa carregar enquanto houver outro questionário `PUBLISHED`, porque o fluxo de avaliação exige exatamente um. Com `--retire-other-published`, os outros publicados passam para `RETIRED` na mesma transação; resultados já calculados são preservados.
+
+Opções com `counts_for_score: false` (por exemplo, "Não sei" e "Prefiro não responder") aparecem para o colaborador, mas a resposta não entra no numerador nem no denominador da nota do pilar.
