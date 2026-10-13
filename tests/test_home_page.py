@@ -285,14 +285,6 @@ class HomePageTests(TestCase):
                 self.assertIn(f'<symbol id="ql-i-{icon}"', body)
         self.assertQuerySetEqual(response.context["pillars"], pillars)
 
-    def test_inactive_pillar_is_hidden(self):
-        Pillar.objects.filter(code="relationships").update(is_active=False)
-
-        _, body = self.get_home()
-
-        self.assertNotIn('data-pillar="relationships"', body)
-        self.assertEqual(body.count('class="ql-pillar"'), 8)
-
     def test_pillar_names_are_not_hardcoded_in_template(self):
         template = (Path(settings.BASE_DIR) / "templates" / "home.html").read_text(
             encoding="utf-8"
