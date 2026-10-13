@@ -97,6 +97,14 @@ class FoundationSurfaceTests(SimpleTestCase):
                 "exercises",
                 "select_organization",
                 "organization_home",
+                "team",
+                "team_member_status",
+                "team_invitations_create",
+                "team_invitation_revoke",
+                "password_change",
+                "accept_invitation",
+                "password_reset_confirm",
+                "password_reset_complete",
             },
         )
 
