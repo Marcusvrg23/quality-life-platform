@@ -1,4 +1,4 @@
-"""Production settings for the isolated Render deployment."""
+"""Production settings for the Railway deployment (see docs/DEPLOY_RAILWAY.md)."""
 
 import os
 
@@ -26,6 +26,8 @@ DATABASES["default"]["OPTIONS"]["sslmode"] = _postgres_sslmode
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
+# Railway health checks hit the container over plain HTTP and need a 2xx.
+SECURE_REDIRECT_EXEMPT = [r"^health/$"]
 SECURE_HSTS_SECONDS = _integer("DJANGO_SECURE_HSTS_SECONDS", default=0)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = _boolean(
     "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", default=False
@@ -37,5 +39,30 @@ STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    },
+}
+
+# With DEBUG=False Django sends nothing from django.request to the console, so
+# 500s would be invisible in the Railway logs. Tracebacks go to stdout.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "plain": {"format": "{levelname} {asctime} {name} {message}", "style": "{"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+            "formatter": "plain",
+        },
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "ERROR"},
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
     },
 }
