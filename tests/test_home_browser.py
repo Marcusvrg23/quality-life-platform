@@ -7,6 +7,7 @@ from unittest import skipIf
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 try:
+    from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
     from playwright.sync_api import sync_playwright
 except ImportError:
     sync_playwright = None
@@ -18,6 +19,23 @@ GSAP_IDLE = (
     "!window.gsap || gsap.globalTimeline.getChildren(true, true, false)"
     ".every(t => t.data === 'parallax' || t.totalProgress() === 1)"
 )
+PENDING_TWEENS = (
+    "gsap.globalTimeline.getChildren(true, true, false)"
+    ".filter(t => !(t.data === 'parallax' || t.totalProgress() === 1))"
+    ".map(t => ({progress: t.totalProgress(), paused: t.paused(),"
+    " target: String((t.targets()[0] || {}).className || ''),"
+    " start: t.scrollTrigger ? t.scrollTrigger.start : null, scrollY}))"
+)
+SCROLL_THROUGH = """async () => {
+    const pause = ms => new Promise(r => setTimeout(r, ms));
+    const bottom = document.documentElement.scrollHeight;
+    for (let y = 0; y <= bottom; y += 200) {
+        window.scrollTo(0, y);
+        await pause(50);
+    }
+    window.scrollTo(0, bottom);
+    await pause(100);
+}"""
 
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
@@ -85,12 +103,13 @@ class HomeBrowserTests(StaticLiveServerTestCase):
                     )
                     self.assertTrue(page.evaluate("Boolean(window.ScrollTrigger)"))
                     # Scroll through the page so every once-only reveal fires.
-                    page.evaluate(
-                        "async () => { for (let y = 0; y <= document.body.scrollHeight;"
-                        " y += 300) { window.scrollTo(0, y);"
-                        " await new Promise(r => requestAnimationFrame(r)); } }"
-                    )
-                    page.wait_for_function(GSAP_IDLE)
+                    page.evaluate(SCROLL_THROUGH)
+                    try:
+                        page.wait_for_function(GSAP_IDLE, timeout=10_000)
+                    except PlaywrightTimeoutError:
+                        self.fail(
+                            f"GSAP did not settle: {page.evaluate(PENDING_TWEENS)}"
+                        )
                     self.assertTrue(
                         page.evaluate(
                             "document.documentElement.scrollWidth <= window.innerWidth"

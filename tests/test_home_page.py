@@ -1,5 +1,7 @@
 """Public landing page at "/": content, pillars from the database, auth state."""
 
+from pathlib import Path
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles import finders
@@ -27,7 +29,11 @@ class HomePageTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "home.html")
-        self.assertContains(response, "Sua pausa também faz parte do trabalho.")
+        self.assertContains(
+            response,
+            'Sua pausa também faz parte do <span class="ql-accent">trabalho.</span>',
+            html=False,
+        )
 
     def test_home_links_to_login_privacy_and_terms(self):
         response = self.client.get("/")
@@ -72,14 +78,21 @@ class HomePageTests(TestCase):
                 self.assertContains(response, name)
 
     def test_pillar_list_is_not_hardcoded_in_template(self):
-        # Pillar.save() forbids renames; queryset update simulates new data.
-        Pillar.objects.filter(display_order=2).update(name="Pilar Vindo Do Banco")
-
         response = self.client.get("/")
+        template = (Path(settings.BASE_DIR) / "templates" / "home.html").read_text(
+            encoding="utf-8"
+        )
 
-        self.assertContains(response, "Pilar Vindo Do Banco")
-        self.assertNotContains(response, "Comportamento Preventivo")
-        self.assertEqual(Pillar.objects.count(), 9)
+        self.assertQuerySetEqual(
+            response.context["pillars"],
+            Pillar.objects.filter(is_active=True).order_by("display_order"),
+        )
+        self.assertEqual(len(response.context["pillars"]), 9)
+        # The hero preview mockup is the only place a pillar name is written.
+        for name in PILLAR_NAMES:
+            if name != "Sono e Recuperação":
+                with self.subTest(pillar=name):
+                    self.assertNotIn(name, template)
 
     def test_authenticated_user_sees_open_app_button(self):
         user = get_user_model().objects.create_user(
