@@ -14,16 +14,17 @@ except ImportError:
 
 VIEWPORTS = (("390", 390, 844), ("1280", 1280, 800))
 VISIBLE_SELECTORS = ("h1", ".ql-feature")
-# Scroll-scrubbed parallax tweens follow the scroll position and never "finish".
-GSAP_IDLE = (
-    "!window.gsap || gsap.globalTimeline.getChildren(true, true, false)"
-    ".every(t => t.data === 'parallax' || t.totalProgress() === 1)"
-)
-PENDING_TWEENS = (
+# Scroll-scrubbed parallax tweens follow the scroll position and never "finish";
+# ScrollTrigger also keeps a paused delayedCall (resize debounce) with no element.
+OWN_PENDING = (
     "gsap.globalTimeline.getChildren(true, true, false)"
-    ".filter(t => !(t.data === 'parallax' || t.totalProgress() === 1))"
-    ".map(t => ({progress: t.totalProgress(), paused: t.paused(),"
-    " target: String((t.targets()[0] || {}).className || ''),"
+    ".filter(t => t.targets()[0] instanceof Element && t.data !== 'parallax'"
+    " && t.totalProgress() !== 1)"
+)
+GSAP_IDLE = f"!window.gsap || {OWN_PENDING}.length === 0"
+PENDING_TWEENS = (
+    f"{OWN_PENDING}.map(t => ({{progress: t.totalProgress(), paused: t.paused(),"
+    " target: String(t.targets()[0].className),"
     " start: t.scrollTrigger ? t.scrollTrigger.start : null, scrollY}))"
 )
 SCROLL_THROUGH = """async () => {
