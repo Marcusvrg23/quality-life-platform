@@ -1,5 +1,7 @@
 # Quality Life — publicar em produção no Railway
 
+> Outra opção de hospedagem: [DEPLOY_SQUARE_CLOUD.md](DEPLOY_SQUARE_CLOUD.md) (Square Cloud + Neon).
+
 Guia passo a passo para quem não é programador. Siga na ordem. Nenhuma senha ou chave deve ser escrita neste repositório: tudo vai nas **Variables** do Railway.
 
 ## 1. O que você vai criar no Railway

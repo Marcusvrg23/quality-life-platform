@@ -25,7 +25,9 @@ DATABASES["default"]["OPTIONS"]["sslmode"] = _postgres_sslmode
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+# Square Cloud does not document X-Forwarded-Proto; without it the redirect
+# loops, so the host can turn it off while its proxy still serves HTTPS.
+SECURE_SSL_REDIRECT = _boolean("DJANGO_SECURE_SSL_REDIRECT", default=True)
 # Railway health checks hit the container over plain HTTP and need a 2xx.
 SECURE_REDIRECT_EXEMPT = [r"^health/$"]
 SECURE_HSTS_SECONDS = _integer("DJANGO_SECURE_HSTS_SECONDS", default=0)

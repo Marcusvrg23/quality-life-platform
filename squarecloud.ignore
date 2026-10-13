@@ -1,0 +1,21 @@
+# Local development and secrets
+.git/
+.github/
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+qa-artifacts/
+# Legacy static PWA baseline; Django serves static/ instead.
+assets/
