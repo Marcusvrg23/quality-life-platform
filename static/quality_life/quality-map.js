@@ -10,7 +10,11 @@
   const gsap = window.gsap;
   let intro;
   let selected = null;
-  const animate = (target, values) => { if (gsap && !motion.matches) gsap.to(target, {...values, duration: .22, overwrite: true}); };
+  // Interaction during the entrance used to kill the intro tweens (overwrite: true)
+  // and leave segments stuck invisible; finish the intro first, then only
+  // overwrite the property being animated.
+  const finishIntro = () => { if (intro && intro.progress() < 1) intro.progress(1); };
+  const animate = (target, values) => { if (gsap && !motion.matches) { finishIntro(); gsap.to(target, {...values, duration: .22, overwrite: 'auto'}); } };
   function display(region) {
     regions.forEach(item => {
       item.classList.toggle('is-active', item === region);
