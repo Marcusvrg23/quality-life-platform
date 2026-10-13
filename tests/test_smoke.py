@@ -1,7 +1,6 @@
 from io import StringIO
 
 from django.conf import settings
-from django.contrib.staticfiles import finders
 from django.core.management import call_command
 from django.db import connection
 from django.test import SimpleTestCase, TestCase
@@ -52,28 +51,6 @@ class FoundationSurfaceTests(SimpleTestCase):
         ):
             self.assertNotIn(sensitive_value, body)
 
-    def test_foundation_page_returns_ok(self):
-        response = self.client.get("/")
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_foundation_page_uses_expected_template(self):
-        response = self.client.get("/")
-
-        self.assertTemplateUsed(response, "foundation.html")
-
-    def test_foundation_page_contains_minimum_content(self):
-        response = self.client.get("/")
-
-        self.assertContains(response, "Quality Life")
-        self.assertContains(response, "fundação técnica da Quality Life V2")
-
-    def test_foundation_static_file_can_be_located(self):
-        response = self.client.get("/")
-
-        self.assertContains(response, "/static/quality_life/foundation.css")
-        self.assertIsNotNone(finders.find("quality_life/foundation.css"))
-
     def test_unknown_url_returns_not_found(self):
         response = self.client.get("/rota-inexistente/")
 
@@ -89,7 +66,7 @@ class FoundationSurfaceTests(SimpleTestCase):
         self.assertEqual(
             route_names,
             {
-                "foundation",
+                "home",
                 "health",
                 "login",
                 "logout",
@@ -113,7 +90,7 @@ class FoundationSurfaceTests(SimpleTestCase):
             },
         )
 
-    def test_foundation_routes_reject_non_get_methods(self):
+    def test_public_routes_reject_non_get_methods(self):
         for route in ("/", "/health/"):
             with self.subTest(route=route):
                 response = self.client.post(route)

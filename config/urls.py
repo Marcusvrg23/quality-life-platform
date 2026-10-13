@@ -20,7 +20,7 @@ from .auth_views import (
 from .exercise_views import exercises
 from .legal_views import privacy, privacy_revoke, privacy_settings, terms
 from .lesson_views import lessons
-from .views import foundation, health
+from .views import health, home
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -74,6 +74,6 @@ urlpatterns = [
     ),
     path("app/select-organization/", select_organization, name="select_organization"),
     path("app/organizations/<slug:slug>/", organization_home, name="organization_home"),
-    path("", foundation, name="foundation"),
+    path("", home, name="home"),
     path("health/", health, name="health"),
 ]

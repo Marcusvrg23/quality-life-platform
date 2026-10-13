@@ -1,0 +1,205 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quality Life · Qualidade de vida no trabalho</title>
+    <meta name="description" content="Ginástica laboral, aulas em vídeo e um mapa de qualidade de vida em 9 pilares para empresas e colaboradores.">
+    <meta name="theme-color" content="#fbf8f4">
+    <link rel="icon" type="image/png" href="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}">
+    <link rel="preload" href="{% static 'quality_life/fonts/quicksand-latin-700.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{% static 'quality_life/fonts/figtree-latin-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{% static 'quality_life/brand.css' %}">
+    <link rel="stylesheet" href="{% static 'quality_life/home.css' %}">
+    <script defer src="{% static 'quality_life/vendor/gsap-3.13.0.min.js' %}"></script>
+    <script defer src="{% static 'quality_life/vendor/ScrollTrigger-3.13.0.min.js' %}"></script>
+    <script defer src="{% static 'quality_life/home.js' %}"></script>
+</head>
+<body class="ql-home">
+    <a class="ql-skip" href="#conteudo">Pular para o conteúdo</a>
+
+    <header class="ql-header">
+        <div class="ql-container ql-header__inner">
+            <a class="ql-brand" href="{% url 'home' %}">
+                <img src="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" alt="Quality Life" width="64" height="64">
+            </a>
+            <nav class="ql-nav" aria-label="Seções da página">
+                <a href="#como-funciona">Como funciona</a>
+                <a href="#empresas">Para empresas</a>
+                <a href="#privacidade">Privacidade</a>
+            </nav>
+            {% if user.is_authenticated %}
+                <a class="ql-btn ql-btn--primary ql-btn--sm" href="{% url 'app' %}">Abrir o app</a>
+            {% else %}
+                <a class="ql-btn ql-btn--primary ql-btn--sm" href="{% url 'login' %}">Entrar</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <main id="conteudo">
+        <section class="ql-hero" aria-labelledby="hero-title">
+            <div class="ql-container ql-hero__grid">
+                <div class="ql-hero__copy" data-anim="hero">
+                    <p class="ql-badge">
+                        <span class="ql-badge__dots" aria-hidden="true">
+                            <span class="ql-dot-sm ql-bg-purple"></span>
+                            <span class="ql-dot-sm ql-bg-turquoise"></span>
+                            <span class="ql-dot-sm ql-bg-lime"></span>
+                        </span>
+                        Qualidade de vida no trabalho
+                    </p>
+                    <h1 id="hero-title">Sua pausa também faz parte do <span class="ql-accent">trabalho.</span></h1>
+                    <p class="ql-lead">Ginástica laboral, aulas em vídeo e um mapa de qualidade de vida em 9 pilares. O colaborador cuida de si; a empresa enxerga o todo, sem expor ninguém.</p>
+                    <div class="ql-actions">
+                        {% if user.is_authenticated %}
+                            <a class="ql-btn ql-btn--primary" href="{% url 'app' %}">Entrar na plataforma</a>
+                        {% else %}
+                            <a class="ql-btn ql-btn--primary" href="{% url 'login' %}">Entrar na plataforma</a>
+                        {% endif %}
+                        <a class="ql-btn ql-btn--outline" href="#empresas">Sou empresa</a>
+                    </div>
+                    <p class="ql-note">Acesso por convite da sua empresa.</p>
+                </div>
+
+                <div class="ql-hero__visual" aria-hidden="true">
+                    <div class="ql-stage">
+                        <div class="ql-ring" data-parallax="0.12"></div>
+                        <span class="ql-orb ql-orb--lime" data-parallax="-0.4"></span>
+                        <span class="ql-orb ql-orb--turquoise" data-parallax="0.35"></span>
+                        <span class="ql-orb ql-orb--magenta" data-parallax="-0.25"></span>
+                        <div class="ql-preview">
+                            <p class="ql-preview__title">Hoje</p>
+                            <div class="ql-preview__priority">
+                                <span>Sua prioridade agora</span>
+                                <strong>Sono e Recuperação</strong>
+                            </div>
+                            <div class="ql-preview__moments">
+                                <span class="ql-bg-turquoise">Início</span>
+                                <span class="ql-bg-lime">Durante</span>
+                                <span class="ql-bg-orange">Final</span>
+                            </div>
+                            <div class="ql-preview__lesson">
+                                <span class="ql-preview__play">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" focusable="false"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></svg>
+                                </span>
+                                Aula: Durante o trabalho
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="ql-section" id="como-funciona" aria-labelledby="como-funciona-title">
+            <div class="ql-container">
+                <h2 class="ql-section__title" id="como-funciona-title" data-anim="reveal">Pequenas pausas, um mapa claro e o próximo passo certo.</h2>
+                <div class="ql-features" data-anim="stagger">
+                    <article class="ql-feature ql-bg-turquoise">
+                        <span class="ql-feature__icon">
+                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="4.5" r="2"/><path d="M4 8.5l8 2 8-2M12 10.5V15m0 0l-4 6m4-6l4 6"/></svg>
+                        </span>
+                        <h3>Exercícios</h3>
+                        <p>Ginástica laboral guiada, com passos simples para fazer durante o expediente.</p>
+                    </article>
+                    <article class="ql-feature ql-bg-purple">
+                        <span class="ql-feature__icon">
+                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z"/></svg>
+                        </span>
+                        <h3>Aulas em vídeo</h3>
+                        <p>Aulas para o início, durante e o final do trabalho.</p>
+                    </article>
+                    <article class="ql-feature ql-bg-lime">
+                        <span class="ql-feature__icon">
+                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12.5l2 2 4-4"/></svg>
+                        </span>
+                        <h3>Minha avaliação</h3>
+                        <p>Questionário dos 9 pilares com nota de 0 a 100. O resultado é só seu.</p>
+                    </article>
+                    <article class="ql-feature ql-bg-orange">
+                        <span class="ql-feature__icon">
+                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>
+                        </span>
+                        <h3>Sua prioridade</h3>
+                        <p>Mostra o pilar com a nota mais baixa, para você saber por onde começar.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        {% if pillars %}
+        <section class="ql-section ql-section--tight" aria-labelledby="pilares-title">
+            <div class="ql-container">
+                <h2 class="ql-section__title" id="pilares-title" data-anim="reveal">Os 9 pilares da qualidade de vida</h2>
+                <ol class="ql-pillars" data-anim="stagger">
+                    {% for pillar in pillars %}
+                        <li class="ql-pill">
+                            <span class="ql-pill__num" aria-hidden="true">{{ pillar.display_order }}</span>
+                            <span class="ql-pill__name">{{ pillar.name }}</span>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="ql-section" id="empresas" aria-labelledby="empresas-title">
+            <div class="ql-container">
+                <div class="ql-company" data-anim="reveal">
+                    <div class="ql-company__intro">
+                        <h2 class="ql-section__title" id="empresas-title">Decisões de bem-estar com dados agregados.</h2>
+                        <a class="ql-btn ql-btn--turquoise" href="mailto:{{ sales_email }}">Fale com a Quality Life</a>
+                    </div>
+                    <ul class="ql-company__list">
+                        <li>
+                            <span class="ql-company__bullet ql-bg-turquoise" aria-hidden="true"></span>
+                            Relatório da empresa com médias por pilar e matriz de prioridades.
+                        </li>
+                        <li>
+                            <span class="ql-company__bullet ql-bg-lime" aria-hidden="true"></span>
+                            Os dados só aparecem com 5 ou mais avaliações, sem expor ninguém.
+                        </li>
+                        <li>
+                            <span class="ql-company__bullet ql-bg-orange" aria-hidden="true"></span>
+                            Convites individuais por link para cada colaborador.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="ql-section ql-section--tight" id="privacidade" aria-labelledby="privacidade-title">
+            <div class="ql-container">
+                <div class="ql-privacy" data-anim="reveal">
+                    <span class="ql-privacy__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 8.2-7.5 9.5-4.3-1.3-7.5-5-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/></svg>
+                    </span>
+                    <div>
+                        <h2 class="ql-section__title" id="privacidade-title">Privacidade por padrão</h2>
+                        <p>A avaliação só começa com o seu consentimento, e você pode revogá-lo quando quiser. O gestor vê apenas números agregados da empresa, nunca respostas ou notas individuais.</p>
+                        <a class="ql-link" href="{% url 'privacy' %}">Leia a política de privacidade</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="ql-footer">
+        <div class="ql-container ql-footer__inner">
+            <p class="ql-footer__brand">
+                <img src="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" alt="" width="40" height="40">
+                © {% now "Y" %} Quality Life
+            </p>
+            <nav class="ql-footer__links" aria-label="Rodapé">
+                <a href="{% url 'privacy' %}">Privacidade</a>
+                <a href="{% url 'terms' %}">Termos</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'app' %}">Abrir o app</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Entrar</a>
+                {% endif %}
+            </nav>
+        </div>
+    </footer>
+</body>
+</html>

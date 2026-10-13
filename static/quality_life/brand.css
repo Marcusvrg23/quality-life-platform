@@ -1,0 +1,98 @@
+/*
+ * Quality Life brand tokens: the base of the design system.
+ * Colors sampled from the ring logo. Turquoise, lime and orange are
+ * background colors (pair them with --ql-ink); never small text on white.
+ * Fonts are self-hosted (SIL OFL 1.1, see fonts/OFL-*.txt).
+ */
+
+@font-face {
+    font-family: "Quicksand";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("fonts/quicksand-latin-600.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Quicksand";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("fonts/quicksand-latin-700.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Figtree";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("fonts/figtree-latin-400.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Figtree";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("fonts/figtree-latin-500.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Figtree";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("fonts/figtree-latin-600.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Figtree";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("fonts/figtree-latin-700.woff2") format("woff2");
+}
+
+:root {
+    /* Brand colors */
+    --ql-purple: #84267d;
+    --ql-turquoise: #19b4a5;
+    --ql-lime: #a8b108;
+    --ql-orange: #fa8b16;
+    --ql-magenta: #d3268e;
+    --ql-lilac: #7e5ba3;
+
+    /* Text and surfaces */
+    --ql-ink: #1b1a1f;
+    --ql-ink-soft: #4a4752;
+    --ql-turquoise-text: #0e7369;
+    --ql-on-purple: #ffffff;
+    --ql-bg: #fbf8f4;
+    --ql-surface: #ffffff;
+    --ql-line: #e8e1d8;
+
+    /* Typography */
+    --ql-font-display: "Quicksand", "Trebuchet MS", sans-serif;
+    --ql-font-body: "Figtree", "Segoe UI", Arial, sans-serif;
+
+    /* Radii */
+    --ql-radius-sm: 14px;
+    --ql-radius-md: 20px;
+    --ql-radius-lg: 28px;
+    --ql-radius-pill: 999px;
+
+    /* Spacing scale */
+    --ql-space-1: 4px;
+    --ql-space-2: 8px;
+    --ql-space-3: 12px;
+    --ql-space-4: 16px;
+    --ql-space-5: 24px;
+    --ql-space-6: 32px;
+    --ql-space-7: 48px;
+    --ql-space-8: 64px;
+    --ql-space-9: 88px;
+
+    /* Elevation */
+    --ql-shadow-card: 0 18px 40px -18px rgb(27 26 31 / 28%),
+        0 2px 6px rgb(27 26 31 / 6%);
+}
