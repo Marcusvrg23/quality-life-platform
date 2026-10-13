@@ -44,7 +44,7 @@ class PublicLegalPagesTests(TestCase):
             "Controladora",
             "Operadora",
             "A definir pelo jurídico",
-            "nome, e-mail, empresa e papel",
+            "Cadastro:</strong> e-mail, empresa e papel",
             "dados pessoais sensíveis referentes à saúde",
             "art. 11, I",
             "A confirmar pelo jurídico",
@@ -57,6 +57,8 @@ class PublicLegalPagesTests(TestCase):
         ):
             with self.subTest(text=text):
                 self.assertContains(response, text)
+        # The User model stores only the e-mail; the policy must not claim a name.
+        self.assertNotContains(response, "nome, e-mail")
 
     def test_terms_state_it_is_not_a_diagnosis_and_list_emergency_numbers(self):
         response = self.client.get(reverse("terms"))
