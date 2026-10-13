@@ -41,6 +41,9 @@ SCROLL_THROUGH = """async () => {
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
 class HomeBrowserTests(StaticLiveServerTestCase):
+    # Keep the nine pillars seeded by migration 0002 (live server tests flush).
+    serialized_rollback = True
+
     def open_home(self, browser, width, height, reduced_motion):
         context = browser.new_context(
             viewport={"width": width, "height": height},
@@ -67,6 +70,11 @@ class HomeBrowserTests(StaticLiveServerTestCase):
         )
         self.assertEqual(len(opacities), 5, label)
         self.assertEqual(set(opacities), {"1"}, label)
+        pills = page.evaluate(
+            "[...document.querySelectorAll('.ql-pill')]"
+            ".map(el => getComputedStyle(el).opacity)"
+        )
+        self.assertEqual(pills, ["1"] * 9, label)
 
     def test_reduced_motion_shows_everything_without_overflow(self):
         with sync_playwright() as playwright:

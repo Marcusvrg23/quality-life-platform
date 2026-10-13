@@ -397,7 +397,8 @@ body.ql-home {
     padding-block: var(--ql-space-6);
 }
 
-.ql-section__title {
+/* .ql-home prefix: beats the `.ql-home h2 { margin: 0 }` reset above. */
+.ql-home .ql-section__title {
     max-width: 24ch;
     margin-bottom: var(--ql-space-6);
     font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.75rem);
@@ -557,7 +558,7 @@ body.ql-home {
     gap: var(--ql-space-4);
 }
 
-.ql-privacy .ql-section__title {
+.ql-home .ql-privacy .ql-section__title {
     margin-bottom: 0;
 }
 
