@@ -20,3 +20,9 @@
 .dashboard-note { color: #8b988d; text-align: center; font-size: .7rem; margin: 1.7rem 0 0; }
 @media (max-width: 640px) { .dashboard-hero { grid-template-columns: 1fr; } .dashboard-hero__copy { padding: 1.65rem 1.6rem .8rem; } .dashboard-hero h2 { font-size: 2rem; } .dashboard-hero h2 br:last-child { display: none; } .dashboard-hero__copy > p { max-width: none; } .dashboard-hero__visual { margin: .6rem 1rem 1rem; aspect-ratio: 1.45; } .dashboard-links { grid-template-columns: 1fr; } .dashboard-link { padding: 1.15rem; } }
 @media (prefers-reduced-motion: reduce) { .dashboard-link { transition: none; } }
+.dashboard-notice, .dashboard-recommendation { background: #fff; border: 1px solid #e6ece5; border-radius: 1.2rem; padding: 1.1rem 1.3rem; margin-bottom: 1rem; overflow-wrap: anywhere; }
+.dashboard-notice { background: #fff8e1; border-color: #f0dd9a; }
+.dashboard-notice h2, .dashboard-recommendation h2 { font-size: 1rem; margin: 0 0 .4rem; color: #234b41; }
+.dashboard-notice p, .dashboard-recommendation p:not(.ql-eyebrow) { font-size: .78rem; line-height: 1.6; color: #6b7a70; margin: 0 0 .4rem; }
+.dashboard-notice .dashboard-notice__support { font-weight: 650; color: #5c4a00; }
+.recommendation-link { display: inline-block; margin-top: .5rem; font-size: .8rem; font-weight: 650; color: #397d70; text-decoration: none; }

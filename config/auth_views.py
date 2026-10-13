@@ -9,7 +9,9 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_GET, require_POST
 
+from .calendar_highlights import active_highlight
 from .forms import EmailAuthenticationForm
+from .recommendations import build_recommendation
 from .tenant import (
     SESSION_ORGANIZATION_KEY,
     active_memberships,
@@ -17,6 +19,18 @@ from .tenant import (
     require_membership_for_slug,
     resolve_tenant_context,
 )
+
+
+def _render_home(request: HttpRequest, tenant) -> HttpResponse:
+    return render(
+        request,
+        "identity/app.html",
+        {
+            "tenant": tenant,
+            "recommendation": build_recommendation(request.user, tenant.organization),
+            "highlight": active_highlight(),
+        },
+    )
 
 
 class EmailLoginView(LoginView):
@@ -49,7 +63,7 @@ class ShellPasswordChangeView(SuccessMessageMixin, PasswordChangeView):
 def app_home(request: HttpRequest) -> HttpResponse:
     context = resolve_tenant_context(request)
     if context is not None:
-        return render(request, "identity/app.html", {"tenant": context})
+        return _render_home(request, context)
 
     memberships = list(active_memberships(request.user))
     if not memberships:
@@ -72,8 +86,4 @@ def select_organization(request: HttpRequest) -> HttpResponse:
 @require_GET
 def organization_home(request: HttpRequest, slug: str) -> HttpResponse:
     membership = require_membership_for_slug(request.user, slug)
-    return render(
-        request,
-        "identity/app.html",
-        {"tenant": context_for_membership(membership)},
-    )
+    return _render_home(request, context_for_membership(membership))

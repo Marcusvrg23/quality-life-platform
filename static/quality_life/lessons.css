@@ -1,0 +1,10 @@
+.lessons { max-width: 1080px; margin: auto; }
+.lessons-intro h1 { font-size: clamp(1.7rem, 2.6vw, 2.15rem); font-weight: 650; letter-spacing: -.04em; margin: 0 0 .75rem; line-height: 1.15; }
+.lessons-intro > p:last-child { font-size: .85rem; color: #74897f; margin: 0 0 1.7rem; line-height: 1.7; }
+.lessons-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1.1rem; }
+.lesson-card { background: #fff; border: 1px solid #e6ece5; border-radius: 1.2rem; overflow: hidden; min-width: 0; }
+.lesson-card video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #14231e; object-fit: cover; }
+.lesson-card__body { padding: 1.1rem 1.2rem 1.3rem; }
+.lesson-card__category { display: inline-block; background: #edf5ed; color: #618564; padding: .35rem .6rem; border-radius: 5rem; font-size: .6rem; letter-spacing: .1em; font-weight: 700; }
+.lesson-card h2 { font-size: 1rem; margin: .8rem 0 .45rem; color: #234b41; }
+.lesson-card p { font-size: .76rem; line-height: 1.65; color: #7c8b81; margin: 0; }

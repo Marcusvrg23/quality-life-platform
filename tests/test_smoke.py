@@ -95,6 +95,7 @@ class FoundationSurfaceTests(SimpleTestCase):
                 "logout",
                 "app",
                 "exercises",
+                "lessons",
                 "select_organization",
                 "organization_home",
                 "team",

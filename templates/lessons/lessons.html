@@ -1,0 +1,27 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Aulas{% endblock %}
+{% block page_title %}Aulas{% endblock %}
+{% block header_title %}Aulas{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/lessons.css' %}">{% endblock %}
+{% block content %}
+<section class="lessons" aria-labelledby="lessons-title">
+    <header class="lessons-intro">
+        <p class="ql-eyebrow">AULAS EM VÍDEO</p>
+        <h1 id="lessons-title">Aulas</h1>
+        <p>Rotinas guiadas para acompanhar a sua jornada de trabalho.</p>
+    </header>
+    <div class="lessons-grid">
+        {% for lesson in lessons %}
+        <article class="lesson-card">
+            <video controls playsinline preload="none" poster="{% static 'quality_life/images/posters/' %}{{ lesson.slug }}.jpg" src="{% static 'quality_life/videos/' %}{{ lesson.slug }}.mp4"></video>
+            <div class="lesson-card__body">
+                <span class="lesson-card__category">{{ lesson.category }}</span>
+                <h2>{{ lesson.title }}</h2>
+                <p>{{ lesson.description }}</p>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
