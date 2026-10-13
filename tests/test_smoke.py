@@ -28,7 +28,7 @@ class ProjectSmokeTests(SimpleTestCase):
         )
 
 
-class FoundationSurfaceTests(SimpleTestCase):
+class FoundationSurfaceTests(TestCase):
     def test_health_returns_ok(self):
         response = self.client.get("/health/")
 
@@ -60,19 +60,19 @@ class FoundationSurfaceTests(SimpleTestCase):
     def test_foundation_page_uses_expected_template(self):
         response = self.client.get("/")
 
-        self.assertTemplateUsed(response, "foundation.html")
+        self.assertTemplateUsed(response, "home.html")
 
     def test_foundation_page_contains_minimum_content(self):
         response = self.client.get("/")
 
         self.assertContains(response, "Quality Life")
-        self.assertContains(response, "fundação técnica da Quality Life V2")
+        self.assertContains(response, "Sua pausa também faz parte do")
 
     def test_foundation_static_file_can_be_located(self):
         response = self.client.get("/")
 
-        self.assertContains(response, "/static/quality_life/foundation.css")
-        self.assertIsNotNone(finders.find("quality_life/foundation.css"))
+        self.assertContains(response, "/static/quality_life/home.css")
+        self.assertIsNotNone(finders.find("quality_life/home.css"))
 
     def test_unknown_url_returns_not_found(self):
         response = self.client.get("/rota-inexistente/")

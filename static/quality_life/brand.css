@@ -1,0 +1,45 @@
+/* Base do design system da Quality Life. */
+@font-face {
+  font-family: "Quicksand";
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url("fonts/quicksand-latin-variable.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Figtree";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("fonts/figtree-latin-variable.woff2") format("woff2");
+}
+:root {
+  --ql-purple: #84267d;
+  --ql-teal: #19b4a5;
+  --ql-lime: #a8b108;
+  --ql-orange: #fa8b16;
+  --ql-magenta: #d3268e;
+  --ql-lilac: #7e5ba3;
+  --ql-ink: #1b1a1f;
+  --ql-canvas: #fbf8f4;
+  --ql-teal-text: #0e7369;
+  --ql-white: #fff;
+  --ql-muted: #5e5961;
+  --ql-line: #ded8df;
+  --ql-font-heading: "Quicksand", ui-rounded, sans-serif;
+  --ql-font-body: "Figtree", system-ui, sans-serif;
+  --ql-radius-sm: 14px;
+  --ql-radius-md: 20px;
+  --ql-radius-lg: 28px;
+  --ql-radius-pill: 999px;
+  --ql-space-1: 4px;
+  --ql-space-2: 8px;
+  --ql-space-3: 12px;
+  --ql-space-4: 16px;
+  --ql-space-6: 24px;
+  --ql-space-8: 32px;
+  --ql-space-12: 48px;
+  --ql-space-16: 64px;
+  --ql-space-22: 88px;
+  --ql-shadow-card: 0 24px 64px -24px rgb(48 21 48 / 25%), 0 4px 16px rgb(48 21 48 / 6%);
+}

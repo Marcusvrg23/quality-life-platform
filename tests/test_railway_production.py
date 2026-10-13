@@ -332,7 +332,7 @@ class ProductionStaticSmokeTests(TestCase):
         self.assertTrue((Path(self.static_root) / "staticfiles.json").exists())
 
     def test_public_pages_render(self):
-        self.assert_pages_ok(["login", "privacy", "terms"])
+        self.assert_pages_ok(["foundation", "login", "privacy", "terms"])
 
     def test_collaborator_pages_render(self):
         self.login(self.collaborator)

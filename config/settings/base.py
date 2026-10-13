@@ -159,3 +159,6 @@ LEGAL_CNPJ = os.environ.get("LEGAL_CNPJ", "").strip() or "[CNPJ]"
 LEGAL_DPO_EMAIL = (
     os.environ.get("LEGAL_DPO_EMAIL", "").strip() or "[E-MAIL DO ENCARREGADO]"
 )
+
+# Commercial contact is separate from the data protection contact.
+QL_SALES_EMAIL = os.environ.get("QL_SALES_EMAIL", "").strip() or "[EMAIL-COMERCIAL]"
