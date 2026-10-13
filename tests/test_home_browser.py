@@ -1,10 +1,13 @@
 """Browser QA for the public landing page: overflow, reduced motion, console."""
 
 import os
+from importlib import import_module
 from pathlib import Path
 from unittest import skipIf
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+
+from assessments.models import Pillar
 
 try:
     from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
@@ -12,6 +15,7 @@ try:
 except ImportError:
     sync_playwright = None
 
+NINE_PILLARS = import_module("assessments.migrations.0002_nine_pillars")
 VIEWPORTS = (("390", 390, 844), ("1280", 1280, 800))
 VISIBLE_SELECTORS = ("h1", ".ql-feature")
 # Scroll-scrubbed parallax tweens follow the scroll position and never "finish";
@@ -41,8 +45,12 @@ SCROLL_THROUGH = """async () => {
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
 class HomeBrowserTests(StaticLiveServerTestCase):
-    # Keep the nine pillars seeded by migration 0002 (live server tests flush).
-    serialized_rollback = True
+    def setUp(self):
+        # Live-server tests flush the database; restore migration 0002's pillars.
+        for order, (code, name) in enumerate(NINE_PILLARS.PILLARS, start=1):
+            Pillar.objects.get_or_create(
+                code=code, defaults={"name": name, "display_order": order}
+            )
 
     def open_home(self, browser, width, height, reduced_motion):
         context = browser.new_context(
