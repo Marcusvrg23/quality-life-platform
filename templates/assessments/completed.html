@@ -7,7 +7,7 @@
 <section class="quality-map" aria-labelledby="result-title">
   <header class="map-heading">
     <div><p class="eyebrow">UM OLHAR PARA VOCÊ</p><h1 id="result-title">Seu mapa de qualidade de vida</h1><p>Resultado da sua avaliação</p></div>
-    <div class="map-date"><span>Avaliação concluída em</span><strong>{{ assessment.completed_at|date:"d/m/Y" }}</strong></div>
+    <div class="map-date">{% if collaborator_name %}<p><span>Nome do colaborador</span><strong>{{ collaborator_name }}</strong></p>{% endif %}<p><span>Data da avaliação</span><strong>{{ assessment.completed_at|date:"d/m/Y" }}</strong></p></div>
   </header>
   <div class="map-layout">
     <div class="map-canvas">

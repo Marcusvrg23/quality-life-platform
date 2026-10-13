@@ -10,10 +10,10 @@
     <ul class="review-list">
         {% for item in items %}
         <li>
-            <h2>{{ item.question.questionnaire_pillar.pillar.name }}</h2>
-            <p>{{ item.question.text }}</p>
+            <h2>{% if item.question.section %}{{ item.question.section.number }}. {{ item.question.section.title }}{% else %}{{ item.question.questionnaire_pillar.pillar.name }}{% endif %}</h2>
+            <p>{% if item.question.number %}{{ item.question.number }} {% endif %}{{ item.question.text }}</p>
             {% if item.answer %}
-                <p><strong>Resposta:</strong> {{ item.answer.label }}</p>
+                <p><strong>Resposta:</strong> {{ item.answer }}</p>
             {% elif item.question.required %}
                 <p class="missing"><strong>Obrigatória sem resposta</strong></p>
             {% else %}

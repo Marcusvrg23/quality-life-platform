@@ -625,7 +625,7 @@ class V2FlowViewTests(TestCase):
             requires_text=True,
         )
         missing = self.client.post(self.url(assessment, "q1-3"), {"option": other.pk})
-        self.assertContains(missing, "Descreva", status_code=200)
+        self.assertContains(missing, "Descreva a opção", status_code=200)
 
         pain = self.client.get(self.url(assessment, "q2-9"))
         self.assertContains(pain, 'type="checkbox"', count=11)

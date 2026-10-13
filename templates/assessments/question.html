@@ -1,23 +1,54 @@
 {% extends 'assessments/base.html' %}
+{% load static %}
 {% block title %}Pergunta {{ position }} de {{ total }}{% endblock %}
 {% block content %}
 <section class="card">
-    <p class="eyebrow">{{ question.questionnaire_pillar.pillar.name }}</p>
+    <p class="eyebrow">{% if question.section %}{{ question.section.number }}. {{ question.section.title }}{% else %}{{ question.questionnaire_pillar.pillar.name }}{% endif %}</p>
     <h1>Pergunta {{ position }} de {{ total }}</h1>
     <p class="progress-text">{{ answered }} de {{ total }} perguntas respondidas</p>
     <progress value="{{ answered }}" max="{{ total }}" aria-label="Progresso da avaliação">{{ answered }} de {{ total }}</progress>
     <form method="post" action="{% url 'assessment_question' assessment.pk question.pk %}">
         {% csrf_token %}
-        <fieldset {% if error %}aria-describedby="answer-error"{% endif %}>
-            <legend>{{ question.text }}</legend>
+        {% if question.section.intro %}<p class="question-intro">{{ question.section.intro }}</p>{% endif %}
+        {% if question.kind == 'TEXT' %}
+        <div class="text-answer">
+            <label class="question-label" for="answer-text">{% if question.number %}<span class="question-number">{{ question.number }}</span> {% endif %}{{ question.text }}{% if not question.required %} <span class="optional">(opcional)</span>{% endif %}</label>
             {% if error %}<p id="answer-error" class="error" role="alert">{{ error }}</p>{% endif %}
+            {% if multiline %}
+            <textarea id="answer-text" name="text" rows="5" maxlength="{{ question.max_length }}" data-counter="answer-count" aria-describedby="answer-count{% if error %} answer-error{% endif %}">{{ text_value }}</textarea>
+            {% else %}
+            <input id="answer-text" type="text" name="text" value="{{ text_value }}" maxlength="{{ question.max_length }}" autocomplete="off" data-counter="answer-count" aria-describedby="answer-count{% if error %} answer-error{% endif %}">
+            {% endif %}
+            <p id="answer-count" class="char-count">{{ text_value|length }}/{{ question.max_length }} caracteres</p>
+        </div>
+        {% else %}
+        <fieldset class="answer-{{ question.kind|lower }}"{% if error or question.help_text %} aria-describedby="{% if question.help_text %}answer-help{% endif %}{% if error %} answer-error{% endif %}"{% endif %}>
+            <legend>{% if question.number %}<span class="question-number">{{ question.number }}</span> {% endif %}{{ question.text }}{% if not question.required %} <span class="optional">(opcional)</span>{% endif %}</legend>
+            {% if question.help_text %}<p id="answer-help" class="answer-help">{{ question.help_text }}</p>{% endif %}
+            {% if error %}<p id="answer-error" class="error" role="alert">{{ error }}</p>{% endif %}
+            <div class="options">
             {% for option in question.options.all %}
+                {% if question.kind == 'MULTIPLE' %}
                 <label class="option">
-                    <input type="radio" name="option" value="{{ option.pk }}" {% if selected.pk == option.pk %}checked{% endif %} {% if error %}aria-describedby="answer-error"{% endif %}>
+                    <input type="checkbox" name="options" value="{{ option.pk }}"{% if option.pk in selected_ids %} checked{% endif %}{% if option.exclusive %} data-exclusive{% endif %}>
                     <span>{{ option.label }}</span>
                 </label>
+                {% else %}
+                <label class="option">
+                    <input type="radio" name="option" value="{{ option.pk }}"{% if option.pk in selected_ids %} checked{% endif %}>
+                    <span>{{ option.label }}</span>
+                </label>
+                {% if option.requires_text %}
+                <label class="other-text">
+                    <span>Descreva “{{ option.label }}”</span>
+                    <input type="text" name="other_text" value="{{ text_value }}" maxlength="500" autocomplete="off">
+                </label>
+                {% endif %}
+                {% endif %}
             {% endfor %}
+            </div>
         </fieldset>
+        {% endif %}
         <div class="actions">
             <button type="submit">Salvar e {% if following %}próxima{% else %}revisar{% endif %}</button>
             <button class="button-secondary" type="submit" name="destination" value="review">Salvar e ir para revisão</button>
@@ -30,3 +61,4 @@
     </nav>
 </section>
 {% endblock %}
+{% block extra_js %}{{ block.super }}<script src="{% static 'quality_life/assessment-question.js' %}" defer></script>{% endblock %}
