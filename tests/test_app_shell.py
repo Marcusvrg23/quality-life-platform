@@ -17,7 +17,8 @@ class AppShellTests(SimpleTestCase):
         self.request.user = get_user_model()(email="real.member@example.test")
         self.request.resolver_match = resolve(reverse("app"))
         self.tenant = SimpleNamespace(
-            organization=SimpleNamespace(name="Real Company & Partners")
+            organization=SimpleNamespace(name="Real Company & Partners"),
+            role="COLLABORATOR",
         )
 
     def render(self, template="identity/app.html", **context):
@@ -35,6 +36,15 @@ class AppShellTests(SimpleTestCase):
         self.assertNotIn('href="#"', html)
         self.assertNotIn("Mariana Alves", html)
         self.assertNotIn("Carla Souza", html)
+
+    def test_non_collaborator_shell_hides_assessment_and_keeps_legal_links(self):
+        self.tenant.role = "CORPORATE_MANAGER"
+        html = self.render()
+        self.assertNotIn(f'href="{reverse("assessment_hub")}"', html)
+        self.assertNotIn("Minha avaliação", html)
+        self.assertIn(f'href="{reverse("privacy")}"', html)
+        self.assertIn(f'href="{reverse("terms")}"', html)
+        self.assertIn(f'href="{reverse("privacy_settings")}"', html)
 
     def test_logout_remains_post_with_csrf(self):
         html = self.render()

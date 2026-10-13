@@ -36,6 +36,8 @@ body.ql-app { margin: 0; min-width: 0; font-family: "Segoe UI", Arial, sans-seri
 .ql-avatar--topbar { border-radius: 50%; width: 2.5rem; height: 2.5rem; color: #fff; background: #2b7166; }
 .ql-main { max-width: 1440px; min-width: 0; margin: 0 auto; padding: 2.5rem clamp(1.25rem, 3.2vw, 3.5rem); }
 .ql-main--assessment > .card { max-width: 52rem; margin-inline: auto; }
+.ql-footer { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem 1.25rem; padding: 0 1.2rem 1.6rem; font-size: .8rem; }
+.ql-footer a { color: #176759; font-weight: 700; }
 .ql-main--assessment > .card.result { max-width: none; }
 .ql-eyebrow { font-size: .68rem; letter-spacing: .15em; font-weight: 750; color: #397d70; margin: 0 0 .7rem; }
 .ql-button { display: inline-flex; align-items: center; justify-content: center; gap: 1rem; min-height: 3rem; padding: .85rem 1.15rem; background: #236e60; border: 1px solid #236e60; border-radius: .7rem; color: #fff; font: inherit; font-size: .8rem; font-weight: 650; text-decoration: none; }

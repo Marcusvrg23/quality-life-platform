@@ -23,12 +23,13 @@
             <a href="{% url 'app' %}" {% if request.resolver_match.url_name == 'app' or request.resolver_match.url_name == 'organization_home' %}aria-current="page"{% endif %}><span aria-hidden="true">⌂</span>Hoje</a>
             <a href="{% url 'exercises' %}" {% if request.resolver_match.url_name == 'exercises' %}aria-current="page"{% endif %}><span aria-hidden="true">↗</span>Exercícios</a>
             <a href="{% url 'lessons' %}" {% if request.resolver_match.url_name == 'lessons' %}aria-current="page"{% endif %}><span aria-hidden="true">▶</span>Aulas</a>
-            <a href="{% url 'assessment_hub' %}" {% if 'assessment' in request.resolver_match.url_name %}aria-current="page"{% endif %}><span aria-hidden="true">♡</span>Minha avaliação</a>
+            {% if tenant.role == 'COLLABORATOR' %}<a href="{% url 'assessment_hub' %}" {% if 'assessment' in request.resolver_match.url_name %}aria-current="page"{% endif %}><span aria-hidden="true">♡</span>Minha avaliação</a>{% endif %}
             {% if tenant.role == 'CORPORATE_MANAGER' or tenant.role == 'ADMIN' %}<a href="{% url 'executive_report' %}" {% if request.resolver_match.url_name == 'executive_report' %}aria-current="page"{% endif %}><span aria-hidden="true">▤</span>Relatório da empresa</a>{% endif %}
             {% if tenant.role == 'CORPORATE_MANAGER' or tenant.role == 'ADMIN' %}<a href="{% url 'team' %}" {% if 'team' in request.resolver_match.url_name %}aria-current="page"{% endif %}><span aria-hidden="true">☷</span>Equipe</a>{% endif %}
         </nav>
         <div class="ql-sidebar__bottom">
             <div class="ql-user"><span class="ql-avatar" aria-hidden="true">{{ request.user.email|first|upper }}</span><div><strong title="{{ request.user.email }}">{{ request.user.email }}</strong><small>{{ tenant.organization.name }}</small></div></div>
+            {% if tenant %}<a class="ql-account-link" href="{% url 'privacy_settings' %}" {% if request.resolver_match.url_name == 'privacy_settings' %}aria-current="page"{% endif %}>Privacidade <span aria-hidden="true">›</span></a>{% endif %}
             <a class="ql-account-link" href="{% url 'password_change' %}" {% if request.resolver_match.url_name == 'password_change' %}aria-current="page"{% endif %}>Trocar senha <span aria-hidden="true">›</span></a>
             <form method="post" action="{% url 'logout' %}" class="ql-logout">{% csrf_token %}<button type="submit">Sair <span aria-hidden="true">↗</span></button></form>
         </div>
@@ -42,6 +43,7 @@
             <span class="ql-avatar ql-avatar--topbar" title="{{ request.user.email }}" aria-label="Conta: {{ request.user.email }}">{{ request.user.email|first|upper }}</span>
         </header>
         <main id="main" class="ql-main {% block shell_content_class %}{% endblock %}" tabindex="-1">{% block content %}{% endblock %}</main>
+        <footer class="ql-footer"><a href="{% url 'privacy' %}">Política de privacidade</a><a href="{% url 'terms' %}">Termos de uso</a></footer>
     </div>
     {% block extra_js %}{% endblock %}
 </body>
