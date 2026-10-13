@@ -29,7 +29,7 @@ V2_FILE = BASE_DIR / "assessments" / "questionnaires" / "quality_life_oficial_v2
 
 # Product decisions (handoff 06): not derivable from the text itself.
 UNSCORED_SECTIONS = {1, 12}
-OPTIONAL = {"q2-12", "q12-3"}
+OPTIONAL = {"q1-2", "q2-12", "q12-3"}
 EXCLUSIVE = {"q2-9": "Não sinto dores", "q4-4": "Não pratico"}
 TEXT_LIMITS = {"q1-1": 150}
 DEFAULT_TEXT_LIMIT = 500

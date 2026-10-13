@@ -135,7 +135,7 @@ class QuestionnaireV2BrowserTests(StaticLiveServerTestCase):
                 ).click()
 
             page.get_by_role("heading", name="Revisar respostas").wait_for()
-            assert page.get_by_text(f"{TOTAL - 2} de {TOTAL} perguntas").count()
+            assert page.get_by_text(f"{TOTAL - 3} de {TOTAL} perguntas").count()
             self.check_layout(page, "review", screenshot=True)
             page.get_by_role("button", name="Concluir avaliação").click()
             page.locator("#result-title").wait_for()
@@ -155,7 +155,7 @@ class QuestionnaireV2BrowserTests(StaticLiveServerTestCase):
         self.assertTrue(sections[-1].startswith("12. SUA PRINCIPAL"))
         self.assertEqual(
             kinds,
-            {"text": 3, "other": 1, "multiple": 2, "skipped": 2, "choice": 93},
+            {"text": 2, "other": 1, "multiple": 2, "skipped": 3, "choice": 93},
         )
         self.assertEqual(
             Assessment.objects.get(user__email=EMAIL).status,

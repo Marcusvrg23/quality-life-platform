@@ -201,7 +201,7 @@ class QuestionnaireV2StructureTests(SimpleTestCase):
             exclusive, {("q2-9", "Não sinto dores"), ("q4-4", "Não pratico")}
         )
         optional = {code for code, q in questions.items() if not q["required"]}
-        self.assertEqual(optional, {"q2-12", "q12-3"})
+        self.assertEqual(optional, {"q1-2", "q2-12", "q12-3"})
         limits = {
             code: q["max_length"]
             for code, q in questions.items()

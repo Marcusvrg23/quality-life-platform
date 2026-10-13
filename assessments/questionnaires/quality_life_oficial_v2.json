@@ -45,7 +45,7 @@
           "text": "Matrícula ou código do colaborador",
           "help_text": "",
           "kind": "TEXT",
-          "required": true,
+          "required": false,
           "scorable": false,
           "pillar_code": null,
           "max_length": 500,

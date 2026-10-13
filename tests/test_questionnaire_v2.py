@@ -352,6 +352,10 @@ class V2AnswerRulesTests(TestCase):
         self.assertIsNone(self.answer("q12-3", text=""))
         self.assertFalse(Answer.objects.filter(question__code="q12-3").exists())
         self.assertIsNone(self.answer("q2-12"))
+        # Matrícula (seção 1) is optional: blank is accepted and clears it.
+        self.answer("q1-2", text="MAT-1")
+        self.assertIsNone(self.answer("q1-2", text="  "))
+        self.assertFalse(Answer.objects.filter(question__code="q1-2").exists())
         with self.assertRaises(ValidationError):
             self.answer("q2-11")
 
