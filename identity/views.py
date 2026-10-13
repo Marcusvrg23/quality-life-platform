@@ -211,14 +211,20 @@ def _join(request, token, *, form=None):
                 inactive_message=INACTIVE_MEMBERSHIP_MESSAGE,
             )
         if membership is None:
-            Membership.objects.create(
-                user=user,
-                organization=organization,
-                role=Membership.Role.COLLABORATOR,
-            )
-            invitation.used_at = timezone.now()
-            invitation.used_by = user
-            invitation.save(update_fields=["used_at", "used_by"])
+            try:
+                with transaction.atomic():
+                    Membership.objects.create(
+                        user=user,
+                        organization=organization,
+                        role=Membership.Role.COLLABORATOR,
+                    )
+            except IntegrityError:
+                # Joined concurrently through another invite: keep this one unused.
+                pass
+            else:
+                invitation.used_at = timezone.now()
+                invitation.used_by = user
+                invitation.save(update_fields=["used_at", "used_by"])
     if not request.user.is_authenticated:
         login(request, user, backend="django.contrib.auth.backends.ModelBackend")
     request.session[SESSION_ORGANIZATION_KEY] = organization.pk

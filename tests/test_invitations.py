@@ -5,14 +5,16 @@ import os
 import re
 from datetime import timedelta
 from pathlib import Path
-from unittest import skipIf
+from unittest import mock, skipIf
 from urllib.parse import quote
 
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.models import Session
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.core.exceptions import PermissionDenied
+from django.db import IntegrityError, connection
 from django.test import Client, RequestFactory, TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
@@ -348,8 +350,63 @@ class InvitationAcceptTests(InvitationTestCase):
                         response, INVALID_INVITATION_MESSAGE, status_code=404
                     )
                     bodies.add(response.content)
+        self.client.force_login(self.collaborator)
+        for token in (expired_token, used_token, revoked_token):
+            for method in (self.client.get, self.client.post):
+                response = method(self.accept_url(token))
+                self.assertEqual(response.status_code, 404)
+                bodies.add(response.content)
         self.assertEqual(len(bodies), 1)
         self.assertFalse(Membership.objects.filter(user__email="novo@a.test").exists())
+
+    def test_acceptance_locks_the_invitation_row(self):
+        token, _ = self.invite()
+        with CaptureQueriesContext(connection) as queries:
+            self.signup(token)
+        locks = [q["sql"] for q in queries.captured_queries if "FOR UPDATE" in q["sql"]]
+        self.assertEqual(len(locks), 1)
+        self.assertIn("identity_invitation", locks[0])
+
+    def test_concurrent_join_through_another_invite_does_not_fail(self):
+        token, invitation = self.invite()
+        outsider = self.member(self.other_org, "pessoa@b.test", Role.COLLABORATOR)
+        self.client.force_login(outsider)
+        with mock.patch.object(
+            Membership.objects, "create", side_effect=IntegrityError
+        ):
+            response = self.client.post(self.accept_url(token))
+        self.assertRedirects(response, reverse("app"), fetch_redirect_response=False)
+        invitation.refresh_from_db()
+        self.assertIsNone(invitation.used_at)
+
+
+class InvitationCsrfTests(InvitationTestCase):
+    def test_invitation_state_changes_require_csrf(self):
+        token, invitation = self.invite()
+        manager = Client(enforce_csrf_checks=True)
+        manager.force_login(self.manager)
+        for url in (
+            reverse("team_invitations_create"),
+            reverse("team_invitation_revoke", args=[invitation.pk]),
+        ):
+            with self.subTest(url=url):
+                response = manager.post(url, {"quantidade": "1"})
+                self.assertEqual(response.status_code, 403)
+        visitor = Client(enforce_csrf_checks=True)
+        response = visitor.post(
+            self.accept_url(token),
+            {
+                "email": "novo@a.test",
+                "password1": NEW_PASSWORD,
+                "password2": NEW_PASSWORD,
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Invitation.objects.count(), 1)
+        invitation.refresh_from_db()
+        self.assertIsNone(invitation.revoked_at)
+        self.assertIsNone(invitation.used_at)
+        self.assertFalse(User.objects.filter(email="novo@a.test").exists())
 
 
 class PasswordChangeTests(InvitationTestCase):
