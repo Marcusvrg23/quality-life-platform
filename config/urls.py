@@ -18,6 +18,7 @@ from .auth_views import (
     select_organization,
 )
 from .exercise_views import exercises
+from .lesson_views import lessons
 from .views import foundation, health
 
 urlpatterns = [
@@ -26,6 +27,7 @@ urlpatterns = [
     path("logout/", SessionLogoutView.as_view(), name="logout"),
     path("app/", app_home, name="app"),
     path("app/exercises/", exercises, name="exercises"),
+    path("app/aulas/", lessons, name="lessons"),
     path("app/assessment/", include("assessments.urls")),
     path("app/report/", include("reports.urls")),
     path("app/equipe/", identity_views.team, name="team"),

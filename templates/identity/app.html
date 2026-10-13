@@ -11,6 +11,28 @@
         <h1 id="dashboard-title">Escolha sua atividade</h1>
         <p>Rotinas rápidas de ginástica laboral organizadas para o seu dia.</p>
     </header>
+    {% if highlight %}
+    <aside class="dashboard-notice" aria-labelledby="highlight-title">
+        <h2 id="highlight-title">{{ highlight.title }}</h2>
+        <p>Conteúdo em definição pela Quality Life</p>
+        {% if highlight.support_text %}<p class="dashboard-notice__support">{{ highlight.support_text }}</p>{% endif %}
+    </aside>
+    {% endif %}
+    {% if recommendation %}
+    <aside class="dashboard-recommendation" aria-labelledby="recommendation-title">
+        <p class="ql-eyebrow">PARA VOCÊ</p>
+        <h2 id="recommendation-title">Sua prioridade agora: {{ recommendation.pillar_name }}</h2>
+        {% if not recommendation.to_exercises %}<p>Conteúdo em definição pela Quality Life</p>{% endif %}
+        <a class="recommendation-link" href="{{ recommendation.url }}">{% if recommendation.to_exercises %}Ver exercícios{% else %}Ver minha avaliação{% endif %} <span aria-hidden="true">→</span></a>
+    </aside>
+    {% else %}
+    <aside class="dashboard-recommendation" aria-labelledby="recommendation-title">
+        <p class="ql-eyebrow">PARA VOCÊ</p>
+        <h2 id="recommendation-title">Faça sua avaliação</h2>
+        <p>Descubra seu mapa de qualidade de vida e receba sua prioridade.</p>
+        <a class="recommendation-link" href="{% url 'assessment_hub' %}">Ir para minha avaliação <span aria-hidden="true">→</span></a>
+    </aside>
+    {% endif %}
     <article class="dashboard-hero">
         <div class="dashboard-hero__copy">
             <span class="dashboard-tag"><span aria-hidden="true">●</span> Uma pausa para você</span>
