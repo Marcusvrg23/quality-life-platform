@@ -30,7 +30,11 @@ class HomeTests(TestCase):
         self.assertQuerySetEqual(
             response.context["pillars"], names, transform=lambda p: p.name
         )
-        body = response.content.decode()
+        body = (
+            response.content.decode()
+            .split('class="pillar-list"', 1)[1]
+            .split("</ol>", 1)[0]
+        )
         positions = []
         for name in names:
             self.assertContains(response, name)

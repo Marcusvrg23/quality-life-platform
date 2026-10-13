@@ -16,7 +16,7 @@ a:focus-visible { outline: 3px solid var(--ql-teal-text); outline-offset: 5px; }
 .site-nav a:hover, .site-footer a:hover { text-decoration: underline; text-underline-offset: 5px; }
 .button { display: inline-flex; justify-content: center; align-items: center; gap: var(--ql-space-4); border: 1px solid var(--ql-purple); border-radius: var(--ql-radius-pill); background: var(--ql-purple); color: var(--ql-white); padding: 15px 24px; font-size: 15px; font-weight: 600; line-height: 1.4; min-height: 48px; }
 .button span { font-size: 20px; line-height: 1; }
-.button:hover { transform: translateY(-2px); }
+.button:hover { opacity: .9; }
 .button-small { padding: 12px 24px; }
 .button-outline { background: transparent; color: var(--ql-purple); }
 .hero { display: flex; flex-wrap: wrap; align-items: center; gap: 32px 48px; padding-block: clamp(48px, 7vw, 88px); }
@@ -112,3 +112,7 @@ h2 { font-size: clamp(30px, 3.5vw, 42px); line-height: 1.2; letter-spacing: -.04
 .site-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; align-items: center; border-top: 1px solid var(--ql-line); padding-block: 24px; }
 .footer-brand { display: flex; gap: 16px; align-items: center; font-size: 12px; color: var(--ql-muted); }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 24px; }
+/* Only the navigation order changes; all page layouts wrap intrinsically. */
+@media (max-width: 42rem) {
+  .site-nav { order: 3; flex-basis: 100%; }
+}
