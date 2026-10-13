@@ -1,5 +1,7 @@
 # Quality Life V2 — deployment da demonstração
 
+> **Produção:** o guia oficial de produção agora é [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md). Este arquivo descreve apenas a demonstração isolada.
+
 Use um Render Web Service e um PostgreSQL 16 **dedicado à demonstração**. O questionário publicado pelo seed é selecionado pelo fluxo M4 atual, que pressupõe uma única versão publicada no banco. Não conecte este serviço ao banco de outro projeto ou ambiente.
 
 ## Configuração do Web Service
@@ -25,6 +27,8 @@ Os logins são `demo1@example.com` para ensaio, `demo2@example.com` para apresen
 O endpoint `/health/` confirma apenas a disponibilidade do processo. Após o primeiro start, confira também o login, a seleção da organização, o fluxo de avaliação até o resultado e um asset CSS em `/static/quality_life/`.
 
 ## Produção
+
+Para publicar no Railway, siga [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md): lá o `migrate` e o carregamento do questionário rodam no Pre-deploy (`python manage.py release`), não no Start. Esta seção documenta o comportamento do carregador.
 
 Em produção **não** rode `seed_quality_life_demo` e não defina `QUALITY_LIFE_DEMO_SEED_ENABLED` nem `QUALITY_LIFE_DEMO_PASSWORD`. O questionário oficial versionado no repositório é carregado com `load_official_questionnaire`:
 
