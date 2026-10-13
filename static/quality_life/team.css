@@ -1,0 +1,27 @@
+/* Team page and own-account forms. Base card/button styles come from assessment.css. */
+.team { display: grid; gap: 1.25rem; max-width: 56rem; margin: 0 auto; min-width: 0; }
+.team h2 { font-size: 1.2rem; margin: 0 0 .75rem; }
+.team-intro p:last-child { margin: 0; color: #41615d; }
+.team-section > p { margin-top: 0; }
+.team-messages { list-style: none; margin: 0; padding: .9rem 1rem; border-radius: .8rem; background: #e8f3ef; color: #164d49; font-weight: 700; overflow-wrap: anywhere; }
+.team-warning { padding: .75rem 1rem; border-radius: .7rem; background: #fff6e6; color: #6b4210; font-weight: 700; }
+.team-list, .team-link-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+.team-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; min-width: 0; padding: .8rem 1rem; border: 1px solid #e1ece7; border-radius: .85rem; background: #f8fbf9; }
+.team-row > div { display: grid; gap: .2rem; flex: 1 1 14rem; min-width: 0; }
+.team-row strong { overflow-wrap: anywhere; }
+.team-row span { color: #41615d; font-size: .85rem; }
+.team-status[data-active="0"] { color: #8f2c1e; }
+.team-link-list { gap: 1rem; }
+.team-link-list li { display: grid; gap: .45rem; min-width: 0; }
+.team-link-list label, .team-field label { font-size: .85rem; font-weight: 700; }
+.team-link-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.team-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem; }
+.team-field { display: grid; gap: .35rem; min-width: 0; }
+.team-password { display: grid; gap: 1rem; max-width: 28rem; }
+.team input:not([type="hidden"]) { width: 100%; min-width: 0; min-height: 3rem; padding: .5rem .75rem; border: 1px solid #abcac2; border-radius: .7rem; background: #fff; color: inherit; font: inherit; }
+.team-form input { max-width: 10rem; }
+.team-link-list input { font-size: .85rem; }
+.team-errors { margin: 0; padding-left: 1.1rem; color: #8f2c1e; font-weight: 700; font-size: .85rem; }
+p.team-errors { padding-left: 0; }
+.team-hint { color: #41615d; font-size: .8rem; }
+.team-hint ul { margin: 0; padding-left: 1.1rem; }

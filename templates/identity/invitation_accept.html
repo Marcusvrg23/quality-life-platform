@@ -1,0 +1,27 @@
+{% extends 'identity/auth_base.html' %}
+{% block title %}Convite{% endblock %}
+{% block eyebrow %}CONVITE{% endblock %}
+{% block heading %}Entre na equipe {{ invitation.organization.name }}{% endblock %}
+{% block body %}
+{% if inactive_message %}
+<p class="login-error" role="alert">{{ inactive_message }}</p>
+<p class="login-help"><a href="{% url 'app' %}">Voltar para o app</a></p>
+{% elif user.is_authenticated %}
+<p class="login-description">Você está conectado como <strong>{{ user.email }}</strong>.</p>
+<form method="post" class="login-form">
+    {% csrf_token %}
+    <button type="submit">Entrar na empresa {{ invitation.organization.name }} <span aria-hidden="true">→</span></button>
+</form>
+{% else %}
+<p class="login-description">Crie seu acesso à Quality Life para participar das atividades da sua empresa.</p>
+{% if existing_account_message %}
+<p class="login-error" role="alert">{{ existing_account_message }} <a href="{{ login_url }}">Entrar</a></p>
+{% endif %}
+<form method="post" class="login-form" novalidate>
+    {% csrf_token %}
+    {% include 'identity/_auth_fields.html' %}
+    <button type="submit">Criar acesso <span aria-hidden="true">→</span></button>
+</form>
+<p class="login-help">Já tem conta? <a href="{% url 'login' %}?next={{ request.path|urlencode }}">Entre com sua senha</a> e abra o link de novo.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+    <title>{% block title %}Quality Life{% endblock %} · Quality Life</title>
+    <link rel="stylesheet" href="{% static 'quality_life/login.css' %}">
+</head>
+<body class="login-page">
+    <main class="login-layout">
+        <section class="login-story" aria-hidden="true">
+            <div class="login-story__content">
+                <p class="login-eyebrow">GINÁSTICA LABORAL · BEM-ESTAR · SAÚDE</p>
+                <p class="login-story__title">Sua pausa também faz parte do trabalho.</p>
+                <div class="login-story__line"></div>
+                <p class="login-story__note">Pequenas pausas. Mais cuidado com você.</p>
+            </div>
+            <span class="login-orbit login-orbit--one"></span>
+            <span class="login-orbit login-orbit--two"></span>
+        </section>
+        <section class="login-form-panel" aria-labelledby="auth-title">
+            <div class="login-form-wrap">
+                <img class="login-logo" src="{% static 'quality_life/images/quality-life-logo.png' %}" alt="Quality Life" width="120" height="120">
+                <p class="login-eyebrow">{% block eyebrow %}QUALITY LIFE{% endblock %}</p>
+                <h1 id="auth-title" class="login-title">{% block heading %}{% endblock %}</h1>
+                {% block body %}{% endblock %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

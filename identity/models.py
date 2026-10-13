@@ -89,3 +89,39 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.user} in {self.organization} ({self.role})"
+
+
+class Invitation(models.Model):
+    """Single-use COLLABORATOR invite; only the SHA-256 of the link token is kept."""
+
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name="invitations"
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="created_invitations",
+    )
+    token_hash = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField()
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    used_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="used_invitations",
+    )
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    def is_usable(self, now):
+        return (
+            self.used_at is None
+            and self.revoked_at is None
+            and self.expires_at > now
+            and self.organization.is_active
+        )
+
+    def __str__(self):
+        return f"Invitation {self.pk} to {self.organization}"
