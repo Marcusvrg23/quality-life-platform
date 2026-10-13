@@ -4,202 +4,363 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Quality Life · Qualidade de vida no trabalho</title>
-    <meta name="description" content="Ginástica laboral, aulas em vídeo e um mapa de qualidade de vida em 9 pilares para empresas e colaboradores.">
-    <meta name="theme-color" content="#fbf8f4">
+    <title>Quality Life · Bem-estar real para uma vida extraordinária</title>
+    <meta name="description" content="Exercícios, aulas em vídeo para os três momentos do dia e uma avaliação em 9 pilares com mapa individual e confidencial.">
+    <meta name="theme-color" content="#061419">
+    <script>document.documentElement.classList.add("js");</script>
     <link rel="icon" type="image/png" href="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}">
-    <link rel="preload" href="{% static 'quality_life/fonts/quicksand-latin-700.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{% static 'quality_life/fonts/cormorant-garamond-latin-600.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{% static 'quality_life/fonts/figtree-latin-400.woff2' %}" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="{% static 'quality_life/brand.css' %}">
     <link rel="stylesheet" href="{% static 'quality_life/home.css' %}">
     <script defer src="{% static 'quality_life/vendor/gsap-3.13.0.min.js' %}"></script>
     <script defer src="{% static 'quality_life/vendor/ScrollTrigger-3.13.0.min.js' %}"></script>
+    <script defer src="{% static 'quality_life/ambient.js' %}"></script>
     <script defer src="{% static 'quality_life/home.js' %}"></script>
 </head>
 <body class="ql-home">
+    <svg class="ql-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="ql-i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
+        <symbol id="ql-i-heart-pulse" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M5 12h3l2-3 3 6 2-3h4"/></symbol>
+        <symbol id="ql-i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+        <symbol id="ql-i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></symbol>
+        <symbol id="ql-i-droplet" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+        <symbol id="ql-i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5a3 3 0 0 1 0 6M18 14c2 1 3 3 3 6"/></symbol>
+        <symbol id="ql-i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 3 3 3 3 0 0 0 3-3V7a3 3 0 0 0-3-3z"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-3 3 3 3 0 0 1-3-3"/></symbol>
+        <symbol id="ql-i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+        <symbol id="ql-i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+        <symbol id="ql-i-balance" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/></symbol>
+        <symbol id="ql-i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15"/><path d="M5 19c3-4 6-6 9-7"/></symbol>
+        <symbol id="ql-i-lotus" viewBox="0 0 24 24"><path d="M12 6c2 2 3 4.5 3 7s-1 4-3 5c-2-1-3-2.5-3-5s1-5 3-7z"/><path d="M9 11c-2-1-4-1-6 0 0 4 3 7 9 7M15 11c2-1 4-1 6 0 0 4-3 7-9 7"/></symbol>
+        <symbol id="ql-i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M5 5l1.5 1.5M17.5 17.5L19 19M2 12h2M20 12h2M5 19l1.5-1.5M17.5 6.5L19 5"/></symbol>
+        <symbol id="ql-i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+        <symbol id="ql-i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+        <symbol id="ql-i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+        <symbol id="ql-i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+        <symbol id="ql-i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+    </svg>
+
+    <canvas class="ql-ambient" id="ql-ambient" aria-hidden="true"></canvas>
     <a class="ql-skip" href="#conteudo">Pular para o conteúdo</a>
 
     <header class="ql-header">
         <div class="ql-container ql-header__inner">
             <a class="ql-brand" href="{% url 'home' %}">
-                <img src="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" alt="Quality Life" width="64" height="64">
+                <img src="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" alt="" width="40" height="40">
+                <span>Quality Life</span>
             </a>
-            <nav class="ql-nav" aria-label="Seções da página">
+            <nav class="ql-nav" id="ql-menu" aria-label="Seções da página">
+                <a href="#experiencias">Experiências</a>
                 <a href="#como-funciona">Como funciona</a>
                 <a href="#empresas">Para empresas</a>
-                <a href="#privacidade">Privacidade</a>
             </nav>
-            {% if user.is_authenticated %}
-                <a class="ql-btn ql-btn--primary ql-btn--sm" href="{% url 'app' %}">Abrir o app</a>
-            {% else %}
-                <a class="ql-btn ql-btn--primary ql-btn--sm" href="{% url 'login' %}">Entrar</a>
-            {% endif %}
+            <div class="ql-header__actions">
+                {% if user.is_authenticated %}
+                    <a class="ql-btn ql-btn--primary ql-btn--sm ql-header__cta" href="{% url 'app' %}">Abrir o app</a>
+                {% else %}
+                    <a class="ql-btn ql-btn--primary ql-btn--sm ql-header__cta" href="{% url 'login' %}">Entrar</a>
+                {% endif %}
+                <button class="ql-menu-toggle" type="button" aria-expanded="false" aria-controls="ql-menu" aria-label="Menu de seções">
+                    <span class="ql-menu-toggle__bar" aria-hidden="true"></span>
+                </button>
+            </div>
         </div>
     </header>
 
     <main id="conteudo">
         <section class="ql-hero" aria-labelledby="hero-title">
-            <div class="ql-container ql-hero__grid">
-                <div class="ql-hero__copy" data-anim="hero">
-                    <p class="ql-badge">
-                        <span class="ql-badge__dots" aria-hidden="true">
-                            <span class="ql-dot-sm ql-bg-purple"></span>
-                            <span class="ql-dot-sm ql-bg-turquoise"></span>
-                            <span class="ql-dot-sm ql-bg-lime"></span>
-                        </span>
-                        Qualidade de vida no trabalho
-                    </p>
-                    <h1 id="hero-title">Sua pausa também faz parte do <span class="ql-accent">trabalho.</span></h1>
-                    <p class="ql-lead">Ginástica laboral, aulas em vídeo e um mapa de qualidade de vida em 9 pilares. O colaborador cuida de si; a empresa enxerga o todo, sem expor ninguém.</p>
-                    <div class="ql-actions">
+            <div class="ql-scene ql-scene--hero" data-scene="hero">
+                <picture class="ql-scene__static">
+                    <source media="(max-width: 599px)" srcset="{% static 'quality_life/images/landing/hero-mobile.webp' %}" width="752" height="1344">
+                    <img src="{% static 'quality_life/images/landing/hero.webp' %}" alt="Mulher de olhos fechados respirando fundo ao ar livre, envolta por fitas de luz em turquesa e violeta" width="1344" height="752" loading="lazy" decoding="async">
+                </picture>
+                <div class="ql-scene__layers" aria-hidden="true">
+                    <div class="ql-scene__rig">
+                        <picture class="ql-layer ql-layer--bg">
+                            <source media="(max-width: 599px)" srcset="{% static 'quality_life/images/landing/hero-mobile-bg.webp' %}" width="752" height="1344">
+                            <img src="{% static 'quality_life/images/landing/hero-bg.webp' %}" alt="" width="1344" height="752" fetchpriority="high">
+                        </picture>
+                        <canvas class="ql-layer ql-layer--back" aria-hidden="true"></canvas>
+                        <picture class="ql-layer ql-layer--person">
+                            <source media="(max-width: 599px)" srcset="{% static 'quality_life/images/landing/hero-mobile-pessoa.webp' %}" width="752" height="1344">
+                            <img src="{% static 'quality_life/images/landing/hero-pessoa.webp' %}" alt="" width="1344" height="752" fetchpriority="high">
+                        </picture>
+                        <canvas class="ql-layer ql-layer--front" aria-hidden="true"></canvas>
+                    </div>
+                </div>
+            </div><!-- /scene -->
+
+            <div class="ql-container ql-hero__content">
+                <div class="ql-hero__copy">
+                    <p class="ql-eyebrow ql-eyebrow--chip" data-hero>Vida em movimento</p>
+                    <h1 class="ql-display ql-h1" id="hero-title"><span class="ql-word"><span>Bem-estar</span></span> <span class="ql-word"><span>real</span></span> <span class="ql-word"><span>para</span></span> <span class="ql-word"><span>uma</span></span> <span class="ql-word"><span>vida</span></span> <span class="ql-word"><span class="ql-gradient-text">extraordinária.</span></span></h1>
+                    <p class="ql-lead" data-hero>Cuidado, movimento e presença em uma experiência completa para você viver mais e melhor, todos os dias.</p>
+                    <div class="ql-actions" data-hero>
+                        <a class="ql-btn ql-btn--primary" href="#experiencias">
+                            Conheça a plataforma
+                            <svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-arrow"/></svg>
+                        </a>
                         {% if user.is_authenticated %}
-                            <a class="ql-btn ql-btn--primary" href="{% url 'app' %}">Entrar na plataforma</a>
+                            <a class="ql-btn ql-btn--ghost" href="{% url 'app' %}">Abrir o app</a>
                         {% else %}
-                            <a class="ql-btn ql-btn--primary" href="{% url 'login' %}">Entrar na plataforma</a>
+                            <a class="ql-btn ql-btn--ghost" href="{% url 'login' %}">Entrar</a>
                         {% endif %}
-                        <a class="ql-btn ql-btn--outline" href="#empresas">Sou empresa</a>
                     </div>
-                    <p class="ql-note">Acesso por convite da sua empresa.</p>
-                </div>
-
-                <div class="ql-hero__visual" aria-hidden="true">
-                    <div class="ql-stage">
-                        <div class="ql-ring" data-parallax="0.12"></div>
-                        <span class="ql-orb ql-orb--lime" data-parallax="-0.4"></span>
-                        <span class="ql-orb ql-orb--turquoise" data-parallax="0.35"></span>
-                        <span class="ql-orb ql-orb--magenta" data-parallax="-0.25"></span>
-                        <div class="ql-preview">
-                            <p class="ql-preview__title">Hoje</p>
-                            <div class="ql-preview__priority">
-                                <span>Sua prioridade agora</span>
-                                <strong>Sono e Recuperação</strong>
-                            </div>
-                            <div class="ql-preview__moments">
-                                <span class="ql-bg-turquoise">Início</span>
-                                <span class="ql-bg-lime">Durante</span>
-                                <span class="ql-bg-orange">Final</span>
-                            </div>
-                            <div class="ql-preview__lesson">
-                                <span class="ql-preview__play">
-                                    <svg viewBox="0 0 24 24" width="14" height="14" focusable="false"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></svg>
-                                </span>
-                                Aula: Durante o trabalho
-                            </div>
+                    <dl class="ql-facts" data-hero>
+                        <div class="ql-fact">
+                            <dt><span class="ql-fact__num" data-count="9">9</span> pilares</dt>
+                            <dd>da qualidade de vida</dd>
                         </div>
+                        <div class="ql-fact">
+                            <dt><span class="ql-fact__num" data-count="3">3</span> momentos</dt>
+                            <dd>do seu dia</dd>
+                        </div>
+                        <div class="ql-fact">
+                            <dt><span class="ql-fact__num" data-count="100" data-suffix="%">100%</span> confidencial</dt>
+                            <dd>seu resultado é só seu</dd>
+                        </div>
+                    </dl>
+                </div>
+                <a class="ql-scroll-hint" href="#essencia" data-hero>
+                    <span class="ql-scroll-hint__mouse" aria-hidden="true"><span></span></span>
+                    Role para explorar
+                </a>
+            </div>
+        </section>
+
+        <section class="ql-section ql-essence" id="essencia" aria-labelledby="essencia-title">
+            <div class="ql-container ql-essence__grid">
+                <div data-reveal>
+                    <p class="ql-eyebrow">Nossa essência</p>
+                    <h2 class="ql-display ql-h2" id="essencia-title">Mais presença em cada fase da sua <span class="ql-gradient-text">vida.</span></h2>
+                </div>
+                <p class="ql-text" data-reveal>A Quality Life existe para tornar o bem-estar parte da sua rotina, com experiências que integram corpo, mente e propósito.</p>
+                <ul class="ql-values" data-reveal-group>
+                    <li class="ql-value">
+                        <span class="ql-orb" data-float><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-balance"/></svg></span>
+                        <strong>Equilíbrio</strong>
+                        <span>corpo e mente</span>
+                    </li>
+                    <li class="ql-value">
+                        <span class="ql-orb ql-orb--violet" data-float><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-heart-pulse"/></svg></span>
+                        <strong>Saúde</strong>
+                        <span>cuidado diário</span>
+                    </li>
+                    <li class="ql-value">
+                        <span class="ql-orb ql-orb--magenta" data-float><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-lotus"/></svg></span>
+                        <strong>Presença</strong>
+                        <span>atenção ao agora</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="ql-section" id="experiencias" aria-labelledby="experiencias-title">
+            <div class="ql-container">
+                <div class="ql-section__head" data-reveal>
+                    <div>
+                        <p class="ql-eyebrow">Bem-estar em todos os momentos</p>
+                        <h2 class="ql-display ql-h2" id="experiencias-title">Aulas em vídeo para os <span class="ql-gradient-text">três momentos</span> do seu dia.</h2>
                     </div>
+                    <p class="ql-text">Aulas para o início, durante e o final do trabalho, e exercícios guiados para fazer no seu ritmo.</p>
+                </div>
+                {% if user.is_authenticated %}{% url 'lessons' as moment_url %}{% else %}{% url 'login' as login_url %}{% url 'lessons' as lessons_url %}{% endif %}
+                <div class="ql-moments" data-reveal-group>
+                    <a class="ql-moment ql-glass" href="{% if user.is_authenticated %}{{ moment_url }}{% else %}{{ login_url }}?next={{ lessons_url }}{% endif %}">
+                        <span class="ql-moment__media"><img src="{% static 'quality_life/images/landing/momento-comecar.webp' %}" alt="" width="1168" height="880" loading="lazy" decoding="async"></span>
+                        <span class="ql-moment__body">
+                            <svg class="ql-icon ql-moment__icon" aria-hidden="true" focusable="false"><use href="#ql-i-sun"/></svg>
+                            <span class="ql-moment__title">Ao começar o dia</span>
+                            <span class="ql-moment__text">Aulas para preparar o corpo antes de começar.</span>
+                        </span>
+                        <span class="ql-moment__go" aria-hidden="true"><svg class="ql-icon"><use href="#ql-i-arrow"/></svg></span>
+                    </a>
+                    <a class="ql-moment ql-glass" href="{% if user.is_authenticated %}{{ moment_url }}{% else %}{{ login_url }}?next={{ lessons_url }}{% endif %}">
+                        <span class="ql-moment__media"><img src="{% static 'quality_life/images/landing/momento-durante.webp' %}" alt="" width="1168" height="880" loading="lazy" decoding="async"></span>
+                        <span class="ql-moment__body">
+                            <svg class="ql-icon ql-moment__icon" aria-hidden="true" focusable="false"><use href="#ql-i-activity"/></svg>
+                            <span class="ql-moment__title">Durante o dia</span>
+                            <span class="ql-moment__text">Pausas guiadas para se movimentar no trabalho.</span>
+                        </span>
+                        <span class="ql-moment__go" aria-hidden="true"><svg class="ql-icon"><use href="#ql-i-arrow"/></svg></span>
+                    </a>
+                    <a class="ql-moment ql-glass" href="{% if user.is_authenticated %}{{ moment_url }}{% else %}{{ login_url }}?next={{ lessons_url }}{% endif %}">
+                        <span class="ql-moment__media"><img src="{% static 'quality_life/images/landing/momento-encerrar.webp' %}" alt="" width="1168" height="880" loading="lazy" decoding="async"></span>
+                        <span class="ql-moment__body">
+                            <svg class="ql-icon ql-moment__icon" aria-hidden="true" focusable="false"><use href="#ql-i-moon"/></svg>
+                            <span class="ql-moment__title">Ao encerrar o dia</span>
+                            <span class="ql-moment__text">Aulas para desacelerar no fim do expediente.</span>
+                        </span>
+                        <span class="ql-moment__go" aria-hidden="true"><svg class="ql-icon"><use href="#ql-i-arrow"/></svg></span>
+                    </a>
                 </div>
             </div>
         </section>
 
-        <section class="ql-section" id="como-funciona" aria-labelledby="como-funciona-title">
+        <section class="ql-section" id="pilares" aria-labelledby="pilares-title">
             <div class="ql-container">
-                <h2 class="ql-section__title" id="como-funciona-title" data-anim="reveal">Pequenas pausas, um mapa claro e o próximo passo certo.</h2>
-                <div class="ql-features" data-anim="stagger">
-                    <article class="ql-feature ql-bg-turquoise">
-                        <span class="ql-feature__icon">
-                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="4.5" r="2"/><path d="M4 8.5l8 2 8-2M12 10.5V15m0 0l-4 6m4-6l4 6"/></svg>
-                        </span>
-                        <h3>Exercícios</h3>
-                        <p>Ginástica laboral guiada, com passos simples para fazer durante o expediente.</p>
-                    </article>
-                    <article class="ql-feature ql-bg-purple">
-                        <span class="ql-feature__icon">
-                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z"/></svg>
-                        </span>
-                        <h3>Aulas em vídeo</h3>
-                        <p>Aulas para o início, durante e o final do trabalho.</p>
-                    </article>
-                    <article class="ql-feature ql-bg-lime">
-                        <span class="ql-feature__icon">
-                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12.5l2 2 4-4"/></svg>
-                        </span>
-                        <h3>Minha avaliação</h3>
-                        <p>Questionário dos 9 pilares com nota de 0 a 100. O resultado é só seu.</p>
-                    </article>
-                    <article class="ql-feature ql-bg-orange">
-                        <span class="ql-feature__icon">
-                            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg>
-                        </span>
-                        <h3>Sua prioridade</h3>
-                        <p>Mostra o pilar com a nota mais baixa, para você saber por onde começar.</p>
-                    </article>
+                <div class="ql-section__head" data-reveal>
+                    <div>
+                        <p class="ql-eyebrow">Uma vida melhor em todas as áreas</p>
+                        <h2 class="ql-display ql-h2" id="pilares-title">Os <span class="ql-gradient-text">9 pilares</span> da qualidade de vida.</h2>
+                    </div>
+                    <p class="ql-text">Na avaliação, você responde sobre cada pilar e recebe um mapa individual e confidencial, com a sua prioridade.</p>
                 </div>
-            </div>
-        </section>
-
-        {% if pillars %}
-        <section class="ql-section ql-section--tight" aria-labelledby="pilares-title">
-            <div class="ql-container">
-                <h2 class="ql-section__title" id="pilares-title" data-anim="reveal">Os 9 pilares da qualidade de vida</h2>
-                <ol class="ql-pillars" data-anim="stagger">
+                {% if pillars %}
+                <ul class="ql-pillars" data-reveal-group>
                     {% for pillar in pillars %}
-                        <li class="ql-pill">
-                            <span class="ql-pill__num" aria-hidden="true">{{ pillar.display_order }}</span>
-                            <span class="ql-pill__name">{{ pillar.name }}</span>
-                        </li>
+                    <li class="ql-pillar" data-pillar="{{ pillar.code }}">
+                        <span class="ql-pillar__icon" data-float><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-{{ pillar.icon }}"/></svg></span>
+                        <span class="ql-pillar__name">{{ pillar.name }}</span>
+                    </li>
                     {% endfor %}
-                </ol>
+                </ul>
+                {% endif %}
             </div>
         </section>
-        {% endif %}
+
+        <section class="ql-section ql-how" id="como-funciona" aria-labelledby="como-funciona-title">
+            <div class="ql-container ql-how__grid">
+                <div class="ql-how__copy">
+                    <div data-reveal>
+                        <p class="ql-eyebrow">Um caminho simples</p>
+                        <h2 class="ql-display ql-h2" id="como-funciona-title">Do convite ao seu <span class="ql-gradient-text">ritmo.</span></h2>
+                    </div>
+                    <ol class="ql-steps" data-reveal-group>
+                        <li class="ql-step">
+                            <span class="ql-step__num" aria-hidden="true">01</span>
+                            <div>
+                                <h3>Receba o convite da sua empresa</h3>
+                                <p>O acesso é individual, por um link enviado pela sua empresa.</p>
+                            </div>
+                        </li>
+                        <li class="ql-step">
+                            <span class="ql-step__num" aria-hidden="true">02</span>
+                            <div>
+                                <h3>Faça sua avaliação</h3>
+                                <p>Depois do seu consentimento, você responde ao questionário dos 9 pilares.</p>
+                            </div>
+                        </li>
+                        <li class="ql-step">
+                            <span class="ql-step__num" aria-hidden="true">03</span>
+                            <div>
+                                <h3>Veja seu mapa e sua prioridade</h3>
+                                <p>O mapa mostra cada pilar e indica por onde começar. Só você vê o seu resultado.</p>
+                            </div>
+                        </li>
+                        <li class="ql-step">
+                            <span class="ql-step__num" aria-hidden="true">04</span>
+                            <div>
+                                <h3>Pratique no seu ritmo</h3>
+                                <p>Exercícios e aulas em vídeo para o início, durante e o final do trabalho.</p>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+                <figure class="ql-how__photo" data-reveal>
+                    <img src="{% static 'quality_life/images/landing/jornada.webp' %}" alt="Pessoa de costas no alto de uma montanha olhando o pôr do sol sobre o mar" width="1168" height="880" loading="lazy" decoding="async">
+                </figure>
+            </div>
+        </section>
 
         <section class="ql-section" id="empresas" aria-labelledby="empresas-title">
             <div class="ql-container">
-                <div class="ql-company" data-anim="reveal">
+                <div class="ql-company ql-glass" data-reveal>
                     <div class="ql-company__intro">
-                        <h2 class="ql-section__title" id="empresas-title">Decisões de bem-estar com dados agregados.</h2>
-                        <a class="ql-btn ql-btn--turquoise" href="mailto:{{ sales_email }}">Fale com a Quality Life</a>
+                        <p class="ql-eyebrow">Para empresas</p>
+                        <h2 class="ql-display ql-h2" id="empresas-title">Decisões de bem-estar com <span class="ql-gradient-text">dados agregados.</span></h2>
+                        <p class="ql-text">A empresa acompanha o todo, sem acesso a respostas ou notas individuais.</p>
+                        <div class="ql-actions">
+                            <a class="ql-btn ql-btn--primary" href="mailto:{{ sales_email }}">
+                                Fale com a Quality Life
+                                <svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-mail"/></svg>
+                            </a>
+                            {% if user.is_authenticated %}
+                                <a class="ql-btn ql-btn--ghost" href="{% url 'app' %}">Acesso da empresa</a>
+                            {% else %}
+                                <a class="ql-btn ql-btn--ghost" href="{% url 'login' %}">Acesso da empresa</a>
+                            {% endif %}
+                        </div>
                     </div>
-                    <ul class="ql-company__list">
-                        <li>
-                            <span class="ql-company__bullet ql-bg-turquoise" aria-hidden="true"></span>
-                            Relatório da empresa com médias por pilar e matriz de prioridades.
-                        </li>
-                        <li>
-                            <span class="ql-company__bullet ql-bg-lime" aria-hidden="true"></span>
-                            Os dados só aparecem com 5 ou mais avaliações, sem expor ninguém.
-                        </li>
-                        <li>
-                            <span class="ql-company__bullet ql-bg-orange" aria-hidden="true"></span>
-                            Convites individuais por link para cada colaborador.
-                        </li>
+                    <ul class="ql-company__list" data-reveal-group>
+                        <li><span class="ql-orb ql-orb--sm"><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-chart"/></svg></span>Relatório da empresa com médias por pilar e prioridades.</li>
+                        <li><span class="ql-orb ql-orb--sm ql-orb--violet"><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-lock"/></svg></span>Os dados só aparecem com 5 ou mais avaliações, sem expor ninguém.</li>
+                        <li><span class="ql-orb ql-orb--sm ql-orb--magenta"><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-link"/></svg></span>Convites individuais por link para cada colaborador.</li>
+                        <li><span class="ql-orb ql-orb--sm"><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-shield"/></svg></span>A avaliação só começa com o consentimento do colaborador (LGPD).</li>
                     </ul>
                 </div>
             </div>
         </section>
 
-        <section class="ql-section ql-section--tight" id="privacidade" aria-labelledby="privacidade-title">
-            <div class="ql-container">
-                <div class="ql-privacy" data-anim="reveal">
-                    <span class="ql-privacy__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 8.2-7.5 9.5-4.3-1.3-7.5-5-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/></svg>
-                    </span>
-                    <div>
-                        <h2 class="ql-section__title" id="privacidade-title">Privacidade por padrão</h2>
-                        <p>A avaliação só começa com o seu consentimento, e você pode revogá-lo quando quiser. O gestor vê apenas números agregados da empresa, nunca respostas ou notas individuais.</p>
-                        <a class="ql-link" href="{% url 'privacy' %}">Leia a política de privacidade</a>
+        <section class="ql-cta" aria-labelledby="cta-title">
+            <div class="ql-scene ql-scene--cta" data-scene="cta">
+                <picture class="ql-scene__static">
+                    <img src="{% static 'quality_life/images/landing/cta.webp' %}" alt="Pessoa meditando no alto de uma montanha ao entardecer, sob fitas de luz no céu" width="1344" height="752" loading="lazy" decoding="async">
+                </picture>
+                <div class="ql-scene__layers" aria-hidden="true">
+                    <div class="ql-scene__rig">
+                        <picture class="ql-layer ql-layer--bg">
+                            <img src="{% static 'quality_life/images/landing/cta-bg.webp' %}" alt="" width="1344" height="752" loading="lazy" decoding="async">
+                        </picture>
+                        <canvas class="ql-layer ql-layer--back" aria-hidden="true"></canvas>
+                        <picture class="ql-layer ql-layer--person">
+                            <img src="{% static 'quality_life/images/landing/cta-pessoa.webp' %}" alt="" width="1344" height="752" loading="lazy" decoding="async">
+                        </picture>
+                        <canvas class="ql-layer ql-layer--front" aria-hidden="true"></canvas>
                     </div>
                 </div>
+            </div><!-- /scene -->
+            <div class="ql-container ql-cta__copy">
+                <div data-reveal>
+                    <h2 class="ql-display ql-h2" id="cta-title">Sua melhor versão começa <span class="ql-gradient-text">agora.</span></h2>
+                    <p class="ql-text">Entre com o convite da sua empresa e comece pela sua avaliação.</p>
+                </div>
+                <div class="ql-actions" data-reveal>
+                    {% if user.is_authenticated %}
+                        <a class="ql-btn ql-btn--primary" href="{% url 'app' %}">Abrir o app</a>
+                    {% else %}
+                        <a class="ql-btn ql-btn--primary" href="{% url 'login' %}">Entrar</a>
+                    {% endif %}
+                    <a class="ql-btn ql-btn--ghost" href="mailto:{{ sales_email }}">Fale com a Quality Life</a>
+                </div>
+                <ul class="ql-cta__icons" data-reveal-group>
+                    <li><span class="ql-orb" data-float><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-heart"/></svg></span>Saúde</li>
+                    <li><span class="ql-orb ql-orb--violet" data-float><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-activity"/></svg></span>Movimento</li>
+                    <li><span class="ql-orb ql-orb--magenta" data-float><svg class="ql-icon" aria-hidden="true" focusable="false"><use href="#ql-i-lotus"/></svg></span>Presença</li>
+                </ul>
             </div>
         </section>
     </main>
 
     <footer class="ql-footer">
-        <div class="ql-container ql-footer__inner">
-            <p class="ql-footer__brand">
-                <img src="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" alt="" width="40" height="40">
-                © {% now "Y" %} Quality Life
-            </p>
-            <nav class="ql-footer__links" aria-label="Rodapé">
-                <a href="{% url 'privacy' %}">Privacidade</a>
-                <a href="{% url 'terms' %}">Termos</a>
+        <div class="ql-container ql-footer__grid">
+            <div class="ql-footer__brand">
+                <a class="ql-brand" href="{% url 'home' %}">
+                    <img src="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" alt="" width="40" height="40">
+                    <span>Quality Life</span>
+                </a>
+                <p>Bem-estar hoje. Mais vida sempre.</p>
+            </div>
+            <nav class="ql-footer__nav" aria-label="Rodapé">
+                <a href="#experiencias">Experiências</a>
+                <a href="#como-funciona">Como funciona</a>
+                <a href="#empresas">Para empresas</a>
                 {% if user.is_authenticated %}
                     <a href="{% url 'app' %}">Abrir o app</a>
                 {% else %}
                     <a href="{% url 'login' %}">Entrar</a>
                 {% endif %}
             </nav>
+            <nav class="ql-footer__nav" aria-label="Documentos legais">
+                <a href="{% url 'privacy' %}">Política de privacidade</a>
+                <a href="{% url 'terms' %}">Termos de uso</a>
+            </nav>
+            <div class="ql-footer__contact">
+                <p>Contato</p>
+                <a href="mailto:{{ sales_email }}">{{ sales_email }}</a>
+            </div>
         </div>
+        <p class="ql-container ql-footer__bottom">© {% now "Y" %} Quality Life</p>
     </footer>
 </body>
 </html>

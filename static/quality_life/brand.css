@@ -53,6 +53,22 @@
     src: url("fonts/figtree-latin-700.woff2") format("woff2");
 }
 
+@font-face {
+    font-family: "Cormorant Garamond";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("fonts/cormorant-garamond-latin-500.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Cormorant Garamond";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("fonts/cormorant-garamond-latin-600.woff2") format("woff2");
+}
+
 :root {
     /* Brand colors */
     --ql-purple: #84267d;
@@ -74,6 +90,7 @@
     /* Typography */
     --ql-font-display: "Quicksand", "Trebuchet MS", sans-serif;
     --ql-font-body: "Figtree", "Segoe UI", Arial, sans-serif;
+    --ql-font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
 
     /* Radii */
     --ql-radius-sm: 14px;

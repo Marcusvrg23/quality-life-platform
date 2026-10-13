@@ -1,5 +1,6 @@
 """Shared, secure-by-default settings for Quality Life V2."""
 
+import mimetypes
 import os
 from pathlib import Path
 
@@ -136,6 +137,8 @@ TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
 
+# Python 3.11 on Windows has no WebP entry; serve the landing images correctly.
+mimetypes.add_type("image/webp", ".webp")
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
