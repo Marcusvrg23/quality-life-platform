@@ -16,12 +16,10 @@
       <div><dt>Participação</dt><dd>{{ report.participation_percent }}%</dd></div>
     </dl>
     <p class="report-note">Gerado em {{ generated_at|date:"d/m/Y H:i" }}. Dados agregados: considera a avaliação concluída mais recente de cada colaborador no período e exige no mínimo {{ min_group }} avaliações.</p>
-    <form class="report-period no-print" method="get" action="{% url 'executive_report' %}">
-      <label>Início <input type="date" name="inicio" value="{{ report.start_date|date:'Y-m-d' }}"></label>
-      <label>Fim <input type="date" name="fim" value="{{ report.end_date|date:'Y-m-d' }}"></label>
-      <button type="submit" class="button button-secondary">Atualizar período</button>
+    <p class="report-note">Período fixo: últimos {{ period_days }} dias até hoje.</p>
+    <div class="report-period no-print">
       <button type="button" class="button" data-print>Imprimir ou salvar PDF</button>
-    </form>
+    </div>
   </header>
 
   {% if report.insufficient_data %}

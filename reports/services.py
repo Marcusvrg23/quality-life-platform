@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from assessments.models import Assessment, Pillar, PillarResult
 from assessments.services import canonical_score, classify_score
+from identity.consent import revoked_user_ids
 from identity.models import Membership
 
 from .catalog import CatalogEntry, catalog_for
@@ -177,8 +178,13 @@ def build_executive_report(organization, start_date, end_date):
             is_active=True,
         ).values_list("user_id", flat=True)
     )
+    # Revoked consent (latest record in this company) removes the person's data.
+    revoked = revoked_user_ids(organization)
     assessment_ids = _latest_assessment_ids(
-        organization, population_user_ids, start_date, end_date
+        organization,
+        [user_id for user_id in population_user_ids if user_id not in revoked],
+        start_date,
+        end_date,
     )
     population = len(population_user_ids)
     evaluated = len(assessment_ids)
