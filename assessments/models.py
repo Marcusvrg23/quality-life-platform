@@ -162,16 +162,77 @@ class QuestionnairePillar(PublishedConfigurationGuard):
         ]
 
 
+class QuestionnaireSection(PublishedConfigurationGuard):
+    """A part of the official text. Not a pillar: it never gets a score itself.
+
+    Unscored sections (identification, main need) hold only unscored questions.
+    """
+
+    questionnaire = models.ForeignKey(
+        QuestionnaireVersion, on_delete=models.PROTECT, related_name="sections"
+    )
+    code = models.SlugField(max_length=64)
+    number = models.PositiveSmallIntegerField()
+    title = models.CharField(max_length=255)
+    intro = models.TextField(blank=True)
+    is_scored = models.BooleanField(default=True)
+    display_order = models.PositiveSmallIntegerField()
+
+    @property
+    def questionnaire_version(self):
+        return self.questionnaire
+
+    class Meta:
+        ordering = ["display_order"]  # noqa: RUF012
+        constraints = [  # noqa: RUF012
+            models.UniqueConstraint(
+                fields=["questionnaire", "code"],
+                name="assessment_section_code_unique",
+            ),
+            models.UniqueConstraint(
+                fields=["questionnaire", "number"],
+                name="assessment_section_number_unique",
+            ),
+            models.UniqueConstraint(
+                fields=["questionnaire", "display_order"],
+                name="assessment_section_order_unique",
+            ),
+        ]
+
+
 class Question(PublishedConfigurationGuard):
     class Direction(models.TextChoices):
         NORMAL = "NORMAL", "Normal"
         REVERSE = "REVERSE", "Reverse"
 
+    class Kind(models.TextChoices):
+        SINGLE = "SINGLE", "Escolha única"
+        MULTIPLE = "MULTIPLE", "Múltipla escolha"
+        TEXT = "TEXT", "Texto"
+        SCALE = "SCALE", "Escala de 0 a 10"
+
+    MAX_TEXT_LENGTH = 500
+
     questionnaire_pillar = models.ForeignKey(
-        QuestionnairePillar, on_delete=models.CASCADE, related_name="questions"
+        QuestionnairePillar,
+        on_delete=models.CASCADE,
+        related_name="questions",
+        null=True,
+        blank=True,
+    )
+    section = models.ForeignKey(
+        QuestionnaireSection,
+        on_delete=models.CASCADE,
+        related_name="questions",
+        null=True,
+        blank=True,
     )
     code = models.SlugField(max_length=64)
+    number = models.CharField(max_length=8, blank=True, default="")
     text = models.TextField()
+    help_text = models.TextField(blank=True, default="")
+    kind = models.CharField(max_length=8, choices=Kind.choices, default=Kind.SINGLE)
+    max_length = models.PositiveSmallIntegerField(null=True, blank=True)
     required = models.BooleanField(default=True)
     scorable = models.BooleanField(default=True)
     score_direction = models.CharField(
@@ -183,11 +244,51 @@ class Question(PublishedConfigurationGuard):
 
     @property
     def questionnaire_version(self):
-        return self.questionnaire_pillar.questionnaire
+        container = self.questionnaire_pillar or self.section
+        if container is None:
+            raise ValidationError("Question needs a pillar or a section.")
+        return container.questionnaire
+
+    def clean(self):
+        if (
+            self.questionnaire_pillar_id
+            and self.section_id
+            and self.questionnaire_pillar.questionnaire_id
+            != self.section.questionnaire_id
+        ):
+            raise ValidationError("Pillar and section belong to other versions.")
 
     class Meta:
         ordering = ["display_order"]  # noqa: RUF012
         constraints = [  # noqa: RUF012
+            models.UniqueConstraint(
+                fields=["section", "code"],
+                name="assessment_question_section_code_unique",
+            ),
+            models.UniqueConstraint(
+                fields=["section", "display_order"],
+                name="assessment_question_section_order_unique",
+            ),
+            models.CheckConstraint(
+                condition=Q(questionnaire_pillar__isnull=False)
+                | Q(section__isnull=False),
+                name="assessment_question_has_container",
+            ),
+            models.CheckConstraint(
+                condition=Q(kind__in=["SINGLE", "MULTIPLE", "TEXT", "SCALE"]),
+                name="assessment_question_valid_kind",
+            ),
+            # Only one-option kinds attached to a pillar can ever score.
+            models.CheckConstraint(
+                condition=Q(scorable=False)
+                | Q(questionnaire_pillar__isnull=False, kind__in=["SINGLE", "SCALE"]),
+                name="assessment_scorable_question_kind",
+            ),
+            models.CheckConstraint(
+                condition=Q(kind="TEXT", max_length__gte=1, max_length__lte=500)
+                | (~Q(kind="TEXT") & Q(max_length__isnull=True)),
+                name="assessment_question_text_length",
+            ),
             models.UniqueConstraint(
                 fields=["questionnaire_pillar", "code"],
                 name="assessment_question_pillar_code_unique",
@@ -214,6 +315,10 @@ class QuestionOption(PublishedConfigurationGuard):
     label = models.CharField(max_length=255)
     score_value = models.DecimalField(max_digits=5, decimal_places=2)
     counts_for_score = models.BooleanField(default=True)
+    # Multiple choice: "Não sinto dores" cannot be checked with other options.
+    exclusive = models.BooleanField(default=False)
+    # Single choice: "Outro: ___" needs the person's own words.
+    requires_text = models.BooleanField(default=False)
     display_order = models.PositiveSmallIntegerField()
 
     @property
@@ -288,7 +393,13 @@ class Answer(models.Model):
         Assessment, on_delete=models.CASCADE, related_name="answers"
     )
     question = models.ForeignKey(Question, on_delete=models.PROTECT)
-    selected_option = models.ForeignKey(QuestionOption, on_delete=models.PROTECT)
+    # Empty for text and multiple choice answers (see text_value and choices).
+    selected_option = models.ForeignKey(
+        QuestionOption, on_delete=models.PROTECT, null=True, blank=True
+    )
+    text_value = models.CharField(
+        max_length=Question.MAX_TEXT_LENGTH, blank=True, default=""
+    )
     answered_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -333,6 +444,43 @@ class Answer(models.Model):
             pk=self.assessment_id, status=Assessment.Status.IN_PROGRESS
         ).exists():
             raise ValidationError("Completed assessment answers are immutable.")
+        return super().delete(*args, **kwargs)
+
+
+class AnswerChoice(models.Model):
+    """One checked option of a multiple choice answer."""
+
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name="choices")
+    option = models.ForeignKey(QuestionOption, on_delete=models.PROTECT)
+
+    class Meta:
+        constraints = [  # noqa: RUF012
+            models.UniqueConstraint(
+                fields=["answer", "option"], name="assessment_answer_choice_unique"
+            ),
+        ]
+
+    def _require_in_progress(self):
+        answer_ids = {self.answer_id}
+        if self.pk:
+            answer_ids.add(type(self).objects.get(pk=self.pk).answer_id)
+        in_progress = Answer.objects.filter(
+            pk__in=answer_ids, assessment__status=Assessment.Status.IN_PROGRESS
+        )
+        if in_progress.count() != len(answer_ids):
+            raise ValidationError("Completed assessment answers are immutable.")
+
+    def clean(self):
+        if self.option.question_id != self.answer.question_id:
+            raise ValidationError("Option belongs to another question.")
+
+    def save(self, *args, **kwargs):
+        self._require_in_progress()
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self._require_in_progress()
         return super().delete(*args, **kwargs)
 
 

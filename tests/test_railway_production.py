@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from decimal import Decimal
 from io import StringIO
 from pathlib import Path
 from typing import ClassVar
@@ -19,6 +20,12 @@ from django.utils import timezone
 
 from assessments.management.commands.seed_quality_life_demo import DEMO_CODE
 from assessments.models import QuestionnaireVersion
+from assessments.services import (
+    complete_assessment,
+    ordered_questions,
+    record_answer,
+    start_assessment,
+)
 from config.legal import CONSENT_VERSION
 from config.tenant import SESSION_ORGANIZATION_KEY
 from identity.models import ConsentRecord, Membership, Organization
@@ -28,8 +35,9 @@ OFFICIAL_FILE = (
     Path(settings.BASE_DIR)
     / "assessments"
     / "questionnaires"
-    / "quality_life_oficial_v1.json"
+    / "quality_life_oficial_v2.json"
 )
+V1_FILE = OFFICIAL_FILE.with_name("quality_life_oficial_v1.json")
 STRONG_PASSWORD = "Railway-admin-passphrase-9137"
 
 
@@ -224,6 +232,7 @@ class ReleaseCommandTests(TestCase):
             call(
                 "load_official_questionnaire",
                 file=str(OFFICIAL_FILE),
+                retire_other_published=True,
                 stdout=mocked_call.call_args_list[1].kwargs["stdout"],
                 stderr=mocked_call.call_args_list[1].kwargs["stderr"],
             ),
@@ -245,8 +254,49 @@ class ReleaseCommandTests(TestCase):
         self.assertFalse(QuestionnaireVersion.objects.filter(code=DEMO_CODE).exists())
         self.assertEqual(User.objects.filter(is_superuser=True).count(), 1)
 
-    def test_failure_propagates_as_command_error(self):
-        # Another published questionnaire makes the official load refuse.
+    def test_publishes_v2_and_retires_v1_keeping_completed_results(self):
+        call_command(
+            "load_official_questionnaire", file=str(V1_FILE), stdout=StringIO()
+        )
+        v1 = QuestionnaireVersion.objects.get(version=1)
+        organization = Organization.objects.create(name="Empresa", slug="empresa")
+        user = User.objects.create_user(email="pessoa@example.test", password="x")
+        Membership.objects.create(
+            user=user, organization=organization, role=Membership.Role.COLLABORATOR
+        )
+        assessment = start_assessment(user, organization, v1.pk)
+        for question in ordered_questions(v1):
+            option = question.options.order_by("-score_value", "display_order")[0]
+            record_answer(user, organization, assessment.pk, question.pk, option.pk)
+        result = complete_assessment(user, organization, assessment.pk)
+
+        first = self.release()
+        snapshot = list(
+            QuestionnaireVersion.objects.order_by("version").values_list(
+                "version", "status", "updated_at"
+            )
+        )
+        second = self.release()
+
+        self.assertIn("Aposentado: quality-life-oficial v1.", first)
+        self.assertIn("já carregado", second)
+        self.assertEqual(
+            [(version, status) for version, status, _ in snapshot],
+            [(1, "RETIRED"), (2, "PUBLISHED")],
+        )
+        self.assertEqual(
+            list(
+                QuestionnaireVersion.objects.order_by("version").values_list(
+                    "version", "status", "updated_at"
+                )
+            ),
+            snapshot,
+        )
+        result.refresh_from_db()
+        self.assertEqual(result.overall_score, Decimal("100.00"))
+        self.assertEqual(result.assessment.questionnaire_version, v1)
+
+    def test_retires_a_published_demo_questionnaire(self):
         with patch.dict(
             os.environ,
             {
@@ -256,7 +306,22 @@ class ReleaseCommandTests(TestCase):
         ):
             call_command("seed_quality_life_demo", stdout=StringIO())
 
-        with self.assertRaisesMessage(CommandError, "--retire-other-published"):
+        self.release()
+
+        self.assertEqual(
+            QuestionnaireVersion.objects.get(code=DEMO_CODE).status, "RETIRED"
+        )
+
+    def test_failure_propagates_as_command_error(self):
+        # Same code and version with other content: the official load refuses.
+        QuestionnaireVersion.objects.create(
+            code="quality-life-oficial",
+            version=2,
+            title="Outro conteúdo",
+            scoring_version="outro",
+        )
+
+        with self.assertRaisesMessage(CommandError, "Aumente a versão"):
             self.release()
 
         self.assertFalse(User.objects.filter(is_superuser=True).exists())

@@ -7,15 +7,17 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
 from django.core.validators import validate_slug
 from django.db import transaction
+from django.db.models import Q
 
 from assessments.models import (
     Pillar,
     Question,
     QuestionnairePillar,
+    QuestionnaireSection,
     QuestionnaireVersion,
     QuestionOption,
 )
-from assessments.services import publish_questionnaire
+from assessments.services import SCORED_KINDS, publish_questionnaire
 
 CENT = Decimal("0.01")
 MAX_WEIGHT = Decimal("999999.99")
@@ -103,6 +105,169 @@ def _unique(items, key, path):
         seen.add(item[key])
 
 
+def _string(data, key, path, max_length):
+    value = _require(data, key, path)
+    if not isinstance(value, str) or len(value) > max_length:
+        _fail(f"{path}.{key}", f"deve ser um texto com até {max_length} caracteres.")
+    return value
+
+
+def _option_spec(raw_option, o_path, display_order=None, *, extended=False):
+    option = {
+        "code": _code(raw_option, "code", o_path),
+        "label": _text(raw_option, "label", o_path, 255),
+        "score_value": _decimal(
+            raw_option, "score_value", o_path, Decimal(0), Decimal(100)
+        ),
+        "counts_for_score": _bool(raw_option, "counts_for_score", o_path),
+        "display_order": display_order
+        or _positive_int(raw_option, "display_order", o_path, MAX_ORDER),
+        "exclusive": False,
+        "requires_text": False,
+    }
+    if extended:
+        option["exclusive"] = _bool(raw_option, "exclusive", o_path)
+        option["requires_text"] = _bool(raw_option, "requires_text", o_path)
+    return option
+
+
+def _question_defaults(question):
+    """v1 questions: single choice, scorable, in a pillar, without section."""
+    return {
+        "section_code": None,
+        "number": "",
+        "help_text": "",
+        "kind": Question.Kind.SINGLE,
+        "max_length": None,
+        "scorable": True,
+        **question,
+    }
+
+
+def _parse_pillars(data, root, pillars):
+    """v1 layout: questions grouped by pillar, all scorable single choice."""
+    spec_pillars = []
+    questions = []
+    for p_index, raw_pillar in enumerate(_list(data, "pillars", root)):
+        p_path = f"pillars[{p_index}]"
+        code = _require(raw_pillar, "pillar_code", p_path)
+        pillar = pillars.get(code) if isinstance(code, str) else None
+        if pillar is None or not pillar.is_active:
+            _fail(f"{p_path}.pillar_code", f"pilar '{code}' inexistente ou inativo.")
+        pillar_questions = []
+        for q_index, raw_question in enumerate(_list(raw_pillar, "questions", p_path)):
+            q_path = f"{p_path}.questions[{q_index}]"
+            options = [
+                _option_spec(raw_option, f"{q_path}.options[{o_index}]")
+                for o_index, raw_option in enumerate(
+                    _list(raw_question, "options", q_path)
+                )
+            ]
+            _unique(options, "code", f"{q_path}.options")
+            _unique(options, "display_order", f"{q_path}.options")
+            pillar_questions.append(
+                _question_defaults(
+                    {
+                        "pillar_code": pillar.code,
+                        "code": _code(raw_question, "code", q_path),
+                        "text": _text(raw_question, "text", q_path),
+                        "required": _bool(raw_question, "required", q_path),
+                        "display_order": _positive_int(
+                            raw_question, "display_order", q_path, MAX_ORDER
+                        ),
+                        "options": options,
+                    }
+                )
+            )
+        _unique(pillar_questions, "code", f"{p_path}.questions")
+        _unique(pillar_questions, "display_order", f"{p_path}.questions")
+        questions.extend(pillar_questions)
+        spec_pillars.append(pillar)
+    return spec_pillars, [], questions
+
+
+def _parse_sections(data, root, pillars):
+    """v2 layout: the official text, section by section, in reading order."""
+    spec_pillars = []
+    for p_index, code in enumerate(_list(data, "pillars", root)):
+        pillar = pillars.get(code) if isinstance(code, str) else None
+        if pillar is None or not pillar.is_active:
+            _fail(f"pillars[{p_index}]", f"pilar '{code}' inexistente ou inativo.")
+        spec_pillars.append(pillar)
+    pillar_codes = {pillar.code for pillar in spec_pillars}
+    sections = []
+    questions = []
+    for s_index, raw_section in enumerate(_list(data, "sections", root)):
+        s_path = f"sections[{s_index}]"
+        section = {
+            "code": _code(raw_section, "code", s_path),
+            "number": _positive_int(raw_section, "number", s_path, MAX_ORDER),
+            "title": _text(raw_section, "title", s_path, 255),
+            "intro": _string(raw_section, "intro", s_path, 1000),
+            "is_scored": _bool(raw_section, "scored", s_path),
+            "display_order": s_index + 1,
+        }
+        sections.append(section)
+        for q_index, raw_question in enumerate(_list(raw_section, "questions", s_path)):
+            q_path = f"{s_path}.questions[{q_index}]"
+            kind = _require(raw_question, "kind", q_path)
+            if kind not in Question.Kind.values:
+                _fail(f"{q_path}.kind", f"tipo '{kind}' desconhecido.")
+            scorable = _bool(raw_question, "scorable", q_path)
+            pillar_code = _require(raw_question, "pillar_code", q_path)
+            if scorable != (pillar_code is not None):
+                _fail(q_path, "pergunta pontuada exige pilar; não pontuada não tem.")
+            if pillar_code is not None and pillar_code not in pillar_codes:
+                _fail(f"{q_path}.pillar_code", f"pilar '{pillar_code}' não listado.")
+            if scorable and (kind not in SCORED_KINDS or not section["is_scored"]):
+                _fail(q_path, "só escolha única ou escala em seção pontuada pontua.")
+            max_length = _require(raw_question, "max_length", q_path)
+            raw_options = _require(raw_question, "options", q_path)
+            if kind == Question.Kind.TEXT:
+                max_length = _positive_int(
+                    raw_question, "max_length", q_path, Question.MAX_TEXT_LENGTH
+                )
+                if raw_options != []:
+                    _fail(f"{q_path}.options", "pergunta de texto não tem opções.")
+            elif max_length is not None:
+                _fail(f"{q_path}.max_length", "só pergunta de texto tem limite.")
+            options = []
+            if kind != Question.Kind.TEXT:
+                for o_index, raw_option in enumerate(
+                    _list(raw_question, "options", q_path)
+                ):
+                    o_path = f"{q_path}.options[{o_index}]"
+                    option = _option_spec(
+                        raw_option, o_path, o_index + 1, extended=True
+                    )
+                    if option["exclusive"] and kind != Question.Kind.MULTIPLE:
+                        _fail(o_path, "só múltipla escolha tem opção exclusiva.")
+                    if option["requires_text"] and kind != Question.Kind.SINGLE:
+                        _fail(o_path, "só escolha única tem opção com texto.")
+                    options.append(option)
+                _unique(options, "code", f"{q_path}.options")
+            questions.append(
+                {
+                    "pillar_code": pillar_code,
+                    "section_code": section["code"],
+                    "code": _code(raw_question, "code", q_path),
+                    "number": _string(raw_question, "number", q_path, 8),
+                    "text": _text(raw_question, "text", q_path),
+                    "help_text": _string(raw_question, "help_text", q_path, 1000),
+                    "kind": kind,
+                    "max_length": max_length,
+                    "required": _bool(raw_question, "required", q_path),
+                    "scorable": scorable,
+                    "display_order": len(questions) + 1,
+                    "options": options,
+                }
+            )
+    _unique(sections, "code", "sections")
+    _unique(sections, "number", "sections")
+    _unique(questions, "code", "sections[].questions")
+    return spec_pillars, sections, questions
+
+
 def parse_questionnaire(data):
     """Validate the whole file before any write and return a normalized spec."""
     root = "arquivo"
@@ -111,69 +276,60 @@ def parse_questionnaire(data):
         "version": _positive_int(data, "version", root),
         "title": _text(data, "title", root, 255),
         "scoring_version": _text(data, "scoring_version", root, 32),
-        "pillars": [],
     }
     pillar_weight = _decimal(data, "pillar_weight", root, CENT, MAX_WEIGHT)
     question_weight = _decimal(data, "question_weight", root, CENT, MAX_WEIGHT)
     pillars = {pillar.code: pillar for pillar in Pillar.objects.all()}
-    for p_index, raw_pillar in enumerate(_list(data, "pillars", root)):
-        p_path = f"pillars[{p_index}]"
-        code = _require(raw_pillar, "pillar_code", p_path)
-        pillar = pillars.get(code) if isinstance(code, str) else None
-        if pillar is None or not pillar.is_active:
-            _fail(f"{p_path}.pillar_code", f"pilar '{code}' inexistente ou inativo.")
-        questions = []
-        for q_index, raw_question in enumerate(_list(raw_pillar, "questions", p_path)):
-            q_path = f"{p_path}.questions[{q_index}]"
-            options = []
-            for o_index, raw_option in enumerate(
-                _list(raw_question, "options", q_path)
-            ):
-                o_path = f"{q_path}.options[{o_index}]"
-                options.append(
-                    {
-                        "code": _code(raw_option, "code", o_path),
-                        "label": _text(raw_option, "label", o_path, 255),
-                        "score_value": _decimal(
-                            raw_option, "score_value", o_path, Decimal(0), Decimal(100)
-                        ),
-                        "counts_for_score": _bool(
-                            raw_option, "counts_for_score", o_path
-                        ),
-                        "display_order": _positive_int(
-                            raw_option, "display_order", o_path, MAX_ORDER
-                        ),
-                    }
-                )
-            _unique(options, "code", f"{q_path}.options")
-            _unique(options, "display_order", f"{q_path}.options")
-            questions.append(
-                {
-                    "code": _code(raw_question, "code", q_path),
-                    "text": _text(raw_question, "text", q_path),
-                    "required": _bool(raw_question, "required", q_path),
-                    "display_order": _positive_int(
-                        raw_question, "display_order", q_path, MAX_ORDER
-                    ),
-                    "weight": question_weight,
-                    "options": options,
-                }
-            )
-        _unique(questions, "code", f"{p_path}.questions")
-        _unique(questions, "display_order", f"{p_path}.questions")
-        spec["pillars"].append(
-            {
-                "pillar": pillar,
-                "display_order": p_index + 1,
-                "weight": pillar_weight,
-                "questions": questions,
-            }
-        )
-    codes = [configured["pillar"].code for configured in spec["pillars"]]
+    parse = _parse_sections if "sections" in data else _parse_pillars
+    spec_pillars, sections, questions = parse(data, root, pillars)
+    codes = [pillar.code for pillar in spec_pillars]
     expected = {code for code, pillar in pillars.items() if pillar.is_active}
     if len(codes) != len(set(codes)) or set(codes) != expected or len(codes) != 9:
         _fail("pillars", "deve conter exatamente os 9 pilares ativos, sem repetição.")
+    for question in questions:
+        question["weight"] = question_weight
+    spec["pillars"] = [
+        {"pillar": pillar, "display_order": index, "weight": pillar_weight}
+        for index, pillar in enumerate(spec_pillars, start=1)
+    ]
+    spec["sections"] = sections
+    spec["questions"] = questions
     return spec
+
+
+def _question_row(pillar_code, section_code, question, options):
+    return (
+        pillar_code or "",
+        section_code or "",
+        question["code"],
+        question["number"],
+        question["text"],
+        question["help_text"],
+        question["kind"],
+        question["max_length"],
+        question["required"],
+        question["scorable"],
+        question["score_direction"],
+        question["weight"],
+        question["display_order"],
+        question["is_active"],
+        tuple(
+            (
+                option["code"],
+                option["label"],
+                option["score_value"],
+                option["counts_for_score"],
+                option["exclusive"],
+                option["requires_text"],
+                option["display_order"],
+            )
+            for option in sorted(options, key=lambda o: o["display_order"])
+        ),
+    )
+
+
+def _rows(rows):
+    return tuple(sorted(rows, key=lambda row: row[:3]))
 
 
 def _spec_snapshot(spec):
@@ -181,81 +337,97 @@ def _spec_snapshot(spec):
         spec["title"],
         spec["scoring_version"],
         tuple(
+            (item["pillar"].code, item["display_order"], item["weight"], True)
+            for item in spec["pillars"]
+        ),
+        tuple(
             (
-                configured["pillar"].code,
-                configured["display_order"],
-                configured["weight"],
-                True,
-                tuple(
-                    (
-                        question["code"],
-                        question["text"],
-                        question["required"],
-                        True,
-                        Question.Direction.NORMAL,
-                        question["weight"],
-                        question["display_order"],
-                        True,
-                        tuple(
-                            (
-                                option["code"],
-                                option["label"],
-                                option["score_value"],
-                                option["counts_for_score"],
-                                option["display_order"],
-                            )
-                            for option in sorted(
-                                question["options"], key=lambda o: o["display_order"]
-                            )
-                        ),
-                    )
-                    for question in sorted(
-                        configured["questions"], key=lambda q: q["display_order"]
-                    )
-                ),
+                section["code"],
+                section["number"],
+                section["title"],
+                section["intro"],
+                section["is_scored"],
+                section["display_order"],
             )
-            for configured in spec["pillars"]
+            for section in spec["sections"]
+        ),
+        _rows(
+            _question_row(
+                question["pillar_code"],
+                question["section_code"],
+                {
+                    **question,
+                    "score_direction": Question.Direction.NORMAL,
+                    "is_active": True,
+                },
+                question["options"],
+            )
+            for question in spec["questions"]
         ),
     )
 
 
 def _db_snapshot(questionnaire):
+    option_fields = (
+        "code",
+        "label",
+        "score_value",
+        "counts_for_score",
+        "exclusive",
+        "requires_text",
+        "display_order",
+    )
+    questions = (
+        Question.objects.filter(
+            Q(questionnaire_pillar__questionnaire=questionnaire)
+            | Q(section__questionnaire=questionnaire)
+        )
+        .select_related("questionnaire_pillar__pillar", "section")
+        .prefetch_related("options")
+    )
     return (
         questionnaire.title,
         questionnaire.scoring_version,
         tuple(
+            (item.pillar.code, item.display_order, item.weight, item.is_active)
+            for item in questionnaire.pillars.select_related("pillar")
+        ),
+        tuple(
             (
-                configured.pillar.code,
-                configured.display_order,
-                configured.weight,
-                configured.is_active,
-                tuple(
-                    (
-                        question.code,
-                        question.text,
-                        question.required,
-                        question.scorable,
-                        question.score_direction,
-                        question.weight,
-                        question.display_order,
-                        question.is_active,
-                        tuple(
-                            (
-                                option.code,
-                                option.label,
-                                option.score_value,
-                                option.counts_for_score,
-                                option.display_order,
-                            )
-                            for option in question.options.all()
-                        ),
-                    )
-                    for question in configured.questions.all()
-                ),
+                section.code,
+                section.number,
+                section.title,
+                section.intro,
+                section.is_scored,
+                section.display_order,
             )
-            for configured in questionnaire.pillars.select_related(
-                "pillar"
-            ).prefetch_related("questions__options")
+            for section in questionnaire.sections.all()
+        ),
+        _rows(
+            _question_row(
+                question.questionnaire_pillar
+                and question.questionnaire_pillar.pillar.code,
+                question.section and question.section.code,
+                {
+                    "code": question.code,
+                    "number": question.number,
+                    "text": question.text,
+                    "help_text": question.help_text,
+                    "kind": question.kind,
+                    "max_length": question.max_length,
+                    "required": question.required,
+                    "scorable": question.scorable,
+                    "score_direction": question.score_direction,
+                    "weight": question.weight,
+                    "display_order": question.display_order,
+                    "is_active": question.is_active,
+                },
+                [
+                    {field: getattr(option, field) for field in option_fields}
+                    for option in question.options.all()
+                ],
+            )
+            for question in questions
         ),
     )
 
@@ -319,29 +491,37 @@ class Command(BaseCommand):
             title=spec["title"],
             scoring_version=spec["scoring_version"],
         )
-        question_count = option_count = 0
-        for configured_spec in spec["pillars"]:
-            configured = QuestionnairePillar.objects.create(
+        configured = {
+            item["pillar"].code: QuestionnairePillar.objects.create(
                 questionnaire=questionnaire,
-                pillar=configured_spec["pillar"],
-                display_order=configured_spec["display_order"],
-                weight=configured_spec["weight"],
+                pillar=item["pillar"],
+                display_order=item["display_order"],
+                weight=item["weight"],
             )
-            for question_spec in configured_spec["questions"]:
-                question = Question.objects.create(
-                    questionnaire_pillar=configured,
-                    code=question_spec["code"],
-                    text=question_spec["text"],
-                    required=question_spec["required"],
-                    scorable=True,
-                    score_direction=Question.Direction.NORMAL,
-                    weight=question_spec["weight"],
-                    display_order=question_spec["display_order"],
-                )
-                question_count += 1
-                for option_spec in question_spec["options"]:
-                    QuestionOption.objects.create(question=question, **option_spec)
-                    option_count += 1
+            for item in spec["pillars"]
+        }
+        sections = {
+            item["code"]: QuestionnaireSection.objects.create(
+                questionnaire=questionnaire, **item
+            )
+            for item in spec["sections"]
+        }
+        option_count = 0
+        for question_spec in spec["questions"]:
+            fields = {
+                key: value
+                for key, value in question_spec.items()
+                if key not in ("pillar_code", "section_code", "options")
+            }
+            question = Question.objects.create(
+                questionnaire_pillar=configured.get(question_spec["pillar_code"]),
+                section=sections.get(question_spec["section_code"]),
+                score_direction=Question.Direction.NORMAL,
+                **fields,
+            )
+            for option_spec in question_spec["options"]:
+                QuestionOption.objects.create(question=question, **option_spec)
+                option_count += 1
         for other in others:
             other.status = QuestionnaireVersion.Status.RETIRED
             other.save(update_fields=["status", "updated_at"])
@@ -349,7 +529,9 @@ class Command(BaseCommand):
         retired = "".join(
             f"\nAposentado: {other.code} v{other.version}." for other in others
         )
+        sections_note = f", {len(sections)} seções" if sections else ""
         return (
             f"Questionário {label} publicado: {len(spec['pillars'])} pilares, "
-            f"{question_count} perguntas, {option_count} opções.{retired}"
+            f"{len(spec['questions'])} perguntas, {option_count} opções"
+            f"{sections_note}.{retired}"
         )

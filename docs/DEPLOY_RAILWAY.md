@@ -26,7 +26,7 @@ Copie exatamente:
 O que cada um faz:
 
 - **Build**: junta CSS, imagens e vídeos para o servidor entregar.
-- **Pre-deploy**: roda antes de cada versão entrar no ar. Atualiza o banco (`migrate`), carrega o questionário oficial e cria o primeiro administrador. Pode rodar quantas vezes for preciso: o que já existe não é alterado. Se der erro, a versão nova não entra no ar e a anterior continua funcionando.
+- **Pre-deploy**: roda antes de cada versão entrar no ar. Atualiza o banco (`migrate`), publica o questionário oficial **v2** (`quality_life_oficial_v2.json`), aposenta o v1 e cria o primeiro administrador. Pode rodar quantas vezes for preciso: o que já existe não é alterado. Se der erro, a versão nova não entra no ar e a anterior continua funcionando.
 - **Start**: liga o site. A porta vem sozinha da variável `PORT` do Railway.
 - **Não** adicione `--access-logfile` ao Start: os links de convite e de redefinição de senha têm um código secreto na URL, e esse log gravaria o código.
 - **Nunca** rode `seed_quality_life_demo` em produção; ele cria usuários de demonstração.
@@ -72,8 +72,9 @@ Sem `LEGAL_COMPANY_NAME`, `LEGAL_CNPJ` e `LEGAL_DPO_EMAIL`, as páginas de priva
 ## 4. Avisos importantes
 
 - **Domínio próprio** (ex.: `app.empresa.com.br`): acrescente o domínio em `DJANGO_ALLOWED_HOSTS` (separado por vírgula, sem `https://`) e em `DJANGO_CSRF_TRUSTED_ORIGINS` (com `https://`). Sem isso, o site responde "Bad Request (400)" ou recusa formulários.
-- **Pontuação do questionário v1**: o arquivo `quality_life_oficial_v1.json` traz a pontuação **PROPOSTA**. Um questionário publicado não pode ser editado. Por isso, a aprovação formal do cliente sobre perguntas e pontuação deve vir **antes** de colaboradores reais responderem. Mudanças depois disso exigem uma nova versão.
-- **Questionário v2**: quando existir um novo arquivo aprovado, carregue com `python manage.py load_official_questionnaire --file <arquivo_v2> --retire-other-published`. Isso aposenta o v1 e preserva os resultados já calculados.
+- **Questionário v2 (atual)**: o `release` publica `quality_life_oficial_v2.json`, gerado a partir do texto oficial `docs/questionario/questionario-oficial-quality-life.md` por `scripts/build_questionnaire_v2.py`. Ele roda com `--retire-other-published`: o v1 (e qualquer outro questionário publicado, inclusive o de demonstração) passa para `RETIRED` na mesma transação. **Avaliações já concluídas no v1 são preservadas**, com notas e mapa intactos, e uma avaliação do v1 em andamento ainda pode ser concluída. Novas avaliações usam o v2.
+- **Pontuação**: o v2 mantém a pontuação **PROPOSTA** do v1 sem nenhuma mudança; as perguntas novas do texto oficial (identificação, múltipla escolha, textos e as demais) não entram na nota. Um questionário publicado não pode ser editado. Por isso, a aprovação formal do cliente sobre perguntas e pontuação deve vir **antes** de colaboradores reais responderem. Mudanças depois disso exigem uma nova versão (`version` maior no JSON).
+- **Identificação (seção 1) e respostas abertas**: nome, matrícula, cargo, setor, textos livres e múltipla escolha só aparecem para o próprio colaborador. O relatório do gestor continua mostrando apenas médias de pilares de grupos com 5 pessoas ou mais.
 
 ## 5. Checklist depois do deploy
 
@@ -97,6 +98,6 @@ Marque cada item:
 
 ## 6. Quando algo dá errado
 
-- **Deploy parado no pre-deploy**: abra os logs do deploy; a mensagem do erro aparece ali (ex.: senha do administrador recusada, outro questionário já publicado).
+- **Deploy parado no pre-deploy**: abra os logs do deploy; a mensagem do erro aparece ali (ex.: senha do administrador recusada, questionário v2 já existente com conteúdo diferente do arquivo).
 - **Erro 500 no site**: os logs do serviço mostram o traceback completo do erro.
 - **Health check falhando**: confirme que `healthcheck.railway.app` está em `DJANGO_ALLOWED_HOSTS`.

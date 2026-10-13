@@ -14,7 +14,13 @@ from identity.consent import grant_consent, has_active_consent
 from identity.models import Membership
 
 from .models import Assessment, AssessmentResult, Question, QuestionnaireVersion
-from .services import complete_assessment, record_answer, start_assessment
+from .services import (
+    collaborator_name,
+    complete_assessment,
+    ordered_questions,
+    record_answer,
+    start_assessment,
+)
 
 
 def _tenant(request):
@@ -46,27 +52,49 @@ def _assessment(request, tenant, assessment_id):
     return assessment
 
 
-def _questions(assessment):
-    return list(
-        Question.objects.filter(
-            questionnaire_pillar__questionnaire=assessment.questionnaire_version,
-            questionnaire_pillar__is_active=True,
-            is_active=True,
-        )
-        .select_related("questionnaire_pillar__pillar")
-        .prefetch_related("options")
-        .order_by("questionnaire_pillar__display_order", "display_order", "pk")
-    )
+ANSWER_ERRORS = {
+    "required": "Selecione uma resposta antes de salvar.",
+    "needs_text": "Descreva a opção “Outro:” antes de salvar.",
+    "too_long": "Sua resposta passou do limite de caracteres.",
+}
+TEXT_REQUIRED = "Escreva sua resposta antes de salvar."
+INVALID_ANSWER = "Resposta inválida. Escolha uma das alternativas desta pergunta."
 
 
 def _flow(assessment):
-    questions = _questions(assessment)
+    questions = ordered_questions(assessment.questionnaire_version)
     answers = {
-        answer.question_id: answer.selected_option
-        for answer in assessment.answers.select_related("selected_option")
+        answer.question_id: answer
+        for answer in assessment.answers.select_related(
+            "selected_option"
+        ).prefetch_related("choices__option")
     }
     answered = sum(question.pk in answers for question in questions)
     return questions, answers, answered
+
+
+def _summary(answer):
+    """What the person answered, in words. Only ever shown to that person."""
+    if answer.selected_option is None:
+        choices = sorted(
+            answer.choices.all(), key=lambda choice: choice.option.display_order
+        )
+        return ", ".join(choice.option.label for choice in choices) or (
+            answer.text_value
+        )
+    if answer.text_value:
+        return f"{answer.selected_option.label} {answer.text_value}"
+    return answer.selected_option.label
+
+
+def _answer_error(error, question):
+    code = getattr(error, "code", None)
+    if code == "required" and question.kind == Question.Kind.TEXT:
+        return TEXT_REQUIRED
+    if code == "exclusive":
+        label = next(o.label for o in question.options.all() if o.exclusive)
+        return f"“{label}” não pode ser marcada junto com outras opções."
+    return ANSWER_ERRORS.get(code, INVALID_ANSWER)
 
 
 @login_required
@@ -186,25 +214,34 @@ def question(request, assessment_id, question_id):
     current = questions[position]
     previous = questions[position - 1] if position else None
     following = questions[position + 1] if position + 1 < len(questions) else None
-    selected = answers.get(question_id)
+    answer = answers.get(question_id)
+    selected_ids = set()
+    text_value = ""
+    if answer is not None:
+        selected_ids = {choice.option_id for choice in answer.choices.all()}
+        selected_ids.add(answer.selected_option_id)
+        text_value = answer.text_value
     error = None
     if request.method == "POST":
-        option_id = request.POST.get("option")
-        if not option_id:
-            error = "Selecione uma resposta antes de salvar."
-        else:
-            try:
-                record_answer(
-                    request.user,
-                    tenant.organization,
-                    assessment.pk,
-                    current.pk,
-                    option_id,
-                )
-            except (ValidationError, ValueError, OverflowError):
-                error = (
-                    "Resposta inválida. Escolha uma das alternativas desta pergunta."
-                )
+        option_ids = request.POST.getlist("options")
+        selected_ids = set(option_ids) | {request.POST.get("option")}
+        text_value = request.POST.get(
+            "text" if current.kind == Question.Kind.TEXT else "other_text", ""
+        )
+        try:
+            record_answer(
+                request.user,
+                tenant.organization,
+                assessment.pk,
+                current.pk,
+                request.POST.get("option") or None,
+                option_ids=option_ids,
+                text=text_value,
+            )
+        except ValidationError as exc:
+            error = _answer_error(exc, current)
+        except (ValueError, OverflowError):
+            error = INVALID_ANSWER
         if error is None:
             destination = request.POST.get("destination")
             if destination == "review" or following is None:
@@ -221,7 +258,10 @@ def question(request, assessment_id, question_id):
             "tenant": tenant,
             "assessment": assessment,
             "question": current,
-            "selected": selected,
+            "selected_ids": {int(v) for v in selected_ids if str(v).isdigit()},
+            "text_value": text_value,
+            # Identification fields are one line; other open answers are paragraphs.
+            "multiline": current.section is None or current.section.number != 1,
             "previous": previous,
             "following": following,
             "position": position + 1,
@@ -243,7 +283,10 @@ def review(request, assessment_id):
         return redirect("assessment_completed", assessment_id=assessment.pk)
     questions, answers, answered = _flow(assessment)
     items = [
-        {"question": question, "answer": answers.get(question.pk)}
+        {
+            "question": question,
+            "answer": answers.get(question.pk) and _summary(answers.get(question.pk)),
+        }
         for question in questions
     ]
     return render(
@@ -327,6 +370,7 @@ def completed(request, assessment_id):
         {
             "tenant": tenant,
             "assessment": assessment,
+            "collaborator_name": collaborator_name(assessment),
             "result": result,
             "pillars": pillars,
             "segments": segments,

@@ -32,11 +32,11 @@ Para publicar no Railway, siga [DEPLOY_RAILWAY.md](DEPLOY_RAILWAY.md): lá o `mi
 
 Em produção **não** rode `seed_quality_life_demo` e não defina `QUALITY_LIFE_DEMO_SEED_ENABLED` nem `QUALITY_LIFE_DEMO_PASSWORD`. O questionário oficial versionado no repositório é carregado com `load_official_questionnaire`:
 
-- Start: `python manage.py migrate --noinput && python manage.py load_official_questionnaire --file assessments/questionnaires/quality_life_oficial_v1.json && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
+- Start: `python manage.py migrate --noinput && python manage.py load_official_questionnaire --file assessments/questionnaires/quality_life_oficial_v2.json --retire-other-published && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT`
 
 Antes de usar um arquivo em produção, confirme que a Quality Life aprovou formalmente perguntas e pontuação. O comando:
 
-- valida o arquivo inteiro antes de gravar (os 9 pilares ativos, códigos slug de até 64 caracteres, `score_value` entre 0 e 100 com até 2 casas); qualquer erro aborta sem gravar nada;
+- valida o arquivo inteiro antes de gravar (os 9 pilares ativos, códigos slug de até 64 caracteres, `score_value` entre 0 e 100 com até 2 casas e, no formato por seções do v2, tipo da pergunta, pilar só em pergunta pontuada, limite de texto e opções exclusivas); qualquer erro aborta sem gravar nada;
 - cria o questionário como rascunho e o publica na mesma transação, imprimindo o total de pilares, perguntas e opções;
 - é idempotente: rodar de novo com o mesmo arquivo informa "já carregado" e não altera o banco;
 - recusa um arquivo com o mesmo `code` e `version` de um questionário existente, mas com conteúdo diferente. Questionário publicado é imutável: para mudar perguntas ou pontuação, crie um novo arquivo com `version` maior;
