@@ -24,6 +24,8 @@ body.ql-app { margin: 0; min-width: 0; font-family: "Segoe UI", Arial, sans-seri
 .ql-avatar { display: grid; place-items: center; flex: 0 0 auto; width: 2.2rem; height: 2.2rem; border-radius: .6rem; background: #f3faf5; color: #28685f; font-size: .8rem; font-weight: 750; }
 .ql-logout button { display: flex; justify-content: space-between; align-items: center; min-height: 2.8rem; width: 100%; margin-top: .55rem; padding: .5rem .7rem; border: 0; border-radius: .5rem; color: #c3dfd5; background: transparent; font: inherit; font-size: .78rem; cursor: pointer; }
 .ql-logout button:hover { background: #ffffff09; }
+.ql-account-link { display: flex; justify-content: space-between; align-items: center; min-height: 2.8rem; margin-top: .55rem; padding: .5rem .7rem; border-radius: .5rem; color: #c3dfd5; font-size: .78rem; text-decoration: none; }
+.ql-account-link:hover, .ql-account-link[aria-current="page"] { background: #ffffff09; }
 .ql-workspace { margin-left: var(--ql-sidebar); min-width: 0; transition: margin-left .22s ease; }
 .ql-topbar { min-height: 88px; display: flex; align-items: center; gap: 1rem; padding: 1rem 2rem; border-bottom: 1px solid #e4ece6; background: #fff; }
 .ql-menu-toggle, .ql-drawer-close { display: grid; place-items: center; width: 2.7rem; min-height: 2.7rem; padding: 0; border: 1px solid #e2eae4; border-radius: .65rem; background: #fff; color: #1c5149; font: inherit; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; }

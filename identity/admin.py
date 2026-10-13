@@ -1,9 +1,14 @@
 from django import forms
-from django.contrib import admin
+from django.conf import settings
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from .models import Membership, Organization, User
 
@@ -77,6 +82,35 @@ class UserAdmin(SuperuserOnlyAdminMixin, BaseUserAdmin):
         (None, {"classes": ("wide",), "fields": ("email", "password1", "password2")}),
     )
     filter_horizontal = ("groups", "user_permissions")
+    actions = ("generate_password_reset_link",)
+
+    @admin.action(
+        description="Gerar link de redefinição de senha", permissions=("change",)
+    )
+    def generate_password_reset_link(self, request, queryset):
+        """Support sends this link by hand; there is no email backend."""
+        if not (request.user.is_active and request.user.is_superuser):
+            raise PermissionDenied("Superuser only.")
+        if queryset.count() != 1:
+            self.message_user(
+                request, "Selecione exatamente 1 usuário.", messages.ERROR
+            )
+            return
+        user = queryset.get()
+        path = reverse(
+            "password_reset_confirm",
+            kwargs={
+                "uidb64": urlsafe_base64_encode(force_bytes(user.pk)),
+                "token": default_token_generator.make_token(user),
+            },
+        )
+        days = settings.PASSWORD_RESET_TIMEOUT // 86400
+        self.message_user(
+            request,
+            f"Link de redefinição de senha para {user.email} (vale {days} dias e "
+            f"deixa de valer após o uso): {request.build_absolute_uri(path)}",
+            messages.SUCCESS,
+        )
 
 
 @admin.register(Organization)

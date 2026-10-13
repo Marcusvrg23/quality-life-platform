@@ -1,9 +1,12 @@
 """Session authentication and tenant entry points."""
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
+from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.views.decorators.http import require_GET, require_POST
 
 from .forms import EmailAuthenticationForm
@@ -23,6 +26,22 @@ class EmailLoginView(LoginView):
 
 class SessionLogoutView(LogoutView):
     next_page = "login"
+
+
+class ShellPasswordChangeView(SuccessMessageMixin, PasswordChangeView):
+    """Own-account password change; the tenant only feeds the shell menu."""
+
+    template_name = "identity/password_change.html"
+    success_url = reverse_lazy("password_change")
+    success_message = "Senha alterada com sucesso."
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        try:
+            context["tenant"] = resolve_tenant_context(self.request)
+        except PermissionDenied:
+            context["tenant"] = None
+        return context
 
 
 @login_required

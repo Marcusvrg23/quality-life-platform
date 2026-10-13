@@ -128,7 +128,10 @@ class AssessmentResultPageTests(TestCase):
         self.assertContains(response, 'class="quality-map-reset button-secondary"')
         self.assertContains(response, 'class="attention-item"', count=3)
         self.assertContains(response, 'tabindex="0" role="button"', count=9)
-        self.assertContains(response, self.assessment.completed_at.strftime("%d/%m/%Y"))
+        self.assertContains(
+            response,
+            timezone.localtime(self.assessment.completed_at).strftime("%d/%m/%Y"),
+        )
         segments = response.context["segments"]
         self.assertEqual(len({segment["path"] for segment in segments}), 9)
         self.assertTrue(

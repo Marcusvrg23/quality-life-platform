@@ -28,4 +28,11 @@ body { margin: 0; }
 .login-form button:hover { background: #174e47; }
 .login-footer { text-align: center; margin: 2rem 0 0; font-size: .72rem; color: #8a9892; }
 .login-error { border: 1px solid #e9c1b8; padding: .75rem; border-radius: .5rem; color: #9e3829; background: #fff6f3; font-size: .85rem; }
+.login-story__title { margin: 0 0 1.6rem; font-size: clamp(2.4rem, 3.8vw, 3.8rem); line-height: 1.12; letter-spacing: -.055em; font-weight: 650; }
+.login-title { margin: 0; font-size: clamp(1.8rem, 2.6vw, 2.25rem); letter-spacing: -.035em; font-weight: 650; overflow-wrap: anywhere; }
+.login-help { margin: 1.25rem 0 0; font-size: .8rem; line-height: 1.6; color: #557a74; }
+.login-help a, .login-error a { color: #1d665b; font-weight: 650; }
+.login-field-errors { margin: -.85rem 0 1.25rem; padding-left: 1.1rem; color: #9e3829; font-size: .8rem; line-height: 1.5; }
+.login-hint { margin: -.85rem 0 1.25rem; color: #728682; font-size: .75rem; line-height: 1.5; }
+.login-hint ul { margin: 0; padding-left: 1.1rem; }
 @media (max-width: 760px) { .login-layout { display: block; } .login-story { display: none; } .login-form-panel { min-height: 100dvh; padding: 2rem 1.5rem; background: radial-gradient(ellipse at 0 0, #eaf5ef 0, transparent 48%); } .login-logo { width: 95px; height: 95px; margin-bottom: 1.6rem; } }
