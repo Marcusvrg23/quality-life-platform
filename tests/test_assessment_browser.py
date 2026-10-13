@@ -235,6 +235,22 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             self._capture(page, viewport, "review")
             page.get_by_role("button", name="Concluir avaliação").click()
             page.locator("#result-title").wait_for()
+            # Regression: moving the pointer over the heart while the entrance
+            # animation runs must not leave segments stuck invisible.
+            for index in (0, 4, 8):
+                box = page.locator(".heart-segment").nth(index).bounding_box()
+                page.mouse.move(
+                    box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
+                )
+            page.wait_for_function(
+                "!window.gsap || gsap.globalTimeline.getChildren(true, true, false)"
+                ".every(t => t.totalProgress() === 1)"
+            )
+            assert page.evaluate(
+                "[...document.querySelectorAll('.heart-segment')]"
+                ".every(g => getComputedStyle(g).opacity === '1')"
+            )
+            page.mouse.move(0, 0)
             with ThreadPoolExecutor(max_workers=1) as pool:
                 overall_score, overall_band, pillars = pool.submit(
                     self._stored_result, email
