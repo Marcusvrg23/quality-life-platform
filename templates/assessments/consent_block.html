@@ -1,0 +1,11 @@
+<section class="consent-box" aria-labelledby="consent-title">
+    <h2 id="consent-title">Autorização para uso dos seus dados de saúde</h2>
+    <p><strong>Finalidade:</strong> suas respostas e notas desta avaliação são dados de saúde. Elas servem para gerar o seu Mapa de Qualidade de Vida e, somadas às de outras pessoas, o diagnóstico de qualidade de vida da sua empresa.</p>
+    <ul>
+        <li>O seu resultado individual só aparece para você.</li>
+        <li>O gestor da empresa só vê médias de grupos com 5 pessoas ou mais e nunca respostas individuais.</li>
+        <li>Você pode revogar esta autorização a qualquer momento em Privacidade.</li>
+    </ul>
+    <p>Leia a <a href="{% url 'privacy' %}">Política de privacidade</a> e os <a href="{% url 'terms' %}">Termos de uso</a>.</p>
+    <label class="consent-check"><input type="checkbox" name="consent" value="on" required> <span>Li e autorizo o uso das minhas respostas e notas, que são dados de saúde, para essas finalidades.</span></label>
+</section>

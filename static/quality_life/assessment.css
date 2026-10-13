@@ -66,3 +66,10 @@ button, .button { display: inline-flex; align-items: center; justify-content: ce
 .pillar-band { grid-column: 2 / 4; justify-self: start; padding: .2rem .55rem; border-radius: 99px; font-size: .75rem; font-weight: 800; letter-spacing: .03em; }
 @media (max-width: 430px) { .actions { display: grid; } .actions button { width: 100%; } }
 @media (min-width: 650px) { .result-overview { grid-template-columns: 1fr 1fr; align-items: center; } .pillar-row { grid-template-columns: 2rem minmax(0, 1fr) auto auto; } .pillar-band { grid-column: auto; justify-self: end; } }
+.consent-messages { list-style: none; margin: 0 0 1rem; padding: .9rem 1rem; border-radius: .8rem; background: #fdf0e7; color: #7a3c12; font-weight: 700; overflow-wrap: anywhere; }
+.consent-box { margin: 1rem 0; padding: 1rem 1.1rem; border: 2px solid #176759; border-radius: 1rem; background: #eef7f4; overflow-wrap: anywhere; }
+.consent-box h2 { margin: 0 0 .6rem; font-size: 1.1rem; }
+.consent-box ul { margin: .6rem 0; padding-left: 1.2rem; }
+.consent-box a { color: #176759; font-weight: 700; }
+.consent-check { display: flex; gap: .7rem; align-items: flex-start; margin-top: .8rem; font-weight: 700; }
+.consent-check input { flex: 0 0 auto; width: 1.4rem; height: 1.4rem; margin: .1rem 0 0; accent-color: #176759; }

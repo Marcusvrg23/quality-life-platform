@@ -18,6 +18,7 @@ from .auth_views import (
     select_organization,
 )
 from .exercise_views import exercises
+from .legal_views import privacy, privacy_revoke, privacy_settings, terms
 from .lesson_views import lessons
 from .views import foundation, health
 
@@ -46,6 +47,10 @@ urlpatterns = [
         identity_views.team_invitation_revoke,
         name="team_invitation_revoke",
     ),
+    path("app/privacidade/", privacy_settings, name="privacy_settings"),
+    path("app/privacidade/revogar/", privacy_revoke, name="privacy_revoke"),
+    path("privacidade/", privacy, name="privacy"),
+    path("termos/", terms, name="terms"),
     path("app/senha/", ShellPasswordChangeView.as_view(), name="password_change"),
     path(
         "convite/<str:token>/",

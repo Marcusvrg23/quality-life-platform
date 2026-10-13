@@ -18,6 +18,7 @@ from assessments.models import (
 )
 from assessments.services import publish_questionnaire
 from config.tenant import SESSION_ORGANIZATION_KEY
+from identity.consent import grant_consent
 from identity.models import Membership, Organization
 
 User = get_user_model()
@@ -89,7 +90,7 @@ class AssessmentUITests(TestCase):
         return questionnaire, required, optional, options
 
     def start(self):
-        response = self.client.post(reverse("assessment_start"))
+        response = self.client.post(reverse("assessment_start"), {"consent": "on"})
         self.assertEqual(response.status_code, 302)
         return Assessment.objects.get(user=self.user)
 
@@ -234,6 +235,7 @@ class AssessmentUITests(TestCase):
     def test_question_from_another_version_is_denied(self):
         _, _, _, _ = self.fixture()
         _, wrong_question, _, wrong_options = self.fixture(2)
+        grant_consent(self.user, self.org)
         assessment = Assessment.objects.create(
             user=self.user,
             organization=self.org,

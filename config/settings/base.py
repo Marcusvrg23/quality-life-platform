@@ -150,3 +150,12 @@ CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
+
+# Legal page identifiers (draft until reviewed by counsel); no secrets here.
+LEGAL_COMPANY_NAME = (
+    os.environ.get("LEGAL_COMPANY_NAME", "").strip() or "[RAZÃO SOCIAL]"
+)
+LEGAL_CNPJ = os.environ.get("LEGAL_CNPJ", "").strip() or "[CNPJ]"
+LEGAL_DPO_EMAIL = (
+    os.environ.get("LEGAL_DPO_EMAIL", "").strip() or "[E-MAIL DO ENCARREGADO]"
+)

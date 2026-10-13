@@ -1,0 +1,29 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Privacidade{% endblock %}
+{% block page_title %}Privacidade{% endblock %}
+{% block header_title %}Seus dados e autorizações{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/legal.css' %}">{% endblock %}
+{% block content %}
+<section class="legal-settings" aria-labelledby="privacy-settings-title">
+    <h1 id="privacy-settings-title">Privacidade</h1>
+    {% if messages %}<ul class="legal-messages" role="status">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
+    {% if consents %}
+        <h2>Autorização ativa nesta empresa</h2>
+        <ul class="legal-consents">
+            {% for consent in consents %}<li><strong>{{ consent.get_purpose_display }}</strong><span>Aceita em {{ consent.accepted_at|date:"d/m/Y H:i" }} · versão {{ consent.version }}</span></li>{% endfor %}
+        </ul>
+        <form method="post" action="{% url 'privacy_revoke' %}" class="legal-revoke">
+            {% csrf_token %}
+            <p>Ao revogar, novas respostas e novas avaliações ficam bloqueadas, e suas avaliações deixam de entrar no relatório da empresa. Seu resultado continua visível só para você.</p>
+            <label class="legal-check"><input type="checkbox" name="confirm" value="on" required> <span>Confirmo que quero revogar minha autorização em {{ tenant.organization.name }}.</span></label>
+            <button type="submit" class="legal-button">Revogar</button>
+        </form>
+    {% else %}
+        <p>Você não tem autorização ativa para a avaliação nesta empresa.</p>
+    {% endif %}
+    <h2>Exclusão dos dados</h2>
+    <p>Revogar não apaga os dados já coletados. Para pedir a exclusão, ou exercer outros direitos da LGPD, escreva para o encarregado de dados: {{ dpo_email }}.</p>
+    <p><a href="{% url 'privacy' %}">Política de privacidade</a> · <a href="{% url 'terms' %}">Termos de uso</a></p>
+</section>
+{% endblock %}

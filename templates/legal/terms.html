@@ -1,0 +1,27 @@
+{% extends 'legal/base.html' %}
+{% block title %}Termos de uso{% endblock %}
+{% block content %}
+<article class="legal-doc" aria-labelledby="terms-title">
+    <h1 id="terms-title">Termos de uso</h1>
+    <p class="legal-meta">Quality Life — {{ company_name }}, CNPJ {{ cnpj }}.</p>
+
+    <h2>1. O serviço</h2>
+    <p>A Quality Life oferece, por meio da empresa onde você trabalha, exercícios de ginástica laboral, aulas e uma avaliação de qualidade de vida.</p>
+
+    <h2>2. A avaliação não é diagnóstico</h2>
+    <p class="legal-callout">A avaliação de qualidade de vida <strong>não é avaliação clínica nem diagnóstico</strong> e <strong>não substitui profissional de saúde</strong>. Em caso de dúvida sobre a sua saúde, procure um profissional.</p>
+    <p class="legal-callout"><strong>Em emergência:</strong> CVV — ligue 188 (24 horas, gratuito). SAMU — ligue 192.</p>
+
+    <h2>3. Sua conta</h2>
+    <p>A conta é pessoal. Não compartilhe sua senha.</p>
+
+    <h2>4. Privacidade</h2>
+    <p>O tratamento dos seus dados segue a <a href="{% url 'privacy' %}">Política de privacidade</a>.</p>
+
+    <h2>5. Responsabilidades, alterações e foro</h2>
+    <p><em>[A definir pelo jurídico.]</em></p>
+
+    <h2>6. Contato</h2>
+    <p>Encarregado de dados: {{ dpo_email }}</p>
+</article>
+{% endblock %}

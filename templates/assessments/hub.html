@@ -3,17 +3,19 @@
 <section class="card" aria-labelledby="page-title">
     <p class="eyebrow">Seu espaço</p>
     <h1 id="page-title">Minha avaliação</h1>
-    {% if current %}
+    {% if messages %}<ul class="consent-messages" role="alert">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
+    {% if current and has_consent %}
         <p>Sua avaliação está em andamento. Suas respostas foram salvas.</p>
         <a class="button" href="{% url 'assessment_detail' current.pk %}">Retomar avaliação</a>
     {% elif latest_completed %}
         <p>Sua avaliação foi concluída.</p>
         <a class="button" href="{% url 'assessment_completed' latest_completed.pk %}">Ver Mapa de Qualidade de Vida</a>
-    {% elif available %}
-        <p>Uma avaliação está disponível para você.</p>
+    {% elif current or available %}
+        {% if current %}<p>Sua avaliação está em andamento. Para continuar, autorize o uso dos seus dados.</p>{% else %}<p>Uma avaliação está disponível para você.</p>{% endif %}
         <form method="post" action="{% url 'assessment_start' %}">
             {% csrf_token %}
-            <button type="submit">Iniciar avaliação</button>
+            {% if not has_consent %}{% include 'assessments/consent_block.html' %}{% endif %}
+            <button type="submit">{% if current %}Retomar avaliação{% else %}Iniciar avaliação{% endif %}</button>
         </form>
     {% elif multiple %}
         <p role="status">A avaliação ainda não está disponível. A configuração precisa ser concluída.</p>

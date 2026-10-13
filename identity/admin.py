@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from .models import Membership, Organization, User
+from .models import ConsentRecord, Membership, Organization, User
 
 
 class SuperuserOnlyAdminMixin:
@@ -127,3 +127,28 @@ class MembershipAdmin(SuperuserOnlyAdminMixin, admin.ModelAdmin):
     list_filter = ("role", "is_active", "organization")
     search_fields = ("user__email", "organization__name", "organization__slug")
     autocomplete_fields = ("user", "organization")
+
+
+@admin.register(ConsentRecord)
+class ConsentRecordAdmin(SuperuserOnlyAdminMixin, admin.ModelAdmin):
+    """Audit trail only: records are created by the user and never edited here."""
+
+    list_display = (
+        "user",
+        "organization",
+        "purpose",
+        "version",
+        "accepted_at",
+        "revoked_at",
+    )
+    list_filter = ("purpose", "version", "organization")
+    search_fields = ("user__email", "organization__name")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
