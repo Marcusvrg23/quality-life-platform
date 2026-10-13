@@ -1,5 +1,6 @@
 """Server-rendered assessment flow backed by the M3 services."""
 
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -9,6 +10,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from config.tenant import resolve_tenant_context
+from identity.consent import grant_consent, has_active_consent
 from identity.models import Membership
 
 from .models import Assessment, AssessmentResult, Question, QuestionnaireVersion
@@ -20,6 +22,17 @@ def _tenant(request):
     if tenant is None or tenant.role != Membership.Role.COLLABORATOR:
         raise PermissionDenied("Assessment unavailable.")
     return tenant
+
+
+CONSENT_REQUIRED = "Marque a autorização para usar seus dados na avaliação."
+
+
+def _without_consent(request, tenant):
+    """Server-side gate: no consent in this company means back to the hub."""
+    if has_active_consent(request.user, tenant.organization):
+        return None
+    messages.error(request, CONSENT_REQUIRED)
+    return redirect("assessment_hub")
 
 
 def _assessment(request, tenant, assessment_id):
@@ -81,6 +94,7 @@ def hub(request):
         "assessments/hub.html",
         {
             "tenant": tenant,
+            "has_consent": has_active_consent(request.user, tenant.organization),
             "current": current,
             "latest_completed": latest_completed,
             "available": not current and not latest_completed and published_count == 1,
@@ -96,6 +110,10 @@ def start(request):
     # Lock the user row so parallel submissions cannot create two current assessments.
     with transaction.atomic():
         get_user_model().objects.select_for_update().get(pk=request.user.pk)
+        consented = has_active_consent(request.user, tenant.organization)
+        if not consented and request.POST.get("consent") != "on":
+            messages.error(request, CONSENT_REQUIRED)
+            return redirect("assessment_hub")
         own = Assessment.objects.filter(
             user=request.user, organization=tenant.organization
         )
@@ -108,6 +126,8 @@ def start(request):
             .first()
         )
         if existing:
+            if not consented:
+                grant_consent(request.user, tenant.organization)
             return redirect("assessment_detail", assessment_id=existing.pk)
         versions = list(
             QuestionnaireVersion.objects.filter(
@@ -117,10 +137,14 @@ def start(request):
         if len(versions) != 1:
             return redirect("assessment_hub")
         try:
+            if not consented:
+                grant_consent(request.user, tenant.organization)
             assessment = start_assessment(
                 request.user, tenant.organization, versions[0].pk
             )
         except ValidationError:
+            # Consent and assessment are one unit: neither survives a failed start.
+            transaction.set_rollback(True)
             return redirect("assessment_hub")
     return redirect("assessment_detail", assessment_id=assessment.pk)
 
@@ -150,6 +174,8 @@ def detail(request, assessment_id):
 @require_http_methods(["GET", "POST"])
 def question(request, assessment_id, question_id):
     tenant = _tenant(request)
+    if blocked := _without_consent(request, tenant):
+        return blocked
     assessment = _assessment(request, tenant, assessment_id)
     if assessment.status == Assessment.Status.COMPLETED:
         return redirect("assessment_completed", assessment_id=assessment.pk)
@@ -210,6 +236,8 @@ def question(request, assessment_id, question_id):
 @require_GET
 def review(request, assessment_id):
     tenant = _tenant(request)
+    if blocked := _without_consent(request, tenant):
+        return blocked
     assessment = _assessment(request, tenant, assessment_id)
     if assessment.status == Assessment.Status.COMPLETED:
         return redirect("assessment_completed", assessment_id=assessment.pk)
@@ -236,6 +264,8 @@ def review(request, assessment_id):
 @require_POST
 def complete(request, assessment_id):
     tenant = _tenant(request)
+    if blocked := _without_consent(request, tenant):
+        return blocked
     assessment = _assessment(request, tenant, assessment_id)
     if assessment.status == Assessment.Status.COMPLETED:
         return redirect("assessment_completed", assessment_id=assessment.pk)

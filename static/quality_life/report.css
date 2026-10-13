@@ -9,8 +9,6 @@
 .report-facts dd { margin: .25rem 0 0; font-weight: 800; overflow-wrap: anywhere; }
 .report-note { color: #41615d; font-size: .85rem; }
 .report-period { display: flex; flex-wrap: wrap; gap: .75rem; align-items: flex-end; margin-top: 1rem; }
-.report-period label { display: grid; gap: .3rem; font-size: .85rem; font-weight: 700; }
-.report-period input { min-height: 3rem; padding: .5rem .7rem; border: 1px solid #abcac2; border-radius: .7rem; font: inherit; max-width: 100%; }
 .report-insufficient { margin: 0; font-weight: 700; border-top: .35rem solid #d7a54d; }
 .report-summary { display: grid; gap: 1.5rem; }
 .report-summary .overall { text-align: left; }

@@ -18,6 +18,7 @@
         {% if highlight.support_text %}<p class="dashboard-notice__support">{{ highlight.support_text }}</p>{% endif %}
     </aside>
     {% endif %}
+    {% if tenant.role == 'COLLABORATOR' %}
     {% if recommendation %}
     <aside class="dashboard-recommendation" aria-labelledby="recommendation-title">
         <p class="ql-eyebrow">PARA VOCÊ</p>
@@ -32,6 +33,7 @@
         <p>Descubra seu mapa de qualidade de vida e receba sua prioridade.</p>
         <a class="recommendation-link" href="{% url 'assessment_hub' %}">Ir para minha avaliação <span aria-hidden="true">→</span></a>
     </aside>
+    {% endif %}
     {% endif %}
     <article class="dashboard-hero">
         <div class="dashboard-hero__copy">
@@ -50,11 +52,11 @@
             <span><strong>Exercícios</strong><small>Movimentos guiados para pequenas pausas.</small></span>
             <span class="dashboard-link__arrow" aria-hidden="true">→</span>
         </a>
-        <a class="dashboard-link" href="{% url 'assessment_hub' %}">
+        {% if tenant.role == 'COLLABORATOR' %}<a class="dashboard-link" href="{% url 'assessment_hub' %}">
             <span class="dashboard-link__icon dashboard-link__icon--purple" aria-hidden="true">♡</span>
             <span><strong>Minha avaliação</strong><small>Conheça seu mapa de qualidade de vida.</small></span>
             <span class="dashboard-link__arrow" aria-hidden="true">→</span>
-        </a>
+        </a>{% endif %}
     </div>
     <p class="dashboard-note">Cada pausa é uma oportunidade de cuidar de você.</p>
 </section>

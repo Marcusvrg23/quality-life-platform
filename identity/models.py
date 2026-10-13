@@ -1,9 +1,11 @@
 from django.conf import settings
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
+from django.utils import timezone
 
 from .managers import UserManager
 
@@ -125,3 +127,83 @@ class Invitation(models.Model):
 
     def __str__(self):
         return f"Invitation {self.pk} to {self.organization}"
+
+
+class ConsentRecordQuerySet(models.QuerySet):
+    """Append-only ledger: bulk updates and deletes are refused."""
+
+    def update(self, **kwargs):
+        raise ValidationError("Consent records are append-only.")
+
+    def delete(self):
+        raise ValidationError("Consent records are append-only.")
+
+
+class ConsentRecord(models.Model):
+    """Per-company consent; the only allowed change is filling revoked_at once."""
+
+    class Purpose(models.TextChoices):
+        ASSESSMENT_HEALTH_DATA = (
+            "ASSESSMENT_HEALTH_DATA",
+            "Avaliação de qualidade de vida (dado de saúde)",
+        )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="consent_records",
+    )
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name="consent_records"
+    )
+    purpose = models.CharField(max_length=40, choices=Purpose.choices)
+    version = models.CharField(max_length=40)
+    accepted_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    objects = ConsentRecordQuerySet.as_manager()
+
+    class Meta:
+        constraints = [  # noqa: RUF012 - Django model metadata convention.
+            models.UniqueConstraint(
+                fields=["user", "organization", "purpose", "version"],
+                condition=Q(revoked_at__isnull=True),
+                name="identity_consent_one_active_per_version",
+            ),
+            models.CheckConstraint(
+                condition=Q(purpose__in=["ASSESSMENT_HEALTH_DATA"]),
+                name="identity_consent_valid_purpose",
+            ),
+            models.CheckConstraint(
+                condition=Q(revoked_at__isnull=True)
+                | Q(revoked_at__gte=models.F("accepted_at")),
+                name="identity_consent_revoked_after_accepted",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            stored = type(self).objects.get(pk=self.pk)
+            unchanged = all(
+                getattr(stored, field) == getattr(self, field)
+                for field in (
+                    "user_id",
+                    "organization_id",
+                    "purpose",
+                    "version",
+                    "accepted_at",
+                )
+            )
+            if not unchanged or stored.revoked_at is not None or not self.revoked_at:
+                raise ValidationError("Only revoked_at can be filled, once.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("Consent records are append-only.")
+
+    def revoke(self, now=None):
+        self.revoked_at = now or timezone.now()
+        self.save(update_fields=["revoked_at"])
+
+    def __str__(self):
+        return f"Consent {self.purpose} v{self.version} of {self.user} in {self.organization}"

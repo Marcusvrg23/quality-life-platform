@@ -9,6 +9,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_GET, require_POST
 
+from identity.models import Membership
+
 from .calendar_highlights import active_highlight
 from .forms import EmailAuthenticationForm
 from .recommendations import build_recommendation
@@ -27,7 +29,11 @@ def _render_home(request: HttpRequest, tenant) -> HttpResponse:
         "identity/app.html",
         {
             "tenant": tenant,
-            "recommendation": build_recommendation(request.user, tenant.organization),
+            "recommendation": (
+                build_recommendation(request.user, tenant.organization)
+                if tenant.role == Membership.Role.COLLABORATOR
+                else None
+            ),
             "highlight": active_highlight(),
         },
     )

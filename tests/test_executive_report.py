@@ -1,6 +1,6 @@
 """TEST ONLY — NOT PRODUCTION CONTENT. Aggregate-only executive report."""
 
-from datetime import date, timedelta
+from datetime import timedelta
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -18,6 +18,7 @@ from assessments.models import (
 )
 from assessments.services import classify_score
 from config.tenant import SESSION_ORGANIZATION_KEY
+from identity.consent import grant_consent, revoke_consent
 from identity.models import Membership, Organization
 from reports.catalog import CATALOG, PENDING_CONTENT, catalog_for
 from reports.services import (
@@ -72,22 +73,11 @@ class ReportPureRulesTests(SimpleTestCase):
         self.assertEqual(percent(5, 6), 83)
         self.assertEqual(percent(0, 0), 0)
 
-    def test_period_defaults_and_invalid_dates(self):
+    def test_period_is_always_the_last_90_days(self):
         today = timezone.localdate()
-        default = (today - timedelta(days=DEFAULT_PERIOD_DAYS - 1), today)
-        self.assertEqual(report_period({}), default)
-        self.assertEqual(report_period({"inicio": "2026-13-01"}), default)
-        self.assertEqual(report_period({"inicio": "20260101", "fim": "x"}), default)
         self.assertEqual(
-            report_period({"inicio": "2026-03-10", "fim": "2026-03-01"}), default
-        )
-        self.assertEqual(
-            report_period({"inicio": "2026-01-01", "fim": "2026-03-31"}),
-            (date(2026, 1, 1), date(2026, 3, 31)),
-        )
-        self.assertEqual(
-            report_period({"inicio": "2026-01-01", "fim": "31/03/2026"}),
-            (date(2026, 1, 1), today),
+            report_period(),
+            (today - timedelta(days=DEFAULT_PERIOD_DAYS - 1), today),
         )
 
     def test_catalog_covers_nine_pillar_codes(self):
@@ -379,19 +369,44 @@ class ExecutiveReportTests(TestCase):
         self.login(self.other_manager, self.org)
         self.assertEqual(self.client.get(self.url).status_code, 403)
 
-    def test_period_query_filters_assessments(self):
+    def test_period_query_is_ignored(self):
         self.persist_reference()
         self.login(self.manager, self.org)
-        response = self.client.get(
-            self.url, {"inicio": "2020-01-01", "fim": "2020-01-31"}
-        )
-        report = response.context["report"]
+        plain = self.client.get(self.url)
+        for query in (
+            {"inicio": "2020-01-01", "fim": "2020-01-31"},
+            {"inicio": self.today.isoformat(), "fim": self.today.isoformat()},
+        ):
+            with self.subTest(query=query):
+                forged = self.client.get(self.url, query)
+                self.assertEqual(forged.context["report"], plain.context["report"])
+        report = plain.context["report"]
         self.assertEqual(
-            (report.start_date.isoformat(), report.end_date.isoformat()),
-            ("2020-01-01", "2020-01-31"),
+            (report.start_date, report.end_date),
+            (self.today - timedelta(days=DEFAULT_PERIOD_DAYS - 1), self.today),
         )
+        self.assert_reference(report)
+        self.assertNotContains(plain, 'name="inicio"')
+        self.assertNotContains(plain, 'name="fim"')
+        self.assertContains(plain, "últimos 90 dias")
+
+    def test_revoked_consent_leaves_the_report(self):
+        self.persist_reference()
+        revoking = self.collaborators[0]
+        grant_consent(revoking, self.org)
+        # Revoking in another company does not touch this company's report.
+        grant_consent(self.collaborators[1], self.other_org)
+        revoke_consent(self.collaborators[1], self.other_org)
+        self.assert_reference(self.build())
+
+        revoke_consent(revoking, self.org)
+        report = self.build()
+        self.assertEqual((report.population, report.evaluated), (6, 4))
         self.assertTrue(report.insufficient_data)
-        self.assertContains(response, INSUFFICIENT)
+
+        # A later, explicit consent brings the person back.
+        grant_consent(revoking, self.org)
+        self.assert_reference(self.build())
 
     def test_html_has_no_collaborator_email_or_individual_score(self):
         self.persist_reference()

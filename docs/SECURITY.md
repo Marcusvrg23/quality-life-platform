@@ -14,6 +14,16 @@ Este documento registra os requisitos mínimos de segurança da Quality Life V2.
 - Dados pessoais e respostas individuais devem ter acesso mínimo, retenção definida e proteção compatível com sua sensibilidade.
 - Diretoria e dashboard corporativo devem receber somente dados agregados. Grupos abaixo do limiar mínimo definido para privacidade não podem ser exibidos nem inferidos por filtros ou combinações de relatórios.
 
+## Relatório executivo e inferência por diferença
+
+O relatório usa sempre os últimos 90 dias até hoje e ignora parâmetros de período na URL, porque um período livre permitia comparar dois recortes quase iguais e isolar as respostas de uma pessoa, mesmo com o grupo mínimo de 5.
+
+Risco residual conhecido: como a janela é móvel, um gestor ainda pode comparar o relatório de dias seguidos e, se uma única avaliação entrar ou sair da janela, inferir a contribuição dela. A correção definitiva é trabalhar com ciclos de avaliação fechados (o relatório só mostra ciclos encerrados, sem janela móvel), prevista para depois do lançamento.
+
+## Consentimento LGPD
+
+A avaliação trata dado de saúde (dado sensível) com base em consentimento específico e destacado, registrado por empresa em `identity.ConsentRecord` (somente inclusão; a única alteração permitida é preencher `revoked_at` uma vez). Sem consentimento ativo na versão vigente (`config/legal.py`), o servidor bloqueia início, respostas, revisão e conclusão. Quem tem o consentimento mais recente revogado naquela empresa sai do relatório executivo. A exclusão dos dados é pedida ao encarregado; não há exclusão automática.
+
 ## PWA e service worker
 
 O service worker do protótipo não será migrado nem modificado na M0. Antes de habilitar PWA nas páginas autenticadas ou dinâmicas, a estratégia de cache deverá passar por revisão de segurança. Conteúdo privado, personalizado ou sujeito a atualização não poderá ser armazenado ou servido como dado stale de forma indevida; logout, invalidação e uso em dispositivo compartilhado também deverão ser testados.

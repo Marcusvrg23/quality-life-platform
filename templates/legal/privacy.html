@@ -1,0 +1,63 @@
+{% extends 'legal/base.html' %}
+{% block title %}Política de privacidade{% endblock %}
+{% block content %}
+<article class="legal-doc" aria-labelledby="privacy-title">
+    <h1 id="privacy-title">Política de privacidade</h1>
+    <p class="legal-meta">Versão do texto de consentimento: {{ consent_version }}.</p>
+
+    <h2>1. Quem trata os seus dados</h2>
+    <ul>
+        <li><strong>Controladora:</strong> a empresa cliente que contrata o programa para os seus colaboradores. <em>[A definir pelo jurídico.]</em></li>
+        <li><strong>Operadora:</strong> Quality Life — {{ company_name }}, CNPJ {{ cnpj }}, que opera a plataforma em nome da empresa cliente. <em>[A definir pelo jurídico.]</em></li>
+    </ul>
+
+    <h2>2. Dados que coletamos</h2>
+    <ul>
+        <li><strong>Cadastro:</strong> nome, e-mail, empresa e papel na plataforma (colaborador, gestor, profissional ou administrador).</li>
+        <li><strong>Avaliação de qualidade de vida:</strong> suas respostas e as notas calculadas a partir delas. Esses dados são <strong>dados pessoais sensíveis referentes à saúde</strong> (Lei 13.709/2018, art. 5º, II).</li>
+    </ul>
+
+    <h2>3. Para que usamos</h2>
+    <ul>
+        <li>Gerar o seu Mapa de Qualidade de Vida, que só você vê.</li>
+        <li>Gerar o diagnóstico agregado de qualidade de vida da sua empresa, para planejar ações de bem-estar e ginástica laboral.</li>
+    </ul>
+
+    <h2>4. Base legal</h2>
+    <p>Dados da avaliação: consentimento específico e destacado do titular, para as finalidades acima (art. 11, I). <em>[A confirmar pelo jurídico.]</em></p>
+    <p>Dados de cadastro: <em>[a definir pelo jurídico]</em>.</p>
+    <p>Você não é obrigado a consentir. Sem o consentimento, você continua usando exercícios e aulas, mas não faz a avaliação.</p>
+
+    <h2>5. Quem acessa o quê</h2>
+    <ul>
+        <li><strong>Você:</strong> suas respostas e o seu resultado individual.</li>
+        <li><strong>Gestor e diretoria da empresa:</strong> somente médias e distribuições de grupos com 5 pessoas ou mais. Nunca respostas, notas individuais, nomes ou e-mails ligados à avaliação.</li>
+        <li><strong>Equipe técnica da Quality Life:</strong> acesso restrito, apenas para operar e dar suporte à plataforma. <em>[Regras a detalhar pelo jurídico.]</em></li>
+    </ul>
+
+    <h2>6. Regra dos agregados</h2>
+    <p>Relatórios da empresa só mostram dados quando há pelo menos 5 avaliações no grupo. Abaixo disso, nada é exibido. Quem revogar o consentimento deixa de entrar nesses relatórios.</p>
+
+    <h2>7. Por quanto tempo guardamos</h2>
+    <p>[PRAZO A DEFINIR]</p>
+
+    <h2>8. Seus direitos (art. 18)</h2>
+    <ul>
+        <li>Confirmação de que tratamos seus dados.</li>
+        <li>Acesso aos dados.</li>
+        <li>Correção de dados incompletos, inexatos ou desatualizados.</li>
+        <li>Anonimização, bloqueio ou eliminação de dados desnecessários, excessivos ou tratados em desconformidade com a lei.</li>
+        <li>Portabilidade dos dados.</li>
+        <li>Eliminação dos dados tratados com base no consentimento.</li>
+        <li>Informação sobre com quem os dados são compartilhados.</li>
+        <li>Informação sobre a possibilidade de não consentir e suas consequências.</li>
+        <li>Revogação do consentimento.</li>
+    </ul>
+
+    <h2>9. Como revogar o consentimento</h2>
+    <p>Entre na plataforma e abra <strong>Privacidade</strong> (<a href="{% url 'privacy_settings' %}">/app/privacidade/</a>). Use o botão “Revogar”. A revogação vale a partir daquele momento: novas respostas ficam bloqueadas e suas avaliações deixam de entrar no relatório da empresa. Para pedir a exclusão dos dados, fale com o encarregado.</p>
+
+    <h2>10. Encarregado de dados (DPO)</h2>
+    <p>Contato: {{ dpo_email }}</p>
+</article>
+{% endblock %}

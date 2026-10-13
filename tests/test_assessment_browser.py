@@ -210,6 +210,7 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             page.get_by_role("heading", name="Minha avaliação").wait_for()
             assert page.locator(".ql-topbar").is_visible()
             self._capture(page, viewport, "hub")
+            page.locator('input[name="consent"]').check()
             page.get_by_role("button", name="Iniciar avaliação").click()
             page.get_by_role("heading", name="Pergunta 1 de 9").wait_for()
             self._capture(page, viewport, "question")
