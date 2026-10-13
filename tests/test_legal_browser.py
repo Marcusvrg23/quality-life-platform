@@ -28,6 +28,9 @@ def no_horizontal_scroll(page):
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
 class LegalBrowserTests(StaticLiveServerTestCase):
+    # Earlier live-server tests flush the seeded pillars; restore them.
+    serialized_rollback = True
+
     def setUp(self):
         organization = Organization.objects.create(
             name="QA Privacidade Empresa Com Nome Longo", slug="qa-privacidade"
