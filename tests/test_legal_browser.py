@@ -28,9 +28,6 @@ def no_horizontal_scroll(page):
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
 class LegalBrowserTests(StaticLiveServerTestCase):
-    # Earlier live-server tests flush the seeded pillars; restore them.
-    serialized_rollback = True
-
     def setUp(self):
         organization = Organization.objects.create(
             name="QA Privacidade Empresa Com Nome Longo", slug="qa-privacidade"
@@ -49,7 +46,11 @@ class LegalBrowserTests(StaticLiveServerTestCase):
         )
         configured = QuestionnairePillar.objects.create(
             questionnaire=version,
-            pillar=Pillar.objects.get(display_order=1),
+            # Earlier live-server tests flush the migration-seeded pillars.
+            pillar=Pillar.objects.get_or_create(
+                code="physical_health",
+                defaults={"name": "Saúde Física", "display_order": 1},
+            )[0],
             display_order=1,
             weight=Decimal(1),
         )
