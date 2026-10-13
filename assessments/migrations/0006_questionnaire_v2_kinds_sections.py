@@ -8,14 +8,14 @@ from django.db import migrations, models
 # Questions now reach their version through a pillar or a section, answers may
 # carry text or checked options, and both follow the same immutability rules.
 SQL = r"""
-CREATE FUNCTION assessments_question_version(pillar_id bigint, section_id bigint)
+CREATE FUNCTION assessments_question_version(p_pillar_id bigint, p_section_id bigint)
 RETURNS bigint AS $$
 DECLARE pillar_version bigint; section_version bigint;
 BEGIN
-    SELECT questionnaire_id INTO pillar_version FROM assessments_questionnairepillar
-    WHERE id = pillar_id;
-    SELECT questionnaire_id INTO section_version FROM assessments_questionnairesection
-    WHERE id = section_id;
+    SELECT qp.questionnaire_id INTO pillar_version FROM assessments_questionnairepillar qp
+    WHERE qp.id = p_pillar_id;
+    SELECT s.questionnaire_id INTO section_version FROM assessments_questionnairesection s
+    WHERE s.id = p_section_id;
     IF pillar_version IS DISTINCT FROM section_version
         AND pillar_version IS NOT NULL AND section_version IS NOT NULL THEN
         RAISE EXCEPTION 'Pillar and section belong to other versions' USING ERRCODE = '23514';

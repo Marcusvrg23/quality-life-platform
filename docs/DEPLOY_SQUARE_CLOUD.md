@@ -33,7 +33,7 @@ A Square Cloud lê o arquivo `squarecloud.app` da raiz do projeto. Ele já está
 O comando de início (`START`) faz, em ordem, a cada vez que o site liga:
 
 1. `collectstatic`: junta CSS, imagens e vídeos para o servidor entregar.
-2. `release`: atualiza o banco (`migrate`), carrega o questionário oficial e cria o primeiro administrador. Pode rodar quantas vezes for preciso: o que já existe não é alterado. Se der erro, o site não liga e a mensagem aparece nos logs.
+2. `release`: atualiza o banco (`migrate`), publica o questionário oficial **v2** (`quality_life_oficial_v2.json`), aposenta o v1 e cria o primeiro administrador. Pode rodar quantas vezes for preciso: o que já existe não é alterado. Se der erro, o site não liga e a mensagem aparece nos logs.
 3. `gunicorn`: liga o site na porta 80, como a Square Cloud exige.
 
 - **Não** adicione `--access-logfile` ao `START`: os links de convite e de redefinição de senha têm um código secreto na URL, e esse log gravaria o código.
@@ -101,8 +101,9 @@ O acesso **continua em HTTPS**: quem cuida do cadeado é o proxy da Square Cloud
 
 - **Dados nos EUA (LGPD)**: o site (Square Cloud, Nova York) e o banco (Neon, N. Virginia) ficam nos **Estados Unidos**. Isso é transferência internacional de **dados de saúde**, que são dados sensíveis. Esse ponto precisa entrar na **revisão jurídica da política de privacidade** antes de colaboradores reais usarem o sistema.
 - **Domínio próprio** (ex.: `app.empresa.com.br`): acrescente o domínio em `DJANGO_ALLOWED_HOSTS` (separado por vírgula, sem `https://`) e em `DJANGO_CSRF_TRUSTED_ORIGINS` (com `https://`). Sem isso, o site responde "Bad Request (400)" ou recusa formulários.
-- **Pontuação do questionário v1**: o arquivo `quality_life_oficial_v1.json` traz a pontuação **PROPOSTA**. Um questionário publicado não pode ser editado. Por isso, a aprovação formal do cliente sobre perguntas e pontuação deve vir **antes** de colaboradores reais responderem. Mudanças depois disso exigem uma nova versão.
-- **Questionário v2**: quando existir um novo arquivo aprovado, carregue com `python manage.py load_official_questionnaire --file <arquivo_v2> --retire-other-published`. Isso aposenta o v1 e preserva os resultados já calculados.
+- **Questionário v2 (atual)**: o `release` publica `quality_life_oficial_v2.json`, gerado a partir do texto oficial `docs/questionario/questionario-oficial-quality-life.md` por `scripts/build_questionnaire_v2.py`. Ele roda com `--retire-other-published`: o v1 (e qualquer outro questionário publicado, inclusive o de demonstração) passa para `RETIRED` na mesma transação. **Avaliações já concluídas no v1 são preservadas**, com notas e mapa intactos, e uma avaliação do v1 em andamento ainda pode ser concluída. Novas avaliações usam o v2.
+- **Pontuação**: o v2 mantém a pontuação **PROPOSTA** do v1 sem nenhuma mudança; as perguntas novas do texto oficial (identificação, múltipla escolha, textos e as demais) não entram na nota. Um questionário publicado não pode ser editado. Por isso, a aprovação formal do cliente sobre perguntas e pontuação deve vir **antes** de colaboradores reais responderem. Mudanças depois disso exigem uma nova versão (`version` maior no JSON).
+- **Identificação (seção 1) e respostas abertas**: nome, matrícula, cargo, setor, textos livres e múltipla escolha só aparecem para o próprio colaborador. O relatório do gestor continua mostrando apenas médias de pilares de grupos com 5 pessoas ou mais.
 
 ## 5. Checklist depois do deploy
 
@@ -126,7 +127,7 @@ Marque cada item:
 
 ## 6. Quando algo dá errado
 
-- **Site não liga**: abra os logs do app na Square Cloud. Erros do `release` aparecem ali (ex.: senha do administrador recusada, outro questionário já publicado, banco do Neon inacessível).
+- **Site não liga**: abra os logs do app na Square Cloud. Erros do `release` aparecem ali (ex.: senha do administrador recusada, questionário v2 já existente com conteúdo diferente do arquivo, banco do Neon inacessível).
 - **Erro 500 no site**: os logs do app mostram o traceback completo do erro.
 - **"Bad Request (400)"**: confira `DJANGO_ALLOWED_HOSTS`.
 - **"Redirecionamento em excesso"**: veja a seção acima sobre `DJANGO_SECURE_SSL_REDIRECT`.
