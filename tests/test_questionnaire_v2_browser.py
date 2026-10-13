@@ -15,7 +15,7 @@ from assessments.models import Assessment, Pillar
 from identity.models import Membership, Organization
 
 try:
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import expect, sync_playwright
 except ImportError:
     sync_playwright = None
 
@@ -69,16 +69,15 @@ class QuestionnaireV2BrowserTests(StaticLiveServerTestCase):
                 return "skipped"
             value = NAME if position == 1 else f"Resposta {position}"
             text.fill(value)
-            counter = page.locator("#answer-count").inner_text()
-            assert (
-                counter == f"{len(value)}/{text.get_attribute('maxlength')} caracteres"
+            expect(page.locator("#answer-count")).to_have_text(
+                f"{len(value)}/{text.get_attribute('maxlength')} caracteres"
             )
             return "text"
         if boxes.count():
             exclusive = page.locator('input[name="options"][data-exclusive]')
             exclusive.check()
             boxes.first.check()
-            assert not exclusive.is_checked(), "exclusive option stayed checked"
+            expect(exclusive).not_to_be_checked()
             return "multiple"
         if page.locator('input[name="other_text"]').count():
             page.locator("label.option", has_text="Outro:").locator("input").check()
@@ -118,6 +117,8 @@ class QuestionnaireV2BrowserTests(StaticLiveServerTestCase):
                 page.get_by_role(
                     "heading", name=f"Pergunta {position} de {TOTAL}"
                 ).wait_for()
+                # Deferred scripts (counter, exclusive option) run before this.
+                page.wait_for_load_state("domcontentloaded")
                 section = page.locator(".card .eyebrow").first.inner_text()
                 if not sections or sections[-1] != section:
                     sections.append(section)
