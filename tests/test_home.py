@@ -20,10 +20,9 @@ class HomeTests(TestCase):
     def test_nine_pillars_are_read_from_database_in_display_order(self):
         pillars = list(Pillar.objects.order_by("display_order"))
         self.assertEqual(len(pillars), 9)
-        # QuerySet.update intentionally bypasses the immutable model's save guard:
-        # a distinct name proves that the landing is not a hard-coded copy.
-        Pillar.objects.filter(pk=pillars[0].pk).update(name="Pilar vindo do banco")
-        response = self.client.get("/")
+        # Read-only: approved pillars are immutable in PostgreSQL as well as Python.
+        with self.assertNumQueries(1):
+            response = self.client.get("/")
         names = list(
             Pillar.objects.order_by("display_order").values_list("name", flat=True)
         )
