@@ -258,6 +258,10 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             assert page.evaluate(
                 "[...document.querySelectorAll('.heart-segment')]"
                 ".every(g => getComputedStyle(g).opacity === '1')"
+            ), page.evaluate(
+                "[...document.querySelectorAll('.heart-segment')].map(g => ["
+                "g.style.opacity, getComputedStyle(g).opacity, g.getAttribute('class'),"
+                " window.gsap ? gsap.getTweensOf(g).length : -1])"
             )
             page.mouse.move(0, 0)
             with ThreadPoolExecutor(max_workers=1) as pool:
