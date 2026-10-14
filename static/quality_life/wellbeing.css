@@ -48,7 +48,7 @@
 .wb-player__progress::-webkit-progress-bar { background: rgb(255 255 255 / 10%); }
 .wb-player__progress::-webkit-progress-value { background: var(--app-accent); }
 .wb-player__progress::-moz-progress-bar { background: var(--app-accent); }
-.wb-player__body { display: grid; flex: 1; gap: 1rem; min-height: 0; padding: 1rem; overflow-y: auto; }
+.wb-player__body { display: grid; flex: 1; align-content: start; gap: 1rem; min-height: 0; padding: 1rem; overflow-y: auto; }
 .wb-player__media { position: relative; overflow: hidden; border-radius: 18px; aspect-ratio: 832 / 480; background: #02090b; }
 .wb-player__media video,
 .wb-player__media img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -68,8 +68,8 @@
 .wb-player__done[hidden] { display: none; }
 .wb-player__done a { color: var(--app-text); }
 .wb-player__controls { display: flex; flex-shrink: 0; gap: 0.5rem; padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); background: #0b2129; border-top: 1px solid var(--app-line); }
-.wb-player__controls .button { flex: 1; min-width: 0; padding-inline: 0.75rem; }
-.wb-player__controls [hidden] { display: none; }
+.ql-main .wb-player__controls .button { flex: 1; min-width: 0; padding-inline: 0.6rem; white-space: nowrap; }
+.ql-main .wb-player__controls [hidden] { display: none; }
 
 /* Breathing guide over the video: scaled by GSAP (app never animates it with reduced motion). */
 .wb-breath { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
@@ -77,11 +77,11 @@
 .wb-breath__label { margin: 0; color: var(--app-accent); font-family: var(--ql-font-serif); font-size: 1.7rem; font-weight: 600; }
 
 @media (min-width: 900px) {
-    .wb-player { width: min(1040px, calc(100% - 3rem)); height: auto; max-height: calc(100% - 3rem); margin: auto; border-radius: 24px; }
+    .wb-player { width: min(1040px, calc(100% - 3rem)); height: fit-content; max-height: calc(100% - 3rem); margin: auto; border-radius: 24px; }
     .wb-player__body { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; padding: 1.25rem 1.5rem; }
     .wb-player__bar { padding-inline: 1.5rem; }
     .wb-player__controls { justify-content: flex-end; padding-inline: 1.5rem; }
-    .wb-player__controls .button { flex: 0 1 12rem; }
+    .ql-main .wb-player__controls .button { flex: 0 1 12rem; }
 }
 
 /* Relaxamento */

@@ -179,16 +179,19 @@
 
         function update(elapsed) {
             if (!session || finished) return;
-            const current = step();
-            const remaining = current.seconds - (elapsed - stepStart);
+            let remaining = step().seconds - (elapsed - stepStart);
             if (remaining <= 0 && watch.running) {
-                if (index < session.steps.length - 1) {
+                // Carry the overflow: a throttled background tab may skip steps.
+                while (remaining <= 0) {
+                    if (index === session.steps.length - 1) {
+                        complete();
+                        return;
+                    }
+                    stepStart += step().seconds;
                     index += 1;
-                    stepStart = elapsed;
-                    renderStep(1);
-                } else {
-                    complete();
+                    remaining = step().seconds - (elapsed - stepStart);
                 }
+                renderStep(1);
                 return;
             }
             const second = Math.ceil(remaining);
