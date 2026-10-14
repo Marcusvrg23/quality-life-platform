@@ -31,6 +31,7 @@ urlpatterns = [
     path("app/aulas/", lessons, name="lessons"),
     path("app/assessment/", include("assessments.urls")),
     path("app/report/", include("reports.urls")),
+    path("app/", include("wellbeing.urls")),
     path("app/equipe/", identity_views.team, name="team"),
     path(
         "app/equipe/membros/<int:membership_id>/status/",

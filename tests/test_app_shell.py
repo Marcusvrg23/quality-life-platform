@@ -99,8 +99,8 @@ class AppShellTests(SimpleTestCase):
     def test_exercise_fallback_and_unique_accessible_openers(self):
         self.request.resolver_match = resolve(reverse("exercises"))
         html = self.render("exercises/library.html", exercises=EXERCISES, source=SOURCE)
-        self.assertEqual(html.count('<details class="exercise-instructions">'), 8)
-        self.assertEqual(html.count('aria-label="Ver exercício:'), 8)
+        self.assertEqual(html.count('<details class="exercise-instructions">'), 9)
+        self.assertEqual(html.count('aria-label="Ver exercício:'), 9)
         self.assertIn('data-sequence-position aria-live="polite"', html)
         self.assertIn('class="exercise-dialog" aria-labelledby="exercise-title"', html)
         self.assertIn('class="exercise-filters exercise-enhanced"', html)

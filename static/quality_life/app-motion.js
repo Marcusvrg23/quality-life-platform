@@ -11,9 +11,10 @@
         '.dashboard-intro', '.dashboard-notice', '.dashboard-recommendation', '.dashboard-hero', '.dashboard-link',
         '.exercise-heading', '.exercise-safety', '.exercise-card', '.lessons-intro', '.lesson-card',
         '.team > *', '.exec-report > *', '.ql-main--assessment > .card', '.legal-settings',
+        '.wb-intro', '.wb-safety', '.wb-card', '.wb-mixer', '.wb-stat', '.wb-tip',
         '.login-form-wrap', '.foundation',
     ].join(', ');
-    const GLOW = '.dashboard-link, .dashboard-recommendation, .exercise-card, .lesson-card';
+    const GLOW = '.dashboard-link, .dashboard-recommendation, .exercise-card, .lesson-card, .wb-card';
 
     function enter() {
         if (reduce.matches || !window.gsap) return;

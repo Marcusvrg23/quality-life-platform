@@ -2,8 +2,12 @@
 
 Page numbers are one-based. Instructions are transcribed, not generated.
 Images are extracted illustrations, never screenshots of complete PDF pages.
+Videos are AI illustrations of the same instructions, pending professional
+review (static/quality_life/videos/wellbeing/README.md); an exercise without
+"video" has none, and one without "image_page" shows the video poster.
 """
 
+VIDEO_DIR = "quality_life/videos/wellbeing/"
 SOURCE = "MEMBROS INFERIORES E SUPERIORES — QUALITYLIFE AP"
 START_POSITION = (
     "Ereto, com os pés paralelos e afastados na largura do quadril, mantenha as "
@@ -30,6 +34,7 @@ EXERCISES = (
         "position": START_POSITION,
         "page": "2–3",
         "image_page": 3,
+        "video": f"{VIDEO_DIR}ex-abertura-peito.mp4",
     },
     {
         "slug": "pescoco",
@@ -40,6 +45,7 @@ EXERCISES = (
         "position": START_POSITION,
         "page": "6–7",
         "image_page": 7,
+        "video": f"{VIDEO_DIR}ex-pescoco.mp4",
     },
     {
         "slug": "punhos",
@@ -50,6 +56,7 @@ EXERCISES = (
         "position": START_POSITION,
         "page": "7–8",
         "image_page": 8,
+        "video": f"{VIDEO_DIR}ex-punhos.mp4",
     },
     {
         "slug": "lateral",
@@ -60,6 +67,18 @@ EXERCISES = (
         "position": START_POSITION,
         "page": "12–13",
         "image_page": 13,
+        "video": f"{VIDEO_DIR}ex-lateral.mp4",
+    },
+    {
+        "slug": "inclinacao-frente",
+        "title": "Inclinação do tronco à frente",
+        "category": "Membros inferiores",
+        "summary": "Pernas afastadas e mãos deslizando pelas pernas em direção ao solo.",
+        "instruction": "Membros inferiores afastados, deslize as mãos pelas pernas inclinando o tronco para frente, indo em direção ao solo. Volte à posição inicial, com o abdome contraído, para proteger a coluna vertebral.",
+        # Série 1, exercício 10. The PDF is not in the repository: page unknown,
+        # and there is no extracted image yet (the card shows the video poster).
+        "page": "",
+        "video": f"{VIDEO_DIR}ex-inclinacao-frente.mp4",
     },
     {
         "slug": "passo-largo",
@@ -69,6 +88,7 @@ EXERCISES = (
         "instruction": "Dê um passo largo com o pé direito. Inspirando, eleve os dois braços, junte as palmas das mãos acima da cabeça e incline o tronco para trás olhando para o teto. Repita o movimento com os membros inferiores opostos.",
         "page": "22–23",
         "image_page": 23,
+        "video": f"{VIDEO_DIR}ex-passo-largo.mp4",
     },
     {
         "slug": "panturrilha",
@@ -88,5 +108,23 @@ EXERCISES = (
         "instruction": "Extensão dos dedos e punhos (abrir a palma da mão). Consulte a posição na ilustração do material.",
         "page": "26",
         "image_page": 26,
+        "video": f"{VIDEO_DIR}ex-sentado.mp4",
     },
 )
+
+
+def image_path(item):
+    """Static path of the illustration extracted from the material, if any."""
+    if not item.get("image_page"):
+        return None
+    return f"quality_life/images/exercises/{item['slug']}.webp"
+
+
+def poster_path(item):
+    """First frame of the exercise video (same name, .webp), if any."""
+    video = item.get("video")
+    return video.removesuffix(".mp4") + ".webp" if video else None
+
+
+def visual_path(item):
+    return image_path(item) or poster_path(item)

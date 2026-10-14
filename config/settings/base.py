@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "identity",
     "assessments",
     "reports",
+    "wellbeing",
 ]
 
 AUTH_USER_MODEL = "identity.User"

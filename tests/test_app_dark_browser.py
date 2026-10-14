@@ -488,9 +488,9 @@ class AppDarkBrowserTests(StaticLiveServerTestCase):
                 assert min(int(v) for v in re.findall(r"\d+", frame)[:3]) > 235, frame
                 page.get_by_role("button", name="Começar sequência").click()
                 position = page.locator("[data-sequence-position]")
-                assert position.inner_text() == "Exercício 1 de 8"
+                assert position.inner_text() == "Exercício 1 de 9"
                 page.get_by_role("button", name="Próximo →").click()
-                assert position.inner_text() == "Exercício 2 de 8"
+                assert position.inner_text() == "Exercício 2 de 9"
                 page.wait_for_function(GSAP_IDLE)
                 image = page.evaluate(
                     "(() => { const s = getComputedStyle("

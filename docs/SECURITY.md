@@ -20,6 +20,12 @@ O relatório usa sempre os últimos 90 dias até hoje e ignora parâmetros de pe
 
 Risco residual conhecido: como a janela é móvel, um gestor ainda pode comparar o relatório de dias seguidos e, se uma única avaliação entrar ou sair da janela, inferir a contribuição dela. A correção definitiva é trabalhar com ciclos de avaliação fechados (o relatório só mostra ciclos encerrados, sem janela móvel), prevista para depois do lançamento.
 
+## Uso das práticas de bem-estar
+
+Cada prática (`wellbeing.ActivitySession`) é gravada só pelo próprio usuário, na empresa ativa, e só ele vê o próprio progresso. No relatório da empresa aparecem apenas agregados da semana e do mês correntes (pessoas ativas, minutos, práticas): com menos de 5 pessoas no período nada é exibido, e a divisão por tipo só aparece se todo tipo tiver 0 ou 5+ pessoas, para que "total menos tipos visíveis" não revele um grupo pequeno. Nunca há nome, e-mail ou ranking.
+
+Risco residual conhecido: a semana está contida no mês, e as duas janelas crescem dia a dia; comparar mês e semana, ou o mesmo relatório em dias seguidos, mostra a variação de um grupo que pode ter menos de 5 pessoas (quantas práticas e minutos, nunca quem). A mesma correção prevista para o relatório (ciclos fechados) vale aqui.
+
 ## Consentimento LGPD
 
 A avaliação trata dado de saúde (dado sensível) com base em consentimento específico e destacado, registrado por empresa em `identity.ConsentRecord` (somente inclusão; a única alteração permitida é preencher `revoked_at` uma vez). Sem consentimento ativo na versão vigente (`config/legal.py`), o servidor bloqueia início, respostas, revisão e conclusão. Quem tem o consentimento mais recente revogado naquela empresa sai do relatório executivo. A exclusão dos dados é pedida ao encarregado; não há exclusão automática.

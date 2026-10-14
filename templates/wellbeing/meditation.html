@@ -1,0 +1,29 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Meditação{% endblock %}
+{% block page_title %}Meditação{% endblock %}
+{% block header_title %}Meditação{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
+{% block content %}
+<section class="wb-page" aria-labelledby="meditation-title" data-wellbeing data-record-url="{% url 'wellbeing_record' %}">
+    {% csrf_token %}
+    <header class="wb-intro">
+        <p class="ql-eyebrow">RESPIRAR</p>
+        <h1 id="meditation-title">Meditação</h1>
+        <p>Sessões com vídeo, cronômetro e guia de respiração, sem narração. Siga o círculo: inspire enquanto ele cresce, expire enquanto ele diminui.</p>
+    </header>
+    <div class="wb-grid">
+        {% for item in meditations %}
+        <article class="card wb-card">
+            <div class="wb-card__visual"><img src="{{ item.steps.0.poster }}" alt="" width="832" height="480" loading="lazy"></div>
+            <h2>{{ item.title }}</h2>
+            <p class="wb-card__meta">{{ item.label }} · respiração guiada</p>
+            <button type="button" class="button" data-open-session="{{ item.slug }}">Começar <span aria-hidden="true">→</span></button>
+        </article>
+        {% endfor %}
+    </div>
+    <p class="wb-note wb-footnote">Ritmo da respiração: inspire {{ catalog.BREATH_IN_SECONDS }} s, expire {{ catalog.BREATH_OUT_SECONDS }} s. {{ catalog.PROPOSAL_NOTE }} Vídeos ilustrativos gerados por IA.</p>
+    {% include 'wellbeing/_player.html' with breathing=True note="Vídeo ilustrativo gerado por IA." %}
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}

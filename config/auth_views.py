@@ -7,10 +7,13 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
 from identity.models import Membership
+from wellbeing.services import first_name, greeting
 
+from . import wellbeing_catalog
 from .calendar_highlights import active_highlight
 from .forms import EmailAuthenticationForm
 from .recommendations import build_recommendation
@@ -35,6 +38,9 @@ def _render_home(request: HttpRequest, tenant) -> HttpResponse:
                 else None
             ),
             "highlight": active_highlight(),
+            "greeting": greeting(),
+            "first_name": first_name(request.user, tenant.organization),
+            "tip": wellbeing_catalog.tip_of_the_day(timezone.localdate()),
         },
     )
 
