@@ -4,6 +4,8 @@
    with prefers-reduced-motion: reduce, while the tab is hidden, or for a
    scene that is off screen. If the average frame over 30 frames exceeds
    24 ms the density drops, the cursor trail stops and <html> gets .ql-lite.
+   A canvas with data-ambient="lite" (app pages) gets only aurora and a few
+   particles: no section ribbons and no cursor trail.
    Exposes window.QLAmbient. */
 (function () {
     "use strict";
@@ -93,6 +95,7 @@
     var rectsDirty = true;
     var sprites = null;
     var trail = [];
+    var trails = true;
     var pointer = { x: -1e4, y: -1e4, sx: -1e4, sy: -1e4, on: false, nx: 0, ny: 0 };
 
     function rand(min, max) {
@@ -355,7 +358,9 @@
 
     // Fixed page background: aurora blobs, section ribbons, particles, trail.
     function AmbientLayer(canvas) {
-        Layer.call(this, canvas, { ribbons: [], particles: [64, 26], depth: 6, bokeh: true }, 1.5);
+        this.light = canvas.dataset.ambient === "lite";
+        var particles = this.light ? [16, 8] : [64, 26];
+        Layer.call(this, canvas, { ribbons: [], particles: particles, depth: 6, bokeh: true }, 1.5);
         this.aurora = document.createElement("canvas");
         this.auroraCtx = this.aurora.getContext("2d");
         this.auroraTick = 0;
@@ -372,6 +377,10 @@
 
     // One ribbon on each section edge, so light flows from section to section.
     AmbientLayer.prototype.anchor = function () {
+        if (this.light) {
+            this.ribbons = [];
+            return;
+        }
         var sections = document.querySelectorAll("main > section");
         var ribbons = [];
         for (var i = 1; i < sections.length; i += 1) {
@@ -400,7 +409,7 @@
                 var cy = h * (0.5 + 0.42 * Math.cos(t * 0.045 * (k + 1.3) + k));
                 var radius = Math.max(w, h) * 0.55;
                 var blob = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-                blob.addColorStop(0, "rgba(" + COLORS[k] + ",0.2)");
+                blob.addColorStop(0, "rgba(" + COLORS[k] + (this.light ? ",0.12)" : ",0.2)"));
                 blob.addColorStop(1, "rgba(" + COLORS[k] + ",0)");
                 ctx.fillStyle = blob;
                 ctx.fillRect(0, 0, w, h);
@@ -439,7 +448,7 @@
             this.drawRibbon(this.ribbons[i], t);
         }
         this.drawParticles(t, dt, true);
-        if (!lite && trail.length) {
+        if (!lite && !this.light && trail.length) {
             this.drawTrail(dt);
         }
     };
@@ -569,6 +578,7 @@
     function startAmbient() {
         var canvas = document.getElementById("ql-ambient");
         if (enabled && canvas) {
+            trails = canvas.dataset.ambient !== "lite";
             register("ambient", [new AmbientLayer(canvas)]);
         }
     }
@@ -602,7 +612,7 @@
             pointer.on = true;
             pointer.nx = (event.clientX / window.innerWidth - 0.5) * 2;
             pointer.ny = (event.clientY / window.innerHeight - 0.5) * 2;
-            if (event.pointerType === "mouse" && fineQuery.matches && !lite && frameId) {
+            if (event.pointerType === "mouse" && fineQuery.matches && trails && !lite && frameId) {
                 trail.push({ x: event.clientX, y: event.clientY, life: 1 });
                 if (trail.length > 18) {
                     trail.shift();

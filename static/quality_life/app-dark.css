@@ -1,0 +1,1182 @@
+/* App and auth pages: the dark neon/glass look of the landing "/"
+   (docs/specs/09-app-dark.md). Loaded after every page sheet, so it wins at
+   equal specificity; identity.css is never edited, only overridden here.
+   Components read the --app-* tokens: the individual map (.quality-map) and
+   print swap them for light "document" values. Brand fonts and colors come
+   from brand.css. */
+
+:root {
+    color-scheme: dark;
+    --app-bg-0: #061419;
+    --app-bg-1: #0a222b;
+    --app-text: #f2f7f8;
+    --app-text-soft: #b8c9ce;
+    --app-text-muted: #9fb4ba;
+    --app-accent: #4fd8ca;
+    --app-violet: #b89cf0;
+    --app-focus: #7ff3e6;
+    --app-line: rgb(255 255 255 / 12%);
+    --app-line-strong: rgb(255 255 255 / 24%);
+    --app-glass: rgb(17 46 56 / 62%);
+    --app-sheen: linear-gradient(160deg, rgb(255 255 255 / 7%), rgb(255 255 255 / 1%));
+    --app-reading: rgb(11 36 44 / 96%);
+    --app-sunken: rgb(3 14 18 / 45%);
+    --app-field: #071b21;
+    --app-field-line: rgb(255 255 255 / 24%);
+    /* Primary gradient: both ends keep white text above 4.5:1. */
+    --app-primary: linear-gradient(100deg, #0e7369 0%, #6b4a9a 100%);
+    --app-primary-base: #0e7369;
+    --app-glow: 0 10px 28px -12px rgb(79 216 202 / 60%), inset 0 1px 0 rgb(255 255 255 / 18%);
+    --app-glow-hover: 0 0 0 1px rgb(79 216 202 / 40%), 0 12px 34px -10px rgb(79 216 202 / 75%),
+        0 0 26px -6px rgb(184 156 240 / 60%);
+    --app-shadow: 0 24px 48px -28px rgb(0 0 0 / 75%), inset 0 1px 0 rgb(255 255 255 / 6%);
+    --app-radius: 20px;
+    --app-radius-sm: 14px;
+    /* Band seals: solid colors, AA on their own background. */
+    --band-excelente-fg: #6ee7a4;
+    --band-excelente-bg: #0f3a2b;
+    --band-bom-fg: #cde77f;
+    --band-bom-bg: #26340f;
+    --band-atencao-fg: #ffcf5c;
+    --band-atencao-bg: #3b2d07;
+    --band-prioridade-fg: #ff9d8f;
+    --band-prioridade-bg: #401813;
+    --band-info-fg: #9cc8ff;
+    --band-info-bg: #13304a;
+    --app-ok-fg: #6ee7a4;
+    --app-ok-bg: #0d3329;
+    --app-warn-fg: #ffcf5c;
+    --app-warn-bg: #2f2408;
+    --app-danger-fg: #ff9d8f;
+    --app-danger-bg: #401813;
+
+    font-family: var(--ql-font-body);
+    color: var(--app-text);
+    background-color: var(--app-bg-0);
+}
+
+/* Page canvas: static aurora; ambient.js (lite) animates a canvas above it. */
+body,
+body.ql-app,
+.legal-page,
+.login-page {
+    color: var(--app-text);
+    background: transparent;
+    font-family: var(--ql-font-body);
+    -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(60% 45% at 12% 18%, rgb(25 180 165 / 16%), transparent 70%),
+        radial-gradient(50% 40% at 88% 42%, rgb(126 91 163 / 16%), transparent 70%),
+        radial-gradient(55% 40% at 30% 88%, rgb(211 38 142 / 8%), transparent 70%),
+        linear-gradient(180deg, var(--app-bg-0) 0%, var(--app-bg-1) 55%, var(--app-bg-0) 100%);
+}
+
+.ql-ambient {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    display: none;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .ql-ambient {
+        display: block;
+    }
+}
+
+:root :focus-visible,
+.ql-app :focus-visible,
+.exercise-page :focus-visible {
+    outline: 2px solid var(--app-focus);
+    outline-offset: 3px;
+}
+
+/* Typography --------------------------------------------------------------- */
+
+h1,
+h2,
+.ql-main h1,
+.ql-main h2,
+.login-story__title,
+.login-title,
+.login-form-wrap h2 {
+    color: var(--app-text);
+    font-family: var(--ql-font-serif);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    text-wrap: balance;
+}
+
+.ql-main h1 {
+    font-size: clamp(2.1rem, 4vw, 2.9rem);
+}
+
+.ql-main h2 {
+    font-size: max(1.5rem, 1em);
+}
+
+h3,
+.ql-main h3 {
+    color: var(--app-text);
+    font-family: var(--ql-font-body);
+    font-weight: 600;
+}
+
+p,
+legend,
+label {
+    color: inherit;
+}
+
+a {
+    color: var(--app-accent);
+}
+
+.ql-eyebrow,
+.eyebrow,
+.exercise-page .eyebrow,
+.foundation__eyebrow,
+.login-eyebrow,
+.login-form-wrap .login-eyebrow {
+    color: var(--app-accent);
+    font-family: var(--ql-font-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+/* Shell ---------------------------------------------------------------------- */
+
+.ql-sidebar {
+    color: var(--app-text);
+    background: rgb(7 24 30 / 72%);
+    border-right: 1px solid var(--app-line);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+}
+
+.ql-brand {
+    color: var(--app-text);
+}
+
+.ql-brand__logo {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 0.4rem;
+    border-radius: 50%;
+    background: none;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 14%), 0 0 30px -6px rgb(79 216 202 / 60%);
+}
+
+.ql-brand__logo img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+}
+
+.ql-brand strong {
+    font-family: var(--ql-font-serif);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+
+.ql-brand > span:last-child,
+.ql-user small {
+    color: var(--app-text-muted);
+}
+
+.ql-nav a {
+    color: var(--app-text-soft);
+    border: 1px solid transparent;
+    border-radius: var(--ql-radius-pill);
+}
+
+.ql-nav a:hover {
+    color: var(--app-text);
+    background: rgb(255 255 255 / 6%);
+}
+
+.ql-nav a[aria-current="page"] {
+    color: #fff;
+    background: var(--app-primary) var(--app-primary-base);
+    border-color: rgb(255 255 255 / 14%);
+    box-shadow: var(--app-glow);
+}
+
+.ql-user {
+    background: rgb(255 255 255 / 5%);
+    border-color: var(--app-line);
+    border-radius: var(--app-radius-sm);
+}
+
+.ql-avatar,
+.ql-avatar--topbar {
+    color: #fff;
+    background: var(--app-primary) var(--app-primary-base);
+}
+
+.ql-account-link,
+.ql-logout button {
+    color: var(--app-text-soft);
+    border-radius: var(--ql-radius-pill);
+}
+
+.ql-account-link:hover,
+.ql-account-link[aria-current="page"],
+.ql-logout button:hover {
+    color: var(--app-text);
+    background: rgb(255 255 255 / 6%);
+}
+
+.ql-topbar {
+    background: rgb(6 20 25 / 45%);
+    border-bottom: 1px solid var(--app-line);
+}
+
+.ql-menu-toggle,
+.ql-drawer-close {
+    color: var(--app-text);
+    background: rgb(255 255 255 / 6%);
+    border: 1px solid var(--app-line-strong);
+    border-radius: 12px;
+}
+
+.ql-menu-toggle:hover,
+.ql-drawer-close:hover {
+    border-color: var(--app-accent);
+    box-shadow: 0 0 18px -6px rgb(79 216 202 / 70%);
+}
+
+.ql-page-heading p {
+    color: var(--app-text-muted);
+}
+
+.ql-page-heading strong {
+    font-family: var(--ql-font-serif);
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 0;
+}
+
+.ql-topbar__organization {
+    color: var(--app-text-soft);
+}
+
+.ql-footer a {
+    color: var(--app-accent);
+}
+
+.ql-skip {
+    color: var(--app-bg-0);
+    background: #fff;
+}
+
+@media (max-width: 900px) {
+    .ql-sidebar {
+        background: rgb(7 24 30 / 92%);
+    }
+
+    .ql-page-heading strong {
+        font-size: 1.35rem;
+    }
+
+    .ql-backdrop:not([hidden]) {
+        background: rgb(2 8 10 / 70%);
+    }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .ql-sidebar {
+        background: #08202a;
+    }
+}
+
+/* Components ------------------------------------------------------------------ */
+
+/* Glass card. */
+.card,
+.dashboard-hero,
+.dashboard-link,
+.dashboard-recommendation,
+.lesson-card,
+.exercise-card,
+.foundation,
+.login-form-wrap {
+    color: var(--app-text);
+    background: var(--app-sheen) var(--app-glass);
+    border: 1px solid var(--app-line);
+    border-radius: var(--app-radius);
+    box-shadow: var(--app-shadow);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+}
+
+/* Long reading: near-opaque surface, no blur needed (no canvas behind). */
+.ql-main--assessment > .card,
+.exec-report .card,
+.legal-doc,
+.legal-settings {
+    color: var(--app-text);
+    background: var(--app-reading);
+    border: 1px solid var(--app-line);
+    border-radius: var(--app-radius);
+    box-shadow: var(--app-shadow);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+/* Rows and tiles inside a card. */
+.team-row,
+.report-facts div,
+.report-list li,
+.report-invest li,
+.report-matrix li,
+.pillar-row,
+.legal-consents li,
+.option {
+    color: var(--app-text);
+    background: var(--app-sunken);
+    border: 1px solid var(--app-line);
+}
+
+/* Buttons: pills. Primary is a turquoise to violet gradient with a glow. */
+.ql-button,
+.ql-main button,
+.ql-main .button,
+.exercise-page .button,
+.login-form button,
+.foundation button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.8rem 1.4rem;
+    color: #fff;
+    background: var(--app-primary) var(--app-primary-base);
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: var(--ql-radius-pill);
+    box-shadow: var(--app-glow);
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.ql-button:hover,
+.ql-main button:hover,
+.ql-main .button:hover,
+.exercise-page .button:hover,
+.login-form button:hover,
+.foundation button:hover {
+    background: var(--app-primary) var(--app-primary-base);
+    filter: brightness(1.08);
+    box-shadow: var(--app-glow-hover);
+}
+
+.ql-main .button-secondary,
+.exercise-page .button-secondary,
+.foundation > form:last-child > button {
+    color: var(--app-accent);
+    background: transparent;
+    border: 1.5px solid var(--app-accent);
+    box-shadow: none;
+}
+
+.ql-main .button-secondary:hover,
+.exercise-page .button-secondary:hover,
+.foundation > form:last-child > button:hover {
+    background: rgb(79 216 202 / 10%);
+    filter: none;
+    box-shadow: 0 0 22px -8px rgb(79 216 202 / 80%);
+}
+
+.ql-main button:disabled,
+.ql-main .button:disabled {
+    cursor: default;
+    filter: none;
+    box-shadow: none;
+}
+
+/* Filter chips and small tags. */
+.ql-main .exercise-filters button {
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
+    color: var(--app-text-soft);
+    background: rgb(255 255 255 / 4%);
+    border: 1px solid var(--app-line-strong);
+    box-shadow: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+.ql-main .exercise-filters button:hover {
+    color: var(--app-text);
+    background: rgb(255 255 255 / 4%);
+    border-color: var(--app-accent);
+    filter: none;
+    box-shadow: none;
+}
+
+.ql-main .exercise-filters [aria-pressed="true"],
+.ql-main .exercise-filters [aria-pressed="true"]:hover {
+    color: var(--app-text);
+    background: rgb(79 216 202 / 14%);
+    border-color: var(--app-accent);
+    box-shadow: 0 0 18px -6px rgb(79 216 202 / 70%);
+}
+
+.dashboard-tag,
+.lesson-card__category,
+.report-cycle li {
+    color: var(--app-accent);
+    background: rgb(79 216 202 / 10%);
+    border: 1px solid rgb(79 216 202 / 30%);
+    border-radius: var(--ql-radius-pill);
+}
+
+/* Form fields: dark, visible focus. */
+.ql-main input:not([type="hidden"], [type="checkbox"], [type="radio"]),
+.ql-main textarea,
+.ql-main select,
+.team input:not([type="hidden"]),
+.text-answer input,
+.text-answer textarea,
+.other-text input,
+.login-form input:not([type="hidden"]) {
+    color: var(--app-text);
+    background: var(--app-field);
+    border: 1px solid var(--app-field-line);
+    border-radius: 12px;
+}
+
+.ql-main input:not([type="hidden"], [type="checkbox"], [type="radio"]):focus,
+.ql-main textarea:focus,
+.team input:not([type="hidden"]):focus,
+.text-answer input:focus,
+.text-answer textarea:focus,
+.other-text input:focus,
+.login-form input:not([type="hidden"]):focus {
+    border-color: var(--app-accent);
+    box-shadow: 0 0 0 3px rgb(79 216 202 / 28%);
+}
+
+input[type="checkbox"],
+input[type="radio"],
+.option input,
+.consent-check input {
+    accent-color: var(--app-accent);
+}
+
+progress,
+.exercise-progress {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 0.55rem;
+    border: 0;
+    border-radius: var(--ql-radius-pill);
+    background: rgb(255 255 255 / 10%);
+    overflow: hidden;
+}
+
+progress::-webkit-progress-bar,
+.exercise-progress::-webkit-progress-bar {
+    background: rgb(255 255 255 / 10%);
+}
+
+progress::-webkit-progress-value,
+.exercise-progress::-webkit-progress-value {
+    background: linear-gradient(90deg, #19b4a5, #7e5ba3);
+    border-radius: var(--ql-radius-pill);
+}
+
+progress::-moz-progress-bar {
+    background: linear-gradient(90deg, #19b4a5, #7e5ba3);
+}
+
+/* Band seals: EXCELENTE green, BOM light green, ATENÇÃO amber, PRIORIDADE red. */
+.overall-band,
+.pillar-band,
+.report-priority {
+    border-radius: var(--ql-radius-pill);
+}
+
+.overall-band[data-band="EXCELENTE"],
+.pillar-band[data-band="EXCELENTE"] {
+    color: var(--band-excelente-fg);
+    background: var(--band-excelente-bg);
+    box-shadow: inset 0 0 0 1px rgb(110 231 164 / 35%);
+}
+
+.overall-band[data-band="BOM"],
+.pillar-band[data-band="BOM"],
+.report-priority {
+    color: var(--band-bom-fg);
+    background: var(--band-bom-bg);
+    box-shadow: inset 0 0 0 1px rgb(205 231 127 / 35%);
+}
+
+.overall-band[data-band="ATENÇÃO"],
+.pillar-band[data-band="ATENÇÃO"],
+.report-priority[data-priority="Prioridade alta"] {
+    color: var(--band-atencao-fg);
+    background: var(--band-atencao-bg);
+    box-shadow: inset 0 0 0 1px rgb(255 207 92 / 35%);
+}
+
+.overall-band[data-band="PRIORIDADE"],
+.pillar-band[data-band="PRIORIDADE"],
+.report-priority[data-priority="Prioridade imediata"] {
+    color: var(--band-prioridade-fg);
+    background: var(--band-prioridade-bg);
+    box-shadow: inset 0 0 0 1px rgb(255 157 143 / 35%);
+}
+
+.report-priority[data-priority="Prioridade moderada"] {
+    color: var(--band-info-fg);
+    background: var(--band-info-bg);
+    box-shadow: inset 0 0 0 1px rgb(156 200 255 / 35%);
+}
+
+/* Messages. */
+.team-messages,
+.legal-messages {
+    color: var(--app-ok-fg);
+    background: var(--app-ok-bg);
+    border: 1px solid rgb(110 231 164 / 30%);
+}
+
+.team-warning,
+.consent-messages,
+.dashboard-notice {
+    color: var(--app-warn-fg);
+    background: var(--app-warn-bg);
+    border: 1px solid rgb(255 207 92 / 30%);
+}
+
+.error,
+.missing,
+.team-errors,
+.team-status[data-active="0"],
+.login-field-errors {
+    color: var(--app-danger-fg);
+}
+
+.login-error {
+    color: #ffc2b8;
+    background: var(--app-danger-bg);
+    border: 1px solid rgb(255 157 143 / 35%);
+    border-radius: 12px;
+}
+
+.login-error a {
+    color: #fff;
+}
+
+/* Pages ----------------------------------------------------------------------- */
+
+/* Hoje */
+.dashboard-intro > p:last-child,
+.dashboard-hero__copy > p,
+.dashboard-notice p,
+.dashboard-recommendation p:not(.ql-eyebrow) {
+    color: var(--app-text-soft);
+}
+
+.dashboard-hero h2 {
+    font-size: clamp(2.2rem, 3.4vw, 3.1rem);
+    letter-spacing: -0.01em;
+}
+
+.dashboard-notice h2,
+.dashboard-recommendation h2 {
+    color: var(--app-text);
+    font-size: 1.5rem;
+}
+
+.dashboard-notice .dashboard-notice__support {
+    color: var(--app-warn-fg);
+}
+
+.dashboard-notice,
+.dashboard-recommendation {
+    border-radius: var(--app-radius);
+}
+
+.dashboard-hero__visual {
+    background: #f7f9f8;
+    border-radius: 18px;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 18%), 0 18px 40px -20px rgb(79 216 202 / 45%);
+}
+
+.dashboard-link {
+    color: var(--app-text);
+}
+
+.dashboard-link small,
+.dashboard-note {
+    color: var(--app-text-soft);
+}
+
+.dashboard-link__icon {
+    color: var(--app-accent);
+    background: rgb(79 216 202 / 12%);
+}
+
+.dashboard-link__icon--purple {
+    color: var(--app-violet);
+    background: rgb(184 156 240 / 14%);
+}
+
+.dashboard-link__arrow,
+.recommendation-link {
+    color: var(--app-accent);
+}
+
+/* Exercícios: white-background art sits in a light rounded frame. */
+.exercise-heading p:not(.eyebrow),
+.exercise-library-top p,
+.exercise-card-body > p:not(.eyebrow),
+.exercise-detail-content p,
+.exercise-dialog-bar {
+    color: var(--app-text-soft);
+}
+
+.exercise-guide {
+    color: var(--app-text);
+}
+
+.exercise-guide img {
+    background: #f7f9f8;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 18%), 0 0 26px -8px rgb(79 216 202 / 60%);
+}
+
+.exercise-safety {
+    color: var(--app-text-soft);
+    background: rgb(79 216 202 / 7%);
+    border: 1px solid rgb(79 216 202 / 28%);
+    border-radius: var(--app-radius);
+}
+
+.exercise-safety summary {
+    color: var(--app-text);
+}
+
+.exercise-safety small,
+.exercise-source,
+.exercise-detail-content small {
+    color: var(--app-text-muted);
+}
+
+.exercise-card {
+    overflow: hidden;
+}
+
+.exercise-card-visual {
+    margin: 12px 12px 0;
+    background: #f6f8f7;
+    border-radius: 16px;
+}
+
+.exercise-index {
+    color: #1d5a52;
+    background: #fff;
+    box-shadow: 0 2px 8px rgb(6 20 25 / 18%);
+}
+
+.exercise-card h3 {
+    color: var(--app-text);
+}
+
+.ql-main .exercise-open {
+    justify-content: space-between;
+    width: 100%;
+    min-height: auto;
+    padding: 16px 0 0;
+    color: var(--app-accent);
+    background: none;
+    border: 0;
+    border-top: 1px solid var(--app-line);
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.ql-main .exercise-open:hover {
+    background: none;
+    filter: none;
+    box-shadow: none;
+}
+
+.exercise-instructions summary {
+    color: var(--app-accent);
+}
+
+.exercise-dialog {
+    color: var(--app-text);
+    background: #0b2129;
+    border: 1px solid var(--app-line);
+    box-shadow: 0 30px 100px rgb(0 0 0 / 60%), 0 0 0 1px rgb(79 216 202 / 12%);
+}
+
+.exercise-dialog::backdrop {
+    background: rgb(3 10 13 / 78%);
+}
+
+.ql-main .exercise-dialog-bar button {
+    min-height: 2.75rem;
+    padding: 8px 0;
+    color: var(--app-accent);
+    background: none;
+    border: 0;
+    box-shadow: none;
+}
+
+.ql-main .exercise-dialog-bar button:hover {
+    background: none;
+    filter: none;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.exercise-detail-image {
+    margin: 16px;
+    background: #f6f8f7;
+    border-radius: 18px;
+}
+
+.exercise-detail-note {
+    color: var(--app-text-soft);
+    border-top-color: var(--app-line);
+}
+
+.exercise-sequence {
+    background: #0b2129;
+    border-top: 1px solid var(--app-line);
+}
+
+/* Aulas */
+.lessons-intro > p:last-child,
+.lesson-card p {
+    color: var(--app-text-soft);
+}
+
+.lesson-card {
+    overflow: hidden;
+}
+
+.lesson-card h2 {
+    color: var(--app-text);
+    font-size: 1.5rem;
+}
+
+.lesson-card video {
+    background: #02090b;
+}
+
+/* The card clips overflow, so the focus ring sits inside the video. */
+.lesson-card video:focus-visible,
+.ql-app .lesson-card video:focus,
+.ql-app .lesson-card video:focus-within {
+    outline: 3px solid var(--app-focus);
+    outline-offset: -3px;
+}
+
+/* Equipe, Trocar senha */
+.team-intro p:last-child,
+.team-row span,
+.team-hint {
+    color: var(--app-text-soft);
+}
+
+.team-row {
+    border-radius: var(--app-radius-sm);
+}
+
+/* Relatório da empresa */
+.report-note,
+.report-facts dt,
+.report-matrix small,
+.overall-score span,
+.pillar-score small {
+    color: var(--app-text-muted);
+}
+
+.report-facts div,
+.report-list li,
+.report-invest li,
+.report-matrix li {
+    border-radius: var(--app-radius-sm);
+}
+
+.report-insufficient {
+    border-top: 0.35rem solid var(--app-warn-fg);
+}
+
+.report-table {
+    color: var(--app-text);
+}
+
+.report-table th,
+.report-table td {
+    border-bottom: 1px solid var(--app-line);
+}
+
+.report-table thead th,
+.report-table td::before {
+    color: var(--app-text-muted);
+}
+
+.report-table tbody tr:hover {
+    background: rgb(255 255 255 / 3%);
+}
+
+.report-rank,
+.pillar-number {
+    color: #fff;
+    background: var(--app-primary) var(--app-primary-base);
+}
+
+.report-plan + .report-plan,
+.pillar-section,
+.review-list li {
+    border-top-color: var(--app-line);
+}
+
+/* Questionário */
+.question-intro,
+.answer-help,
+.optional,
+.char-count,
+.progress-text,
+.other-text {
+    color: var(--app-text-soft);
+}
+
+.question-number {
+    color: var(--app-accent);
+}
+
+.option {
+    border-radius: var(--app-radius-sm);
+}
+
+.option:hover {
+    border-color: rgb(79 216 202 / 55%);
+}
+
+.option:has(input:checked) {
+    background: rgb(79 216 202 / 12%);
+    border-color: var(--app-accent);
+    box-shadow: inset 0 0 0 1px var(--app-accent);
+}
+
+.consent-box {
+    background: rgb(79 216 202 / 7%);
+    border: 1.5px solid rgb(79 216 202 / 45%);
+    border-radius: var(--app-radius);
+}
+
+.consent-box a,
+.legal-nav a,
+.legal-doc a,
+.legal-footer a,
+.legal-settings a,
+.login-help a {
+    color: var(--app-accent);
+}
+
+.completion,
+.result {
+    border-top-color: var(--app-accent);
+}
+
+/* Individual map: a light "document" card inside the dark app (to be rebuilt
+   from a printable light model). Same SVG and logic; only tokens swap. */
+.quality-map {
+    --app-text: #153b3c;
+    --app-text-soft: #41615d;
+    --app-text-muted: #4d6966;
+    --app-accent: #0e7369;
+    --app-focus: #0e7369;
+    --app-line: #dde9e5;
+    --app-line-strong: #abcac2;
+    --app-sunken: #f8fbf9;
+    --app-glow: 0 6px 18px -10px rgb(14 115 105 / 60%);
+    --band-excelente-fg: #0d4e41;
+    --band-excelente-bg: #d8eee6;
+    --band-bom-fg: #145446;
+    --band-bom-bg: #e4f3ed;
+    --band-atencao-fg: #654509;
+    --band-atencao-bg: #fff1cc;
+    --band-prioridade-fg: #7e3023;
+    --band-prioridade-bg: #fbece8;
+
+    color-scheme: light;
+    color: var(--app-text);
+    padding: clamp(1rem, 3vw, 2.25rem);
+    background: #fbfcfa;
+    border-radius: 28px;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 10%), 0 30px 80px -30px rgb(0 0 0 / 80%);
+}
+
+.quality-map h1,
+.quality-map h2,
+.quality-map .map-heading h1,
+.quality-map .pillar-section h2,
+.quality-map .map-panel h2 {
+    letter-spacing: -0.01em;
+}
+
+.quality-map .map-heading p:not(.eyebrow),
+.quality-map .map-controls p,
+.quality-map .score-legend small,
+.quality-map .pillar-section > p:not(.eyebrow),
+.quality-map .map-footer p {
+    color: var(--app-text-muted);
+}
+
+.quality-map .attention-rank {
+    color: #7a5226;
+}
+
+.ql-main .quality-map .map-controls button {
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 11px;
+}
+
+/* Privacidade e Termos */
+.legal-draft {
+    position: relative;
+}
+
+.legal-brand {
+    color: var(--app-text);
+}
+
+.legal-brand img {
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 14%), 0 0 22px -6px rgb(79 216 202 / 60%);
+}
+
+.legal-brand strong {
+    font-family: var(--ql-font-serif);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.legal-meta {
+    color: var(--app-text-muted);
+}
+
+.legal-doc h2,
+.legal-settings h2 {
+    font-size: 1.45rem;
+}
+
+.legal-callout {
+    background: rgb(79 216 202 / 8%);
+    border-left-color: var(--app-accent);
+}
+
+.legal-check input {
+    accent-color: var(--app-danger-fg);
+}
+
+.legal-button,
+.ql-main .legal-button {
+    color: var(--app-danger-fg);
+    background: transparent;
+    border: 1.5px solid var(--app-danger-fg);
+    border-radius: var(--ql-radius-pill);
+    box-shadow: none;
+}
+
+.legal-button:hover,
+.ql-main .legal-button:hover {
+    background: rgb(255 157 143 / 10%);
+    filter: none;
+    box-shadow: none;
+}
+
+/* Login, convite, redefinir senha */
+.login-story,
+.login-form-panel {
+    background: transparent;
+}
+
+.login-story::before {
+    border-color: rgb(79 216 202 / 22%);
+    box-shadow: 0 0 0 3.5rem rgb(255 255 255 / 2%), 0 0 0 7rem rgb(255 255 255 / 2%),
+        0 0 0 10.5rem rgb(255 255 255 / 1.5%);
+}
+
+.login-story h1,
+.login-story__title {
+    font-family: var(--ql-font-serif);
+    font-size: clamp(2.8rem, 4.6vw, 4.6rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.04;
+}
+
+.login-story__description,
+.login-description,
+.login-help,
+.login-hint {
+    color: var(--app-text-soft);
+}
+
+.login-story__line {
+    background: linear-gradient(90deg, #19b4a5, #7e5ba3);
+}
+
+.login-story__note,
+.login-footer {
+    color: var(--app-text-muted);
+}
+
+.login-orbit {
+    border-color: rgb(79 216 202 / 25%);
+}
+
+.login-orbit--one {
+    box-shadow: 0 0 0 3rem rgb(255 255 255 / 2%), 0 0 0 6rem rgb(255 255 255 / 1.5%);
+}
+
+.login-orbit--two {
+    background: linear-gradient(140deg, rgb(79 216 202 / 18%), rgb(126 91 163 / 18%));
+    box-shadow: 0 0 40px -10px rgb(79 216 202 / 45%);
+}
+
+.login-form-wrap {
+    width: min(100%, 27rem);
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    border-radius: 28px;
+}
+
+.login-logo {
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 14%), 0 0 34px -6px rgb(79 216 202 / 60%);
+}
+
+.login-form label {
+    color: var(--app-text);
+}
+
+.login-form button {
+    justify-content: space-between;
+    margin-top: 0.3rem;
+}
+
+@media (max-width: 760px) {
+    .login-form-panel {
+        padding: 1.5rem 1rem;
+        background: transparent;
+    }
+}
+
+/* Sem acesso, Escolher empresa (identity.css is overridden, not edited). */
+.foundation {
+    border-radius: 28px;
+}
+
+.foundation__logo {
+    display: block;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 1.25rem;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 14%), 0 0 30px -6px rgb(79 216 202 / 60%);
+}
+
+.foundation h1 + p {
+    color: var(--app-text-soft);
+}
+
+.organizations button {
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* Motion: pointer glow on interactive cards (app-motion.js sets --mx/--my). */
+@media (hover: hover) and (pointer: fine) {
+    .dashboard-link,
+    .dashboard-recommendation,
+    .exercise-card,
+    .lesson-card {
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .dashboard-link:hover,
+    .dashboard-recommendation:hover,
+    .exercise-card:hover,
+    .lesson-card:hover {
+        background-image: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), rgb(79 216 202 / 12%), transparent 65%),
+            var(--app-sheen);
+        border-color: rgb(79 216 202 / 45%);
+        box-shadow: 0 0 0 1px rgb(79 216 202 / 20%), 0 18px 40px -18px rgb(79 216 202 / 45%),
+            0 0 40px -20px rgb(184 156 240 / 60%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Print (executive report): back to light tokens on white paper. */
+@media print {
+    :root {
+        --app-text: #193c3a;
+        --app-text-soft: #41615d;
+        --app-text-muted: #41615d;
+        --app-accent: #176759;
+        --app-line: #dde9e5;
+        --app-sunken: #f8fbf9;
+        --app-reading: #fff;
+        --band-excelente-fg: #0d4e41;
+        --band-excelente-bg: #d8eee6;
+        --band-bom-fg: #145446;
+        --band-bom-bg: #e4f3ed;
+        --band-atencao-fg: #654509;
+        --band-atencao-bg: #fff1cc;
+        --band-prioridade-fg: #7e3023;
+        --band-prioridade-bg: #fbece8;
+        --band-info-fg: #1f4f6b;
+        --band-info-bg: #e6f0f6;
+
+        color-scheme: light;
+        background: #fff;
+    }
+
+    body::before,
+    .ql-ambient {
+        display: none !important;
+    }
+
+    .exec-report .card {
+        box-shadow: none;
+    }
+}

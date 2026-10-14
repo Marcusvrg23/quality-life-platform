@@ -5,9 +5,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Quality Life{% endblock %} · Quality Life</title>
+    <link rel="stylesheet" href="{% static 'quality_life/brand.css' %}">
     <link rel="stylesheet" href="{% static 'quality_life/login.css' %}">
+    <link rel="stylesheet" href="{% static 'quality_life/app-dark.css' %}">
+    <script src="{% static 'quality_life/vendor/gsap-3.13.0.min.js' %}" defer></script>
+    <script src="{% static 'quality_life/app-motion.js' %}" defer></script>
 </head>
 <body class="login-page">
+    <canvas class="ql-ambient" id="ql-ambient" data-ambient="lite" aria-hidden="true"></canvas>
+    <script src="{% static 'quality_life/ambient.js' %}" defer></script>
     <main class="login-layout">
         <section class="login-story" aria-hidden="true">
             <div class="login-story__content">
@@ -21,7 +27,7 @@
         </section>
         <section class="login-form-panel" aria-labelledby="auth-title">
             <div class="login-form-wrap">
-                <img class="login-logo" src="{% static 'quality_life/images/quality-life-logo.png' %}" alt="Quality Life" width="120" height="120">
+                <img class="login-logo" src="{% static 'quality_life/images/brand/quality-life-logo-ring-512.png' %}" alt="Quality Life" width="100" height="100">
                 <p class="login-eyebrow">{% block eyebrow %}QUALITY LIFE{% endblock %}</p>
                 <h1 id="auth-title" class="login-title">{% block heading %}{% endblock %}</h1>
                 {% block body %}{% endblock %}

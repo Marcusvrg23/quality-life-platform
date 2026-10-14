@@ -8,7 +8,7 @@
     let opener;
     document.querySelectorAll('.exercise-enhanced').forEach(element => { element.hidden = false; });
     document.querySelectorAll('.exercise-instructions').forEach(element => { element.hidden = true; });
-    function show(index) {
+    function show(index, direction = 0) {
         current = index;
         const card = cards[index];
         dialog.querySelector('[data-sequence-position]').textContent = `Exercício ${index + 1} de ${cards.length}`;
@@ -26,7 +26,8 @@
         dialog.scrollTop = 0;
         dialog.querySelector('.exercise-detail').scrollTop = 0;
         dialog.querySelector('#exercise-title').focus({ preventScroll: true });
-        if (window.gsap && !motion.matches) window.gsap.fromTo('.exercise-detail', { opacity: .4, y: 8 }, { opacity: 1, y: 0, duration: .3, overwrite: true, clearProps: 'all' });
+        // Smooth swap: the new exercise slides in from the side it comes from.
+        if (window.gsap && !motion.matches) window.gsap.fromTo('.exercise-detail', { opacity: 0, x: direction * 24, y: direction ? 0 : 12 }, { opacity: 1, x: 0, y: 0, duration: .35, ease: 'power2.out', overwrite: true, clearProps: 'opacity,transform' });
     }
     function open(index, button) {
         opener = button;
@@ -37,8 +38,8 @@
     document.querySelectorAll('[data-open-exercise]').forEach(button => button.addEventListener('click', () => open(Number(button.dataset.openExercise), button)));
     document.querySelector('[data-start-sequence]').addEventListener('click', event => open(0, event.currentTarget));
     dialog.querySelector('[data-close-exercise]').addEventListener('click', () => dialog.close());
-    dialog.querySelector('[data-previous]').addEventListener('click', () => { if (current > 0) show(current - 1); });
-    dialog.querySelector('[data-next]').addEventListener('click', () => { if (current < cards.length - 1) show(current + 1); });
+    dialog.querySelector('[data-previous]').addEventListener('click', () => { if (current > 0) show(current - 1, -1); });
+    dialog.querySelector('[data-next]').addEventListener('click', () => { if (current < cards.length - 1) show(current + 1, 1); });
     dialog.addEventListener('click', event => {
         if (event.target !== dialog) return;
         const rect = dialog.getBoundingClientRect();
@@ -49,7 +50,4 @@
         document.querySelectorAll('[data-category]:is(button)').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
         cards.forEach(card => { card.hidden = button.dataset.category !== 'all' && card.dataset.category !== button.dataset.category; });
     }));
-    if (window.gsap && !motion.matches) {
-        window.gsap.fromTo('.exercise-card, .exercise-guide', { opacity: .5, y: 12 }, { opacity: 1, y: 0, duration: .45, stagger: .04, clearProps: 'all' });
-    }
 })();
