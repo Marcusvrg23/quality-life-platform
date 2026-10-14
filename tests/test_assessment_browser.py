@@ -244,6 +244,10 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             self._capture(page, viewport, "review")
             page.get_by_role("button", name="Concluir avaliação").click()
             page.locator("#result-title").wait_for()
+            # quality-map.js is deferred: until it runs there is no tween to wait
+            # for and no listener, and its .from() then zeroes the segments.
+            # DOMContentLoaded fires only after every deferred script has run.
+            page.wait_for_load_state("domcontentloaded")
             # Regression: moving the pointer over the heart while the entrance
             # animation runs must not leave segments stuck invisible.
             for index in (0, 4, 8):
