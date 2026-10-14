@@ -113,3 +113,9 @@
     --ql-shadow-card: 0 18px 40px -18px rgb(27 26 31 / 28%),
         0 2px 6px rgb(27 26 31 / 6%);
 }
+
+/* Cormorant Garamond draws old-style figures by default, so "101" read as
+   "ioi" in titles. Lining figures everywhere keep numbers legible. */
+html {
+    font-variant-numeric: lining-nums;
+}
