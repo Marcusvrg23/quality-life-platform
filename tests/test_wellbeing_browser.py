@@ -102,7 +102,9 @@ class WellbeingBrowserTests(StaticLiveServerTestCase):
         if artifact_dir:
             path = Path(artifact_dir) / "bem-estar"
             path.mkdir(parents=True, exist_ok=True)
-            page.screenshot(path=str(path / f"{name}.png"), full_page=True)
+            # A modal player is captured as the person sees it (viewport only).
+            modal = page.evaluate("Boolean(document.querySelector('dialog[open]'))")
+            page.screenshot(path=str(path / f"{name}.png"), full_page=not modal)
 
     def assert_fits(self, page, label):
         assert page.evaluate(
@@ -171,10 +173,11 @@ class WellbeingBrowserTests(StaticLiveServerTestCase):
                 self.screenshot(page, f"{name}-ginastica-player-imagem")
                 page.keyboard.press("Escape")
                 assert not page.locator("dialog").is_visible()
-                # Under 60 s nothing is recorded.
-                assert not ActivitySession.objects.exists()
                 page.context.close()
             browser.close()
+        # Under 60 s nothing is recorded. The ORM runs outside sync_playwright,
+        # whose event loop makes Django refuse synchronous queries.
+        assert not ActivitySession.objects.exists()
 
     def test_meditation_breathing_loop_and_noise_after_click(self):
         with sync_playwright() as playwright:
@@ -265,19 +268,19 @@ class WellbeingBrowserTests(StaticLiveServerTestCase):
                 page.clock.run_for(125_000)
             assert info.value.status == 201
             assert page.locator("[data-player-done]").is_visible()
-            session = ActivitySession.objects.get()
-            assert (session.user, session.kind, session.slug) == (
-                self.user,
-                "meditacao",
-                "respiracao-foco",
-            )
-            assert session.completed
-            assert session.duration_seconds == 120
             page.keyboard.press("Escape")  # closing after completion records nothing
             page.goto(f"{self.live_server_url}/app/progresso/")
             page.wait_for_load_state("load")
             assert "Conquistado" in page.locator(".wb-trophy.is-earned").inner_text()
-            assert ActivitySession.objects.count() == 1
             self.assert_fits(page, "390-progresso-com-pratica")
             self.screenshot(page, "390-progresso-com-pratica")
             browser.close()
+        # ORM outside sync_playwright (its event loop blocks synchronous queries).
+        session = ActivitySession.objects.get()
+        assert (session.user, session.kind, session.slug) == (
+            self.user,
+            "meditacao",
+            "respiracao-foco",
+        )
+        assert session.completed
+        assert session.duration_seconds == 120

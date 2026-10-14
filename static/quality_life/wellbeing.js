@@ -234,6 +234,7 @@
             started = true;
             watch.start();
             toggle.textContent = 'Pausar';
+            update(watch.elapsed); // timer and breathing label change on the click, not a tick later
             renderMedia();
             startBreathing();
             if (first) startNoise();
