@@ -251,6 +251,9 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
                 page.mouse.move(
                     box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
                 )
+            # Leave the heart first: while a segment is hovered the other eight
+            # are .is-muted (opacity .65) by design, which is not "stuck".
+            page.mouse.move(0, 0)
             page.wait_for_function(
                 "!window.gsap || gsap.globalTimeline.getChildren(true, true, false)"
                 ".every(t => t.totalProgress() === 1)"
@@ -258,12 +261,7 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             assert page.evaluate(
                 "[...document.querySelectorAll('.heart-segment')]"
                 ".every(g => getComputedStyle(g).opacity === '1')"
-            ), page.evaluate(
-                "[...document.querySelectorAll('.heart-segment')].map(g => ["
-                "g.style.opacity, getComputedStyle(g).opacity, g.getAttribute('class'),"
-                " window.gsap ? gsap.getTweensOf(g).length : -1])"
             )
-            page.mouse.move(0, 0)
             with ThreadPoolExecutor(max_workers=1) as pool:
                 overall_score, overall_band, pillars = pool.submit(
                     self._stored_result, email
