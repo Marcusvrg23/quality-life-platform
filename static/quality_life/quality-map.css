@@ -718,8 +718,11 @@
         background: #fff !important;
     }
 
-    .ql-workspace {
+    /* The shell animates margin-left; on paper it must not lag behind. */
+    .ql-workspace,
+    .ql-sidebar {
         margin-left: 0 !important;
+        transition: none !important;
     }
 
     .ql-main {
