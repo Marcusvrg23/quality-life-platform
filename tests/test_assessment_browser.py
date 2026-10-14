@@ -232,6 +232,9 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             page.get_by_role("button", name="Salvar e próxima").click()
             page.get_by_role("heading", name="Pergunta 2 de 9").wait_for()
             page.get_by_role("link", name="Pergunta anterior").click()
+            # Reloading while that navigation is still committing detaches the
+            # frame ("Not attached to an active page"): wait for it to land.
+            page.get_by_role("heading", name="Pergunta 1 de 9").wait_for()
             page.reload()
             assert page.locator('input[name="option"]').first.is_checked()
             page.get_by_role("link", name="Próxima pergunta sem salvar").click()

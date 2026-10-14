@@ -327,7 +327,8 @@
             noiseSelect.addEventListener('change', () => { if (watch.running) startNoise(); });
             noiseVolume.addEventListener('input', () => { if (window.QLNoise) window.QLNoise.setVolume(volume()); });
         }
-        $('[data-player-close]').addEventListener('click', () => dialog.close());
+        // The dialog "close" event is async; stop media right on the click.
+        $('[data-player-close]').addEventListener('click', () => { stopSession(); dialog.close(); });
         dialog.addEventListener('close', () => {
             stopSession();
             session = null;
