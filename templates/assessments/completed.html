@@ -1,57 +1,117 @@
-﻿{% extends 'assessments/base.html' %}
-{% load static %}
+{% extends 'assessments/base.html' %}
+{% load static l10n %}
 {% block title %}Mapa de Qualidade de Vida{% endblock %}
 {% block page_title %}Minha avaliação{% endblock %}
 {% block extra_css %}{{ block.super }}<link rel="stylesheet" href="{% static 'quality_life/quality-map.css' %}">{% endblock %}
 {% block content %}
-<section class="quality-map" aria-labelledby="result-title">
+<div class="map-actions no-print"><a class="button button-secondary" href="{% url 'assessment_hub' %}">Voltar para Minha avaliação</a><button type="button" class="button map-print" data-print>Salvar em PDF</button></div>
+<section class="quality-map" aria-labelledby="result-title"><div class="map-grid">
   <header class="map-heading">
-    <div><p class="eyebrow">UM OLHAR PARA VOCÊ</p><h1 id="result-title">Seu mapa de qualidade de vida</h1><p>Resultado da sua avaliação</p></div>
-    <div class="map-date">{% if collaborator_name %}<p><span>Nome do colaborador</span><strong>{{ collaborator_name }}</strong></p>{% endif %}<p><span>Data da avaliação</span><strong>{{ assessment.completed_at|date:"d/m/Y" }}</strong></p></div>
+    <img class="map-logo" src="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" width="72" height="72" alt="Quality Life">
+    <div class="map-title"><h1 id="result-title">SEU MAPA DE QUALIDADE DE VIDA</h1><p>Resultado da sua avaliação</p></div>
+    <p class="map-date"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h2M11 14h2M15 14h2M7 17h2M11 17h2"/></svg><span>Data da avaliação:<strong>{{ assessment.completed_at|date:"d/m/Y" }}</strong></span></p>
   </header>
-  <div class="map-layout">
-    <div class="map-canvas">
-      <svg class="quality-heart" viewBox="-12 -12 784 734" role="group" aria-labelledby="heart-title heart-desc" xmlns="http://www.w3.org/2000/svg">
-        <title id="heart-title">Coração dos nove pilares</title>
-        <desc id="heart-desc">Nove regiões representam os resultados persistidos. Explore cada pilar por toque, mouse ou teclado. A lista completa está abaixo.</desc>
+
+  <div class="map-heart">
+    {% localize off %}<svg class="quality-heart" viewBox="{{ spec.viewBox }}" role="group" aria-labelledby="heart-title heart-desc" xmlns="http://www.w3.org/2000/svg">
+      <title id="heart-title">Coração dos nove pilares</title>
+      <desc id="heart-desc">Nove gomos mostram a pontuação de cada pilar nesta avaliação. Explore cada pilar por toque, mouse ou teclado.</desc>
+      <defs>
+        <clipPath id="heart-clip"><path d="{{ spec.outer_heart_path }}"/></clipPath>
+        <filter id="heart-outer" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#2b2210" flood-opacity="0.18"/></filter>
+        <filter id="heart-soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#2b2210" flood-opacity="0.2"/></filter>
+        {% for segment in segments %}<linearGradient id="heart-grad-{{ segment.position }}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{{ segment.colors.top }}"/><stop offset="1" stop-color="{{ segment.colors.bottom }}"/></linearGradient>{% endfor %}
+      </defs>
+      <g filter="url(#heart-outer)"><g clip-path="url(#heart-clip)">
         {% for segment in segments %}
-        <g class="heart-segment" data-pillar="{{ segment.pillar.pillar.display_order }}" data-band="{{ segment.pillar.band }}" data-name="{{ segment.pillar.pillar.name }}" data-score="{{ segment.pillar.score }}" tabindex="0" role="button" aria-pressed="false" aria-label="{{ segment.pillar.pillar.name }}, {{ segment.pillar.score }} de 100, {{ segment.pillar.band }}">
-          <path d="{{ segment.path }}"/>
-          <text class="segment-label" x="{{ segment.x }}" y="{{ segment.y }}" text-anchor="middle">
-            <tspan class="segment-number" x="{{ segment.x }}">{{ segment.pillar.pillar.display_order }}</tspan>
-            {% for line in segment.lines %}<tspan x="{{ segment.x }}" dy="19">{{ line }}</tspan>{% endfor %}
-            <tspan class="segment-score" x="{{ segment.x }}" dy="31">{{ segment.pillar.score }}<tspan class="segment-total"> /100</tspan></tspan>
-            <tspan class="segment-band" x="{{ segment.x }}" dy="20">{{ segment.pillar.band }}</tspan>
-          </text>
+        <g class="heart-segment" data-pillar-code="{{ segment.code }}" data-position="{{ segment.position }}" data-band="{{ segment.band }}" data-name="{{ segment.name }}" data-score="{{ segment.display }}" data-line1="{{ segment.lines.0 }}" data-line2="{{ segment.lines.1|default:'' }}" tabindex="0" role="button" aria-pressed="false" aria-label="{{ segment.position }}. {{ segment.name }}, {{ segment.display }}%, {{ segment.band }}">
+          <path class="heart-segment-shape" d="{{ segment.polygon }}" fill="url(#heart-grad-{{ segment.position }})" stroke="#ffffff" stroke-width="7" stroke-linejoin="round"/>
         </g>
         {% endfor %}
-        <path class="inner-heart" d="M380 278 C339 208 242 210 234 298 C225 384 305 454 380 512 C455 454 535 384 526 298 C518 210 421 208 380 278 Z"/>
-        <foreignObject x="263" y="293" width="234" height="180">
-          <div xmlns="http://www.w3.org/1999/xhtml" class="heart-center" aria-live="polite" aria-atomic="true">
-            <p class="heart-center-name">SUA QUALIDADE<br/>DE VIDA GERAL</p>
-            <p class="overall-score"><strong class="heart-center-score">{{ result.overall_score }}</strong><span>/100</span></p>
-            <p class="overall-band heart-center-band" data-band="{{ result.overall_band }}">{{ result.overall_band }}</p>
-          </div>
-        </foreignObject>
-      </svg>
-      <div class="map-controls"><p>Explore um pilar para ver seu resultado.</p><button type="button" class="quality-map-reset button-secondary">Ver resultado geral</button></div>
-    </div>
-    <aside class="map-aside" aria-label="Como ler seu resultado">
-      <section class="map-panel"><p class="eyebrow">COMO LER SEU MAPA</p><h2>Legenda de pontuação</h2><ul class="score-legend">
-        <li><i data-band="EXCELENTE"></i><span><strong>EXCELENTE</strong><small>Você está indo muito bem.</small></span><b>85–100</b></li>
-        <li><i data-band="BOM"></i><span><strong>BOM</strong><small>Continue assim.</small></span><b>70–84</b></li>
-        <li><i data-band="ATENÇÃO"></i><span><strong>ATENÇÃO</strong><small>Pontos que merecem cuidado.</small></span><b>40–69</b></li>
-        <li><i data-band="PRIORIDADE"></i><span><strong>PRIORIDADE</strong><small>Áreas de maior atenção.</small></span><b>0–39</b></li>
-      </ul></section>
-      <section class="map-panel attention-panel"><p class="eyebrow">SEU PRÓXIMO OLHAR</p><h2>Suas 3 áreas de maior atenção</h2><ol class="attention-list">
-        {% for pillar in attention_pillars %}<li class="attention-item" data-pillar="{{ pillar.pillar.display_order }}"><span class="attention-rank">{{ forloop.counter }}</span><div><strong>{{ pillar.pillar.name }}</strong><p><b>{{ pillar.score }}</b><small>/100</small> <span class="pillar-band" data-band="{{ pillar.band }}">{{ pillar.band }}</span></p></div></li>{% endfor %}
-      </ol></section>
-    </aside>
+      </g></g>
+      <path d="{{ spec.outer_heart_path }}" fill="none" stroke="#ffffff" stroke-width="7"/>
+      <g class="heart-labels" aria-hidden="true">
+        {% for segment in segments %}
+        <g class="heart-label" data-position="{{ segment.position }}">
+          <g transform="translate({{ segment.icon_x }} {{ segment.icon_y }}) scale({{ segment.icon_scale }})" fill="none" stroke="{{ segment.text_color }}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">{{ segment.icon|safe }}</g>
+          <text x="{{ segment.text_x }}" y="{{ segment.text_y }}" text-anchor="{{ segment.anchor }}" fill="{{ segment.text_color }}" font-weight="700" font-size="17">{% for line in segment.lines %}<tspan x="{{ segment.text_x }}" dy="{% if forloop.first %}0{% else %}20{% endif %}">{{ line }}</tspan>{% endfor %}<tspan x="{{ segment.text_x }}" dy="46" font-size="46" font-weight="800" class="segment-score" data-count="{{ segment.display }}">{{ segment.display }}</tspan><tspan font-size="22" font-weight="600">%</tspan><tspan x="{{ segment.text_x }}" dy="30" font-size="17" font-weight="700" letter-spacing="0.4" class="segment-band">{{ segment.band }}</tspan></text>
+        </g>
+        {% endfor %}
+      </g>
+      <path class="inner-heart" d="{{ spec.inner_heart_path }}" fill="#ffffff" filter="url(#heart-soft)"/>
+      <g class="heart-center" aria-live="polite" aria-atomic="true">
+        <text x="500" y="392" text-anchor="middle" fill="#14302e" font-weight="800" font-size="21" class="heart-center-name"><tspan x="500" class="heart-center-line">SUA QUALIDADE</tspan><tspan x="500" dy="25" class="heart-center-line">DE VIDA GERAL</tspan></text>
+        <text x="500" y="490" text-anchor="middle" class="overall-score"><tspan font-size="84" font-weight="800" fill="#0f7f74" letter-spacing="-3" class="heart-center-score" data-count="{{ overall_display }}">{{ overall_display }}</tspan><tspan font-size="30" font-weight="700" fill="#14302e">%</tspan></text>
+        <text x="500" y="522" text-anchor="middle" font-size="24" font-weight="800" fill="{{ center_band_color }}" class="overall-band heart-center-band" data-band="{{ result.overall_band }}">{{ result.overall_band }}</text>
+        <text x="500" y="544" text-anchor="middle" font-size="13.5" font-weight="400" fill="#2f3b3a" class="heart-center-message">{% for line in center_message %}<tspan x="500" dy="{% if forloop.first %}0{% else %}16{% endif %}">{{ line }}</tspan>{% endfor %}</text>
+      </g>
+    </svg>{% endlocalize %}
+    <div class="map-controls no-print"><p>Toque ou passe o mouse em um pilar para ver o resultado no centro.</p><button type="button" class="quality-map-reset button-secondary">Ver resultado geral</button></div>
+    <ol class="pillar-list" aria-label="Seus nove pilares">
+      {% for segment in segments %}<li class="pillar-row" data-pillar-code="{{ segment.code }}"><span class="pillar-number" aria-hidden="true">{{ segment.position }}</span><span class="pillar-name">{{ segment.name }}</span><span class="pillar-score"><strong>{{ segment.display }}</strong><small>%</small></span><span class="pillar-band" data-band="{{ segment.band }}">{{ segment.band }}</span></li>{% endfor %}
+    </ol>
   </div>
-  <section class="pillar-section"><p class="eyebrow">SEUS RESULTADOS EM DETALHE</p><h2>Nove pilares, uma visão completa</h2><p>As cores e pontuações representam esta avaliação.</p><ol class="pillar-list">
-    {% for pillar in pillars %}<li class="pillar-row" data-pillar="{{ pillar.pillar.display_order }}"><span class="pillar-number" aria-hidden="true">{{ pillar.pillar.display_order }}</span><span class="pillar-name">{{ pillar.pillar.name }}</span><span class="pillar-score"><strong>{{ pillar.score }}</strong><small>/100</small></span><span class="pillar-band" data-band="{{ pillar.band }}">{{ pillar.band }}</span></li>{% endfor %}
-  </ol></section>
-  <div class="map-footer"><p>Uma pausa para olhar para você e acompanhar seu bem-estar.</p><a class="button button-secondary" href="{% url 'assessment_hub' %}">Voltar para Minha avaliação</a></div>
-</section>
+
+  {% if identification %}
+  <section class="map-panel map-identity" aria-labelledby="identity-title">
+    <h2 id="identity-title" class="map-panel-bar">Identificação do colaborador</h2>
+    <div class="identity-body">
+      {% if initials %}<span class="identity-avatar" aria-hidden="true">{{ initials }}</span>{% endif %}
+      <dl class="identity-list">{% for label, value in identification %}<div class="identity-item{% if forloop.first %} identity-item--lead{% endif %}"><dt>{{ label }}:</dt><dd>{{ value }}</dd></div>{% endfor %}</dl>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="map-side">
+    <section class="map-panel map-legend" aria-labelledby="legend-title">
+      <h2 id="legend-title" class="map-panel-head">Legenda de pontuação</h2>
+      <ul class="score-legend">{% for band, range, text in legend %}<li data-band="{{ band }}"><i aria-hidden="true"></i><strong>{{ band }}</strong><b>{{ range }}</b><small>{{ text }}</small></li>{% endfor %}</ul>
+    </section>
+    <section class="map-panel attention-panel" aria-labelledby="attention-title">
+      <h2 id="attention-title" class="map-panel-head">Suas 3 principais áreas que merecem atenção</h2>
+      <ol class="attention-list">
+        {% for item in attention %}<li class="attention-item" data-pillar-code="{{ item.pillar.pillar.code }}" data-band="{{ item.pillar.band }}"><span class="attention-rank">{{ forloop.counter }}</span><svg class="attention-icon" viewBox="0 0 40 40" aria-hidden="true" focusable="false" fill="none" stroke="{{ item.color }}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">{{ item.icon|safe }}</svg><span class="attention-name">{{ item.pillar.pillar.name }}</span><span class="attention-score"><strong>{{ item.display }}</strong><small>%</small></span><span class="pillar-band" data-band="{{ item.pillar.band }}">{{ item.pillar.band }}</span></li>{% endfor %}
+      </ol>
+    </section>
+  </div>
+
+  <section class="map-panel map-recommendations" aria-labelledby="recommendations-title">
+    <h2 id="recommendations-title" class="map-panel-head">Recomendações personalizadas</h2>
+    <div class="recommendation-grid">
+      {% for card in recommendations %}
+      <article class="recommendation-card recommendation-card--{{ card.kind }}" data-pillar-code="{{ card.code }}" data-band="{{ card.band }}">
+        <h3>{{ card.title }}</h3>
+        {% if card.summary %}<p>{{ card.summary }}</p>{% endif %}
+        {% if card.text %}<div class="recommendation-text">{{ card.text|linebreaks }}</div>{% endif %}
+        <a class="recommendation-link" href="{{ card.url }}">{{ card.button }}</a>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="map-panel map-evolution" aria-labelledby="evolution-title">
+    <h2 id="evolution-title" class="map-panel-head">Evolução das suas pontuações</h2>
+    {% if evolution %}
+    <ul class="evolution-legend"><li class="evolution-legend--previous">Avaliação anterior <span>{{ previous_completed_at|date:"d/m/Y" }}</span></li><li class="evolution-legend--current">Avaliação atual <span>{{ assessment.completed_at|date:"d/m/Y" }}</span></li></ul>
+    {% localize off %}<svg class="evolution-chart" viewBox="0 0 580 250" role="img" aria-labelledby="evolution-title evolution-desc" xmlns="http://www.w3.org/2000/svg">
+      <desc id="evolution-desc">{% for point in evolution.points %}{{ point.labels.0 }} {{ point.labels.1 }}: {% if point.previous is not None %}{{ point.previous }}%{% else %}sem dado{% endif %} na anterior, {% if point.current is not None %}{{ point.current }}%{% else %}sem dado{% endif %} na atual. {% endfor %}</desc>
+      {% for line in evolution.grid %}<line class="evolution-grid" x1="{{ evolution.left }}" x2="{{ evolution.right }}" y1="{{ line.y }}" y2="{{ line.y }}"/><text class="evolution-axis" x="{{ evolution.left|add:'-12' }}" y="{{ line.y }}" dy="4" text-anchor="end">{{ line.value }}</text>{% endfor %}
+      <path class="evolution-line evolution-line--previous" d="{{ evolution.previous_path }}"/>
+      <path class="evolution-line evolution-line--current" d="{{ evolution.current_path }}"/>
+      {% for point in evolution.points %}
+      {% if point.previous is not None %}<circle class="evolution-dot evolution-dot--previous" cx="{{ point.x }}" cy="{{ point.previous_y }}" r="4.5"/><text class="evolution-value evolution-value--previous" x="{{ point.x }}" y="{{ point.previous_y }}" dy="19" text-anchor="middle">{{ point.previous }}</text>{% endif %}
+      {% if point.current is not None %}<circle class="evolution-dot evolution-dot--current" cx="{{ point.x }}" cy="{{ point.current_y }}" r="5"/><text class="evolution-value evolution-value--current" x="{{ point.x }}" y="{{ point.current_y }}" dy="-11" text-anchor="middle">{{ point.current }}</text>{% endif %}
+      <text class="evolution-label" x="{{ point.x }}" y="228" text-anchor="middle"><tspan x="{{ point.x }}">{{ point.labels.0 }}</tspan><tspan x="{{ point.x }}" dy="13">{{ point.labels.1 }}</tspan></text>
+      {% endfor %}
+    </svg>{% endlocalize %}
+    {% else %}
+    <p class="evolution-empty">Sua evolução aparece a partir da segunda avaliação.</p>
+    {% endif %}
+  </section>
+
+  <footer class="map-footer"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><p>Suas respostas são confidenciais e usadas apenas para promover sua qualidade de vida.</p></footer>
+</div></section>
+{{ band_messages|json_script:"map-band-messages" }}
+{{ band_colors|json_script:"map-band-colors" }}
 {% endblock %}
-{% block extra_js %}{{ block.super }}<script src="{% static 'quality_life/quality-map.js' %}" defer></script>{% endblock %}
+{% block extra_js %}{{ block.super }}<script src="{% static 'quality_life/quality-map.js' %}" defer></script><script src="{% static 'quality_life/report.js' %}" defer></script>{% endblock %}

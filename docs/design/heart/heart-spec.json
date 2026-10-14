@@ -1,0 +1,277 @@
+{
+ "viewBox": "0 0 1000 900",
+ "outer_heart_path": "M500 190 C430 60 250 30 135 110 C15 200 15 400 130 560 C230 700 410 800 500 885 C590 800 770 700 870 560 C985 400 985 200 865 110 C750 30 570 60 500 190 Z",
+ "rays_center": [
+  500,
+  440
+ ],
+ "inner_heart_path": "M500 340 C458 268 322 262 320 378 C318 490 420 560 500 622 C580 560 682 490 680 378 C678 262 542 268 500 340 Z",
+ "note": "Cada segmento = polígono (centro + pontos) recortado pelo outer_heart_path (clipPath). Ordem horária a partir do lobo esquerdo, igual à imagem de referência.",
+ "segments": [
+  {
+   "position": 1,
+   "pillar_code": "physical_health",
+   "label_lines_example": [
+    "1. SAÚDE FÍSICA"
+   ],
+   "polygon": "M500 440 L0 170 L0 0 L500 0 Z",
+   "icon": "pulse",
+   "icon_translate": [
+    195,
+    160
+   ],
+   "icon_scale": 1.35,
+   "text_x": 258,
+   "text_y": 160,
+   "text_anchor": "start"
+  },
+  {
+   "position": 2,
+   "pillar_code": "preventive_behavior",
+   "label_lines_example": [
+    "2. COMPORTAMENTO",
+    "PREVENTIVO"
+   ],
+   "polygon": "M500 440 L500 0 L1000 0 L1000 170 Z",
+   "icon": "shield",
+   "icon_translate": [
+    560,
+    160
+   ],
+   "icon_scale": 1.35,
+   "text_x": 620,
+   "text_y": 160,
+   "text_anchor": "start"
+  },
+  {
+   "position": 3,
+   "pillar_code": "physical_activity",
+   "label_lines_example": [
+    "3. ATIVIDADE",
+    "FÍSICA"
+   ],
+   "polygon": "M500 440 L1000 170 L1000 450 Z",
+   "icon": "run",
+   "icon_translate": [
+    712,
+    330
+   ],
+   "icon_scale": 1.35,
+   "text_x": 770,
+   "text_y": 300,
+   "text_anchor": "start"
+  },
+  {
+   "position": 4,
+   "pillar_code": "nutrition_hydration",
+   "label_lines_example": [
+    "4. ALIMENTAÇÃO E",
+    "HIDRATAÇÃO"
+   ],
+   "polygon": "M500 440 L1000 450 L1000 800 Z",
+   "icon": "apple",
+   "icon_translate": [
+    660,
+    496
+   ],
+   "icon_scale": 1.35,
+   "text_x": 722,
+   "text_y": 495,
+   "text_anchor": "start"
+  },
+  {
+   "position": 5,
+   "pillar_code": "mental_emotional_health",
+   "label_lines_example": [
+    "5. SAÚDE MENTAL",
+    "E EMOCIONAL"
+   ],
+   "polygon": "M500 440 L1000 800 L1000 1000 L640 1000 Z",
+   "icon": "mind",
+   "icon_translate": [
+    602,
+    572
+   ],
+   "icon_scale": 1.2,
+   "text_x": 602,
+   "text_y": 642,
+   "text_anchor": "start"
+  },
+  {
+   "position": 6,
+   "pillar_code": "sleep_recovery",
+   "label_lines_example": [
+    "6. SONO E",
+    "RECUPERAÇÃO"
+   ],
+   "polygon": "M500 440 L640 1000 L360 1000 Z",
+   "icon": "moon",
+   "icon_translate": [
+    476,
+    638
+   ],
+   "icon_scale": 1.2,
+   "text_x": 500,
+   "text_y": 716,
+   "text_anchor": "middle"
+  },
+  {
+   "position": 7,
+   "pillar_code": "ergonomics_workplace",
+   "label_lines_example": [
+    "7. ERGONOMIA E",
+    "AMBIENTE"
+   ],
+   "polygon": "M500 440 L360 1000 L0 1000 L0 800 Z",
+   "icon": "chair",
+   "icon_translate": [
+    320,
+    586
+   ],
+   "icon_scale": 1.1,
+   "text_x": 296,
+   "text_y": 652,
+   "text_anchor": "start"
+  },
+  {
+   "position": 8,
+   "pillar_code": "relationships",
+   "label_lines_example": [
+    "8. RELACIONAMENTOS"
+   ],
+   "polygon": "M500 440 L0 800 L0 450 Z",
+   "icon": "people",
+   "icon_translate": [
+    80,
+    470
+   ],
+   "icon_scale": 1.35,
+   "text_x": 138,
+   "text_y": 495,
+   "text_anchor": "start"
+  },
+  {
+   "position": 9,
+   "pillar_code": "work_life_balance",
+   "label_lines_example": [
+    "9. EQUILÍBRIO",
+    "VIDA E TRABALHO"
+   ],
+   "polygon": "M500 440 L0 450 L0 170 Z",
+   "icon": "scale",
+   "icon_translate": [
+    52,
+    330
+   ],
+   "icon_scale": 1.35,
+   "text_x": 112,
+   "text_y": 325,
+   "text_anchor": "start"
+  }
+ ],
+ "icons_24px_stroke": {
+  "pulse": "<path d=\"M20 34s-13-8-13-18a7 7 0 0 1 13-3.5A7 7 0 0 1 33 16c0 10-13 18-13 18z\"/><path d=\"M8 21h7l3-5 4 9 3-4h7\"/>",
+  "shield": "<path d=\"M20 4l13 5v9c0 8-5.5 14-13 17C12.5 32 7 26 7 18V9z\"/><path d=\"M14 19l4.5 4.5L27 15\"/>",
+  "run": "<circle cx=\"25\" cy=\"7\" r=\"3\"/><path d=\"M10 15l7-3 6 4 4 6 6 1M17 12l-3 10 7 4-3 9M14 22l-6 6\"/>",
+  "apple": "<path d=\"M20 12c-3-3-11-3-13 4-2 8 3 18 9 18 2 0 3-1 4-1s2 1 4 1c6 0 11-10 9-18-2-7-10-7-13-4z\"/><path d=\"M20 12c0-4 2-7 5-8\"/>",
+  "mind": "<path d=\"M12 33v-6c-4-2-6-6-6-10 0-7 6-12 13-12s13 5 13 11c0 3-1 5-3 7v10\"/><path d=\"M19 21s-5-3-5-6a2.5 2.5 0 0 1 5-1 2.5 2.5 0 0 1 5 1c0 3-5 6-5 6z\"/>",
+  "moon": "<path d=\"M29 25A13 13 0 1 1 17 7a10 10 0 0 0 12 18z\"/><path d=\"M28 8l1 2 2 1-2 1-1 2-1-2-2-1 2-1z\"/>",
+  "chair": "<path d=\"M13 5h14v15H13zM10 20h20M20 20v8M12 35l8-7 8 7M12 35h0M28 35h0\"/>",
+  "people": "<circle cx=\"20\" cy=\"11\" r=\"4\"/><circle cx=\"9\" cy=\"14\" r=\"3\"/><circle cx=\"31\" cy=\"14\" r=\"3\"/><path d=\"M13 31v-6a7 7 0 0 1 14 0v6M4 29v-4a5 5 0 0 1 6-5M36 29v-4a5 5 0 0 0-6-5\"/>",
+  "scale": "<path d=\"M20 6v28M12 34h16M8 10h24M8 10l-5 11h10zM32 10l-5 11h10zM3 21a5 5 0 0 0 10 0M27 21a5 5 0 0 0 10 0\"/>"
+ },
+ "color_stops_by_score": [
+  {
+   "score": 0,
+   "rgb": [
+    196,
+    32,
+    40
+   ]
+  },
+  {
+   "score": 39,
+   "rgb": [
+    226,
+    58,
+    44
+   ]
+  },
+  {
+   "score": 40,
+   "rgb": [
+    236,
+    104,
+    32
+   ]
+  },
+  {
+   "score": 50,
+   "rgb": [
+    242,
+    140,
+    24
+   ]
+  },
+  {
+   "score": 60,
+   "rgb": [
+    246,
+    176,
+    20
+   ]
+  },
+  {
+   "score": 69,
+   "rgb": [
+    248,
+    196,
+    30
+   ]
+  },
+  {
+   "score": 70,
+   "rgb": [
+    140,
+    196,
+    64
+   ]
+  },
+  {
+   "score": 84,
+   "rgb": [
+    106,
+    176,
+    52
+   ]
+  },
+  {
+   "score": 85,
+   "rgb": [
+    40,
+    150,
+    70
+   ]
+  },
+  {
+   "score": 100,
+   "rgb": [
+    24,
+    120,
+    56
+   ]
+  }
+ ],
+ "text_color_rule": "branco (#ffffff) quando nota < 50 ou nota >= 70; tinta escura (#2a1d00) entre 50 e 69 (amarelos), para contraste",
+ "typography": {
+  "label": "Figtree 700 17px, entrelinha 20",
+  "score": "Figtree 800 46px + '/100' 600 22px",
+  "band": "Figtree 700 17px",
+  "center_title": "Figtree 800 21px",
+  "center_score": "Figtree 800 84px cor #0f7f74 + '/100' 700 30px",
+  "center_band": "Figtree 800 24px",
+  "center_message": "Figtree 400 13.5px, 3 linhas"
+ },
+ "segment_gradient": "linear vertical: topo = cor da nota x1.10, base = cor da nota x0.86",
+ "separators": "stroke branco 7px, linejoin round; contorno externo branco 7px; sombra externa dy10 blur14 opacidade .18; coração interno branco com sombra dy6 blur10 opacidade .2"
+}

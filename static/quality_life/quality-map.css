@@ -1,2 +1,903 @@
-﻿.quality-map{max-width:1260px;margin:0 auto;color:#153b3c}.map-heading{display:flex;align-items:center;justify-content:space-between;gap:24px;margin:6px 0 24px}.map-heading h1{font-size:clamp(1.7rem,2.6vw,2.6rem);letter-spacing:-.045em;max-width:720px;margin:0}.map-heading p:not(.eyebrow){color:#6b8080;margin:10px 0 0}.map-date{flex-shrink:0;border-left:1px solid #dce5e2;padding:8px 0 8px 22px;font-size:12px}.map-date span,.map-date strong{display:block}.map-date strong{font-size:18px;margin-top:6px}.map-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(250px,30%);gap:22px;align-items:start}.map-canvas{min-width:0;padding:14px 12px 12px;border:1px solid #e4ece7;border-radius:24px;background:radial-gradient(ellipse at center,#f2f7f0 0,#fff 70%);box-shadow:0 12px 42px #183e3510}.quality-heart{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 8px 10px #194b3512)}.quality-map .heart-segment{stroke:none;fill:#eef4e9;cursor:pointer;outline:none;transform-box:fill-box;transform-origin:center}.heart-segment path{stroke:#fff;stroke-width:5;stroke-linejoin:round;fill:#edc14b}.quality-map [data-band="EXCELENTE"] path,.score-legend i[data-band="EXCELENTE"]{fill:#269b50;background:#269b50}.quality-map [data-band="BOM"] path,.score-legend i[data-band="BOM"]{fill:#9ac536;background:#9ac536}.quality-map [data-band="ATENÇÃO"] path,.score-legend i[data-band="ATENÇÃO"]{fill:#ffc431;background:#ffc431}.quality-map [data-band="PRIORIDADE"] path,.score-legend i[data-band="PRIORIDADE"]{fill:#ee6651;background:#ee6651}.segment-label{fill:#173923;pointer-events:none;font-family:Arial,sans-serif;font-size:15px;font-weight:600;stroke:none}.heart-segment[data-band="EXCELENTE"] .segment-label{fill:#fff}.segment-number{font-size:20px;font-weight:800}.segment-score{font-size:27px;font-weight:800;letter-spacing:-1px}.segment-total{font-size:13px;font-weight:400;letter-spacing:0}.segment-band{font-size:12px;font-weight:700;letter-spacing:.4px}.heart-segment.is-active path,.heart-segment:focus-visible path{stroke:#153f3b;stroke-width:5;filter:drop-shadow(0 2px 5px #103c3250)}.inner-heart{fill:#fff;stroke:#fbfcf8;stroke-width:7;filter:drop-shadow(0 3px 8px #35542a18);pointer-events:none}.heart-center{text-align:center;font-family:Arial,sans-serif;color:#163b3e;pointer-events:none}.heart-center-name{font-size:17px;font-weight:800;line-height:1.2;min-height:42px;margin:0 6px 8px}.heart-center .overall-score{gap:3px;margin:0;white-space:nowrap}.heart-center .overall-score strong{font-size:45px;letter-spacing:-2px;color:#087e76}.heart-center .overall-score span{font-size:17px}.heart-center .overall-band{font-size:13px;margin-top:7px;padding:5px 10px;letter-spacing:.01em}.map-controls{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 8px}.map-controls p{font-size:12px;color:#668079;margin:0}.map-controls button{font-size:11px;padding:8px 10px;min-height:36px;flex-shrink:0}.map-aside{display:grid;gap:18px}.map-panel{padding:24px 20px;border:1px solid #e1eae5;border-radius:20px;background:#fff;box-shadow:0 8px 28px #183e3507}.map-panel .eyebrow{font-size:10px;letter-spacing:.14em;margin-bottom:10px}.map-panel h2{font-size:18px;line-height:1.35;letter-spacing:-.025em}.score-legend,.attention-list{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:21px}.score-legend li{display:grid;grid-template-columns:12px 1fr auto;gap:9px;align-items:start}.score-legend i{width:11px;height:11px;border-radius:50%;margin-top:3px}.score-legend strong{font-size:11px;letter-spacing:.04em}.score-legend small{display:block;font-size:11px;color:#72847e;line-height:1.5;margin-top:5px}.score-legend b{font-size:11px;font-weight:500;white-space:nowrap}.attention-item{display:flex;gap:12px;align-items:flex-start}.attention-item>div{min-width:0;flex:1}.attention-item>div>strong{font-size:13px;line-height:1.4;display:block}.attention-rank{border-radius:50%;background:#f3eee3;color:#8c6232;display:grid;place-items:center;min-width:28px;height:28px;font-size:12px;font-weight:800}.attention-item p{margin:7px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:3px}.attention-item b{font-size:21px}.attention-item small{font-size:11px}.attention-item .pillar-band{margin-left:auto;font-size:9px}.quality-map .pillar-section{margin-top:30px;padding-top:25px}.quality-map .pillar-section h2{font-size:23px;letter-spacing:-.035em}.quality-map .pillar-section>p:not(.eyebrow){font-size:13px;color:#6c827c}.quality-map .pillar-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.quality-map .pillar-row{grid-template-columns:27px minmax(0,1fr) auto;gap:9px;background:#fff;padding:16px}.quality-map .pillar-number{width:27px;height:27px;font-size:11px;background:#edf5ef;color:#25645b}.quality-map .pillar-name{font-size:12px;line-height:1.5}.quality-map .pillar-score{font-size:17px}.quality-map .pillar-score small{font-size:10px}.quality-map .pillar-row .pillar-band{grid-column:2/4;justify-self:start;font-size:9px}.map-footer{display:flex;gap:20px;align-items:center;justify-content:space-between}.map-footer p{color:#6c827c;font-size:12px}.map-footer .button{font-size:12px}.quality-map .heart-segment.is-muted{opacity:.65}@media(max-width:1100px){.map-layout{grid-template-columns:minmax(0,1fr) 250px;gap:16px}.map-panel{padding:20px 16px}.map-heading{align-items:flex-start}.map-date{font-size:11px}.quality-map .pillar-list{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:850px){.map-layout{grid-template-columns:1fr}.map-aside{grid-template-columns:1fr 1fr}.map-canvas{max-width:660px;width:100%;justify-self:center}.map-heading{flex-direction:column;gap:14px}.map-date{border-left:0;padding:0;display:flex;align-items:center;gap:8px}.map-date strong{font-size:13px;margin:0}}@media(max-width:540px){.map-heading{margin-bottom:20px}.map-heading h1{font-size:28px}.map-heading .eyebrow{font-size:10px}.map-heading p:not(.eyebrow){font-size:14px}.map-canvas{padding:9px 0 10px;border-radius:18px}.map-controls{flex-direction:column;gap:7px;padding-top:0}.map-aside{grid-template-columns:1fr}.map-panel{padding:22px}.score-legend{grid-template-columns:1fr 1fr;gap:20px 14px}.score-legend li{grid-template-columns:9px 1fr;gap:7px}.score-legend b{grid-column:2;margin-top:-3px}.quality-map .pillar-list{grid-template-columns:1fr}.quality-map .pillar-row{padding:14px}.map-footer{align-items:stretch;flex-direction:column;gap:6px}.segment-label{font-size:15px}.quality-map .pillar-section h2{font-size:21px}}@media(prefers-reduced-motion:reduce){.quality-map *{animation:none!important;transition:none!important}}
-.map-date{display:flex;flex-wrap:wrap;gap:10px 22px;min-width:0;max-width:100%}.map-date p{margin:0;min-width:0;overflow-wrap:anywhere}
+/* Individual quality map (spec 10): light "document" card, layout of
+   docs/questionario/referencia-mapa-individual.png. The heart geometry and
+   colors are inline SVG attributes from heart-spec.json; only layout here. */
+.quality-map {
+    --map-ink: #14302e;
+    --map-muted: #4d6966;
+    --map-line: #e2eae6;
+    --map-panel: #fff;
+    --map-teal: #0f7f74;
+    --map-navy: #173f45;
+    /* Darker than the heart stops so white text and pills reach AA. */
+    --band-excelente: #1d7a36;
+    --band-bom: #3f7a17;
+    --band-atencao: #e8a20f;
+    --band-prioridade: #d8342b;
+
+    container-type: inline-size;
+    max-width: 1500px;
+    margin: 0 auto;
+    font-family: var(--ql-font-body);
+    font-variant-numeric: lining-nums;
+}
+
+.map-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "head" "heart" "identity" "side" "rec" "evo" "foot";
+    gap: 16px;
+}
+
+/* The title keeps the brand serif (Cormorant); panel titles use Figtree. */
+.ql-main .quality-map h2,
+.ql-main .quality-map h3 {
+    font-family: var(--ql-font-body);
+    letter-spacing: 0;
+}
+
+.map-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px;
+    max-width: 1500px;
+    margin: 0 auto 14px;
+}
+
+/* Header */
+.map-heading {
+    grid-area: head;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 6px 14px;
+    min-width: 0;
+}
+
+.map-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+}
+
+.quality-map .map-title h1 {
+    margin: 0;
+    color: var(--map-navy);
+    font-size: clamp(1.45rem, 4.8cqi, 2.6rem);
+    font-weight: 600;
+    line-height: 1.05;
+}
+
+.map-title p {
+    margin: 4px 0 0;
+    color: var(--map-ink);
+    font-size: clamp(0.95rem, 2cqi, 1.3rem);
+}
+
+.quality-map .map-date {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 0;
+    color: var(--map-ink);
+    font-size: 0.9rem;
+}
+
+.map-date svg {
+    flex: 0 0 auto;
+    fill: none;
+    stroke: var(--map-navy);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+}
+
+.map-date strong {
+    display: block;
+    font-size: 1.15rem;
+}
+
+/* Heart */
+.map-heart {
+    grid-area: heart;
+    min-width: 0;
+}
+
+.quality-heart {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+    font-family: var(--ql-font-body);
+    font-variant-numeric: lining-nums;
+    overflow: visible;
+}
+
+.quality-map .heart-segment {
+    cursor: pointer;
+    outline: none;
+}
+
+.quality-map .heart-label {
+    pointer-events: none;
+}
+
+/* No CSS transition here: GSAP animates opacity and a transition would lag. */
+.quality-map .heart-segment.is-muted,
+.quality-map .heart-label.is-muted {
+    opacity: 0.5;
+}
+
+.quality-map .heart-segment.is-active .heart-segment-shape,
+.quality-map .heart-segment:focus-visible .heart-segment-shape {
+    filter: brightness(1.07) saturate(1.08);
+}
+
+.quality-map .heart-segment:focus-visible .heart-segment-shape {
+    stroke: var(--map-ink);
+    stroke-width: 10;
+}
+
+.quality-map .inner-heart,
+.quality-map .heart-center {
+    pointer-events: none;
+}
+
+.map-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 14px;
+    margin-top: 6px;
+}
+
+.map-controls p {
+    margin: 0;
+    color: var(--map-muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.ql-main .quality-map .quality-map-reset {
+    min-height: 40px;
+    padding: 8px 16px;
+    color: var(--map-teal);
+    background: #fff;
+    border: 1.5px solid var(--map-teal);
+    box-shadow: none;
+    font-size: 0.85rem;
+}
+
+/* The nine pillars as text: visible on narrow cards, where the heart
+   labels are small; otherwise kept for screen readers only. */
+.quality-map .pillar-list {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.quality-map .pillar-row {
+    display: grid;
+    grid-template-columns: 1.9rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 10px;
+    padding: 10px 12px;
+    color: var(--map-ink);
+    background: #fff;
+    border: 1px solid var(--map-line);
+    border-radius: 14px;
+}
+
+.quality-map .pillar-number {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--map-navy);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.quality-map .pillar-name {
+    min-width: 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.quality-map .pillar-score {
+    white-space: nowrap;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.quality-map .pillar-row .pillar-band {
+    grid-column: 2 / 4;
+    justify-self: start;
+}
+
+/* Band pills */
+.quality-map .pillar-band[data-band] {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    color: #fff;
+    background: var(--band-color, var(--map-muted));
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.quality-map [data-band="EXCELENTE"] {
+    --band-color: var(--band-excelente);
+}
+
+.quality-map [data-band="BOM"] {
+    --band-color: var(--band-bom);
+}
+
+.quality-map [data-band="ATENÇÃO"] {
+    --band-color: var(--band-atencao);
+}
+
+.quality-map [data-band="PRIORIDADE"] {
+    --band-color: var(--band-prioridade);
+}
+
+.quality-map .pillar-band[data-band="ATENÇÃO"] {
+    color: #3a2600;
+    background: var(--band-atencao);
+}
+
+/* Panels */
+.map-panel {
+    min-width: 0;
+    padding: 16px;
+    color: var(--map-ink);
+    background: var(--map-panel);
+    border: 1px solid var(--map-line);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px -18px rgb(20 48 46 / 45%);
+}
+
+.quality-map .map-panel-head,
+.quality-map .map-panel-bar {
+    margin: 0 0 12px;
+    color: var(--map-navy);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.quality-map .map-panel-bar {
+    margin: -16px -16px 14px;
+    padding: 12px 16px;
+    color: #fff;
+    background: var(--map-navy);
+    border-radius: 15px 15px 0 0;
+    text-align: left;
+}
+
+/* Identification */
+.map-identity {
+    grid-area: identity;
+}
+
+.identity-body {
+    display: grid;
+    gap: 12px;
+}
+
+.identity-avatar {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    color: #fff;
+    background: linear-gradient(145deg, var(--map-teal), var(--map-navy));
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.identity-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+
+.identity-item {
+    min-width: 0;
+}
+
+.identity-item dt {
+    color: var(--map-muted);
+    font-size: 0.8rem;
+}
+
+.identity-item dd {
+    margin: 2px 0 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.identity-item--lead dd {
+    font-size: 1.15rem;
+}
+
+/* Legend and attention */
+.map-side {
+    grid-area: side;
+    display: grid;
+    align-content: start;
+    gap: 16px;
+    min-width: 0;
+}
+
+.score-legend,
+.attention-list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.score-legend li {
+    display: grid;
+    grid-template-columns: 14px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2px 10px;
+}
+
+.score-legend i {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--band-color);
+}
+
+.score-legend strong {
+    color: var(--band-color);
+    font-size: 0.9rem;
+}
+
+.score-legend li[data-band="ATENÇÃO"] strong {
+    color: #9a6400;
+}
+
+.score-legend b {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.score-legend small {
+    grid-column: 2 / -1;
+    color: var(--map-muted);
+    font-size: 0.8rem;
+    line-height: 1.35;
+}
+
+.attention-item {
+    display: grid;
+    grid-template-columns: 32px 38px minmax(0, 1fr) auto;
+    grid-template-areas: "rank icon name name" "rank icon score band";
+    align-items: center;
+    gap: 2px 10px;
+}
+
+.quality-map .attention-item .attention-rank {
+    grid-area: rank;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--band-color);
+    font-weight: 700;
+}
+
+.quality-map .attention-item[data-band="ATENÇÃO"] .attention-rank {
+    color: #3a2600;
+}
+
+.attention-icon {
+    grid-area: icon;
+    width: 38px;
+    height: 38px;
+}
+
+.attention-name {
+    grid-area: name;
+    min-width: 0;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.attention-score {
+    grid-area: score;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.attention-item .pillar-band {
+    grid-area: band;
+    justify-self: end;
+}
+
+/* Recommendations */
+.map-recommendations {
+    grid-area: rec;
+}
+
+.recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    gap: 12px;
+}
+
+.recommendation-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid color-mix(in srgb, var(--band-color) 35%, white);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--band-color) 7%, white);
+}
+
+.quality-map .recommendation-card h3 {
+    margin: 0;
+    color: var(--map-ink);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+.recommendation-card p,
+.recommendation-text {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.recommendation-text p {
+    margin: 0 0 6px;
+}
+
+.quality-map .recommendation-link {
+    align-self: center;
+    margin-top: auto;
+    padding: 6px 16px;
+    color: var(--map-ink);
+    background: #fff;
+    border: 1.5px solid var(--band-color);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.quality-map .recommendation-link:hover {
+    background: color-mix(in srgb, var(--band-color) 14%, white);
+}
+
+/* Evolution */
+.map-evolution {
+    grid-area: evo;
+    align-self: start;
+}
+
+.evolution-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 4px 16px;
+    margin: 0 0 4px;
+    padding: 0;
+    list-style: none;
+    font-size: 0.78rem;
+}
+
+.evolution-legend li::before {
+    content: "";
+    display: inline-block;
+    width: 18px;
+    height: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+    background: currentcolor;
+}
+
+.evolution-legend--previous {
+    color: #5f6c69;
+}
+
+.evolution-legend--current {
+    color: var(--map-teal);
+    font-weight: 700;
+}
+
+.evolution-legend span {
+    color: var(--map-ink);
+    font-weight: 400;
+}
+
+.evolution-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+    font-family: var(--ql-font-body);
+    font-variant-numeric: lining-nums;
+}
+
+.evolution-grid {
+    stroke: var(--map-line);
+    stroke-width: 1;
+}
+
+.evolution-axis,
+.evolution-label {
+    fill: var(--map-muted);
+    font-size: 11px;
+}
+
+.evolution-line {
+    fill: none;
+    stroke-width: 3;
+    stroke-linejoin: round;
+}
+
+.evolution-line--previous {
+    stroke: #a3aeab;
+    stroke-width: 2.5;
+}
+
+.evolution-line--current {
+    stroke: var(--map-teal);
+}
+
+.evolution-dot--previous {
+    fill: #a3aeab;
+}
+
+.evolution-dot--current {
+    fill: var(--map-teal);
+}
+
+.evolution-value {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.evolution-value--previous {
+    fill: #66736f;
+}
+
+.evolution-value--current {
+    fill: var(--map-teal);
+}
+
+.evolution-empty {
+    margin: 0;
+    padding: 18px 8px;
+    color: var(--map-muted);
+    text-align: center;
+}
+
+/* Footer */
+.map-footer {
+    grid-area: foot;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--map-muted);
+    font-size: 0.85rem;
+}
+
+.map-footer svg {
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1.8;
+}
+
+.map-footer p {
+    margin: 0;
+}
+
+/* Wider cards */
+@container (min-width: 640px) {
+    .map-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+            "head head"
+            "heart heart"
+            "identity side"
+            "rec rec"
+            "evo evo"
+            "foot foot";
+    }
+
+    .map-heading {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .map-title {
+        text-align: center;
+    }
+
+    .quality-map .map-date {
+        grid-column: auto;
+        margin: 0;
+    }
+
+    .map-heart {
+        width: min(100%, 720px);
+        justify-self: center;
+    }
+}
+
+@container (min-width: 640px) {
+    .quality-map .pillar-list {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
+/* Narrow cards: the heart uses the card's full width. */
+@container (max-width: 639px) {
+    .quality-heart {
+        width: calc(100% + 24px);
+        max-width: none;
+        margin-inline: -12px;
+    }
+}
+
+/* Notebook with the side menu: heart beside the legend. */
+@container (min-width: 840px) {
+    .map-grid {
+        grid-template-columns: minmax(0, 1fr) 300px;
+        grid-template-areas:
+            "head head"
+            "heart side"
+            "rec rec"
+            "evo identity"
+            "foot foot";
+    }
+
+    .map-heart {
+        width: 100%;
+    }
+}
+
+/* Wide screens and paper: the client's three columns. */
+@container (min-width: 1150px) {
+    .map-grid {
+        grid-template-columns: 250px minmax(0, 1fr) 290px;
+        grid-template-areas:
+            "head head head"
+            "identity heart side"
+            "rec rec evo"
+            "foot foot foot";
+    }
+}
+
+@page {
+    size: A4 landscape;
+    margin: 6mm;
+}
+
+@media print {
+    .ql-sidebar,
+    .ql-topbar,
+    .ql-backdrop,
+    .ql-skip,
+    .ql-footer,
+    .no-print {
+        display: none !important;
+    }
+
+    body.ql-app {
+        background: #fff !important;
+    }
+
+    .ql-workspace {
+        margin-left: 0 !important;
+    }
+
+    .ql-main {
+        max-width: none;
+        margin: 0;
+        padding: 0 !important;
+    }
+
+    .quality-map .map-grid {
+        grid-template-columns: 228px minmax(0, 1fr) 262px;
+        grid-template-areas:
+            "head head head"
+            "identity heart side"
+            "rec rec evo"
+            "foot foot foot";
+        gap: 8px 12px;
+    }
+
+    .quality-map {
+        max-width: none;
+        padding: 0 !important;
+        background: #fff !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        font-size: 11px;
+    }
+
+    .quality-map,
+    .quality-map * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .map-heading {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .map-title {
+        text-align: center;
+    }
+
+    .quality-map .map-title h1 {
+        font-size: 24px;
+    }
+
+    .map-title p {
+        font-size: 13px;
+    }
+
+    .map-logo {
+        width: 46px;
+        height: 46px;
+    }
+
+    .quality-map .map-date {
+        grid-column: auto;
+        margin: 0;
+        font-size: 11px;
+    }
+
+    .map-date strong {
+        font-size: 14px;
+    }
+
+    .quality-heart {
+        width: auto;
+        max-width: 100%;
+        height: 438px;
+    }
+
+    .quality-map .pillar-list {
+        display: none;
+    }
+
+    .map-panel {
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: none;
+        break-inside: avoid;
+    }
+
+    .quality-map .map-panel-head {
+        margin-bottom: 8px;
+        font-size: 11px;
+    }
+
+    .quality-map .map-panel-bar {
+        margin: -10px -10px 10px;
+        padding: 8px 10px;
+        font-size: 11px;
+        border-radius: 9px 9px 0 0;
+    }
+
+    .identity-avatar {
+        width: 56px;
+        height: 56px;
+        font-size: 18px;
+    }
+
+    .identity-list {
+        gap: 6px;
+    }
+
+    .identity-item dt {
+        font-size: 9.5px;
+    }
+
+    .identity-item--lead dd {
+        font-size: 13px;
+    }
+
+    .map-side {
+        gap: 8px;
+    }
+
+    .score-legend,
+    .attention-list {
+        gap: 6px;
+    }
+
+    .score-legend strong,
+    .attention-score {
+        font-size: 11px;
+    }
+
+    .score-legend small {
+        font-size: 9.5px;
+    }
+
+    .attention-item {
+        grid-template-columns: 24px 28px minmax(0, 1fr) auto;
+    }
+
+    .quality-map .attention-item .attention-rank {
+        width: 24px;
+        height: 24px;
+    }
+
+    .attention-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .quality-map .pillar-band[data-band] {
+        padding: 2px 7px;
+        font-size: 8.5px;
+    }
+
+    .recommendation-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .recommendation-card {
+        gap: 5px;
+        padding: 8px;
+    }
+
+    .quality-map .recommendation-card h3,
+    .recommendation-card p,
+    .recommendation-text {
+        font-size: 10px;
+    }
+
+    .quality-map .recommendation-link {
+        padding: 3px 10px;
+        font-size: 9.5px;
+    }
+
+    .evolution-legend {
+        font-size: 9px;
+    }
+
+    .evolution-empty {
+        padding: 8px;
+    }
+
+    .map-footer {
+        font-size: 10px;
+    }
+}

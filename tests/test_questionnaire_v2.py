@@ -688,7 +688,7 @@ class V2FlowViewTests(TestCase):
         self.assertContains(review, "101 de 101")
         self.client.post(reverse("assessment_complete", args=[assessment.pk]))
         result = self.client.get(reverse("assessment_completed", args=[assessment.pk]))
-        self.assertContains(result, "Nome do colaborador")
+        self.assertContains(result, "Identificação do colaborador")
         self.assertContains(result, "Ana Souza")
         self.assertContains(result, "Data da avaliação")
         self.assertNotContains(result, "Pescoço")
