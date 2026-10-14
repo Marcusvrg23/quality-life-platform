@@ -86,7 +86,8 @@ class AppShellTests(SimpleTestCase):
         self.assertIn('name="password"', html)
         self.assertIn('name="csrfmiddlewaretoken"', html)
         self.assertIn(f'name="next" value="{reverse("assessment_hub")}"', html)
-        self.assertEqual(html.count("quality-life-logo.png"), 1)
+        self.assertEqual(html.count("quality-life-logo-ring-512.png"), 1)
+        self.assertNotIn("quality-life-logo.png", html)
         self.assertNotIn("Esqueci minha senha", html)
 
     def test_identity_is_escaped_in_shell(self):

@@ -4,6 +4,7 @@ import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
+from importlib import import_module
 from pathlib import Path
 from unittest import skipIf
 
@@ -27,6 +28,8 @@ try:
 except ImportError:
     sync_playwright = None
 
+NINE_PILLARS = import_module("assessments.migrations.0002_nine_pillars")
+
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
 class AssessmentBrowserTests(StaticLiveServerTestCase):
@@ -47,6 +50,12 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
         )
 
     def setUp(self):
+        # Live-server tests flush the database; restore migration 0002's pillars
+        # so this test does not depend on running before the other browser tests.
+        for order, (code, name) in enumerate(NINE_PILLARS.PILLARS, start=1):
+            Pillar.objects.get_or_create(
+                code=code, defaults={"name": name, "display_order": order}
+            )
         primary = Organization.objects.create(name="QA Principal", slug="qa-principal")
         secondary = Organization.objects.create(
             name="QA Secundária", slug="qa-secondary"
@@ -235,6 +244,10 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             self._capture(page, viewport, "review")
             page.get_by_role("button", name="Concluir avaliação").click()
             page.locator("#result-title").wait_for()
+            # quality-map.js is deferred: until it runs there is no tween to wait
+            # for and no listener, and its .from() then zeroes the segments.
+            # DOMContentLoaded fires only after every deferred script has run.
+            page.wait_for_load_state("domcontentloaded")
             # Regression: moving the pointer over the heart while the entrance
             # animation runs must not leave segments stuck invisible.
             for index in (0, 4, 8):
@@ -242,6 +255,9 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
                 page.mouse.move(
                     box["x"] + box["width"] / 2, box["y"] + box["height"] / 2
                 )
+            # Leave the heart first: while a segment is hovered the other eight
+            # are .is-muted (opacity .65) by design, which is not "stuck".
+            page.mouse.move(0, 0)
             page.wait_for_function(
                 "!window.gsap || gsap.globalTimeline.getChildren(true, true, false)"
                 ".every(t => t.totalProgress() === 1)"
@@ -250,7 +266,6 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
                 "[...document.querySelectorAll('.heart-segment')]"
                 ".every(g => getComputedStyle(g).opacity === '1')"
             )
-            page.mouse.move(0, 0)
             with ThreadPoolExecutor(max_workers=1) as pool:
                 overall_score, overall_band, pillars = pool.submit(
                     self._stored_result, email

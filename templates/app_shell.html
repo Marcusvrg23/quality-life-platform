@@ -7,16 +7,22 @@
     <title>{% block title %}Quality Life{% endblock %} · Quality Life</title>
     {# Critical inline rule: keeps width/height attributes from widening the page while stylesheets are still loading. #}
     <style>img { max-width: 100%; height: auto; }</style>
+    <link rel="stylesheet" href="{% static 'quality_life/brand.css' %}">
     {% block extra_css %}{% endblock %}
     <link rel="stylesheet" href="{% static 'quality_life/app-shell.css' %}">
+    <link rel="stylesheet" href="{% static 'quality_life/app-dark.css' %}">
     <script src="{% static 'quality_life/app-shell.js' %}" defer></script>
+    <script src="{% static 'quality_life/vendor/gsap-3.13.0.min.js' %}" defer></script>
+    <script src="{% static 'quality_life/app-motion.js' %}" defer></script>
 </head>
 <body class="ql-app">
+    {# Light animated background; long-reading pages override this block with nothing. #}
+    {% block ambient %}<canvas class="ql-ambient" id="ql-ambient" data-ambient="lite" aria-hidden="true"></canvas><script src="{% static 'quality_life/ambient.js' %}" defer></script>{% endblock %}
     <a class="ql-skip" href="#main">Ir para o conteúdo</a>
     <aside class="ql-sidebar" id="app-navigation" aria-label="Menu principal">
         <button class="ql-drawer-close" type="button" aria-label="Fechar menu" data-drawer-close>×</button>
         <a class="ql-brand" href="{% url 'app' %}">
-            <span class="ql-brand__logo"><img src="{% static 'quality_life/images/quality-life-logo.png' %}" width="88" height="88" alt=""></span>
+            <span class="ql-brand__logo"><img src="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" width="64" height="64" alt=""></span>
             <strong>Quality Life</strong><span>Ginástica laboral</span>
         </a>
         <nav class="ql-nav" aria-label="Navegação principal">
