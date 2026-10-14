@@ -132,8 +132,11 @@ class RecordPracticeTests(TestCase):
             "started_at": timezone.now(),
         }
         for kind, seconds in (("outro", 120), ("meditacao", 10)):
-            with self.subTest(kind=kind, seconds=seconds):
-                with self.assertRaises(IntegrityError), transaction.atomic():
-                    ActivitySession.objects.create(
-                        kind=kind, duration_seconds=seconds, **base
-                    )
+            with (
+                self.subTest(kind=kind, seconds=seconds),
+                self.assertRaises(IntegrityError),
+                transaction.atomic(),
+            ):
+                ActivitySession.objects.create(
+                    kind=kind, duration_seconds=seconds, **base
+                )
