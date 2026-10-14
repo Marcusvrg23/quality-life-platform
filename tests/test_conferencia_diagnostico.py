@@ -671,9 +671,12 @@ class ConferenciaPontaAPontaTests(TestCase):
         self.assertContains(page, "Pessoa Perfil C")
         html = page.content.decode()
         for code in self.data["pillars"]:
-            score = f"{self.expected['c'].pillars[code].score:.2f}"
+            # The map shows the integer part of the saved score (36.67 -> 36).
+            score = int(self.expected["c"].pillars[code].score)
             with self.subTest(pilar=code):
-                self.assertTrue(score in html or score.replace(".", ",") in html)
+                self.assertRegex(
+                    html, rf'data-pillar-code="{code}"[^>]*data-score="{score}"'
+                )
 
     def test_texto_multipla_e_opcionais_nao_mudam_nota(self):
         _, best = system_scores(self.assessments["a"])

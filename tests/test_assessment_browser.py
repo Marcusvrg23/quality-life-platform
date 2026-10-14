@@ -10,7 +10,6 @@ from unittest import skipIf
 
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.utils.formats import localize
 
 from assessments.models import (
     Assessment,
@@ -31,6 +30,11 @@ except ImportError:
 NINE_PILLARS = import_module("assessments.migrations.0002_nine_pillars")
 
 
+def shown(score):
+    """How the map prints a saved score: integer part only (36.67 -> "36")."""
+    return str(int(score))
+
+
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
 class AssessmentBrowserTests(StaticLiveServerTestCase):
     @staticmethod
@@ -43,10 +47,7 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
         return (
             result.overall_score,
             result.overall_band,
-            [
-                (pillar.pillar.display_order, pillar.score, pillar.band)
-                for pillar in pillars
-            ],
+            [(pillar.pillar.code, pillar.score, pillar.band) for pillar in pillars],
         )
 
     def setUp(self):
@@ -272,45 +273,40 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
                 ).result()
             assert len(pillars) == 9
             assert len({score for _, score, _ in pillars}) == 9
-            assert page.locator(".overall-score strong").inner_text() == localize(
+            # The map shows the integer part only; the band is the saved one.
+            assert page.locator(".heart-center-score").text_content() == shown(
                 overall_score
             )
-            assert page.locator(".overall-band").inner_text() == overall_band
+            assert page.locator(".overall-band").text_content() == overall_band
             assert page.locator(".heart-segment").count() == 9
             assert page.locator(".pillar-row").count() == 9
-            for order, score, band in pillars:
-                row = page.locator(f'.pillar-row[data-pillar="{order}"]')
-                assert row.locator(".pillar-score strong").inner_text() == localize(
+            for code, score, band in pillars:
+                row = page.locator(f'.pillar-row[data-pillar-code="{code}"]')
+                assert row.locator(".pillar-score strong").text_content() == shown(
                     score
                 )
-                assert row.locator(".pillar-band").inner_text() == band
-                assert (
-                    page.locator(
-                        f'.heart-segment[data-pillar="{order}"]'
-                    ).get_attribute("data-band")
-                    == band
-                )
+                assert row.locator(".pillar-band").text_content() == band
+                region = page.locator(f'.heart-segment[data-pillar-code="{code}"]')
+                assert region.get_attribute("data-band") == band
+                assert region.get_attribute("data-score") == shown(score)
             self._capture(page, viewport, "result")
+            first = {code: score for code, score, _ in pillars}[
+                page.locator(".heart-segment").first.get_attribute("data-pillar-code")
+            ]
+            center = page.locator(".heart-center-score")
             segment = page.locator(".heart-segment").first
             segment.focus()
-            assert page.locator(".heart-center-score").inner_text() == localize(
-                pillars[0][1]
-            )
+            assert center.text_content() == shown(first)
+            assert segment.get_attribute("aria-pressed") == "true"
             page.keyboard.press("Escape")
-            assert page.locator(".heart-center-score").inner_text() == localize(
-                overall_score
-            )
+            assert center.text_content() == shown(overall_score)
             if width < 900:
                 segment.tap()
             else:
                 segment.hover()
-            assert page.locator(".heart-center-score").inner_text() == localize(
-                pillars[0][1]
-            )
+            assert center.text_content() == shown(first)
             page.locator(".quality-map-reset").click()
-            assert page.locator(".heart-center-score").inner_text() == localize(
-                overall_score
-            )
+            assert center.text_content() == shown(overall_score)
             self._agent_checkpoint(viewport, "checkpoint-2")
             page.reload()
             page.locator("#result-title").wait_for()
@@ -325,13 +321,9 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             page.route("**/gsap-3.13.0.min.js", lambda route: route.abort())
             page.reload()
             page.locator(".heart-segment").first.focus()
-            assert page.locator(".heart-center-score").inner_text() == localize(
-                pillars[0][1]
-            )
+            assert center.text_content() == shown(first)
             page.locator(".quality-map-reset").click()
-            assert page.locator(".heart-center-score").inner_text() == localize(
-                overall_score
-            )
+            assert center.text_content() == shown(overall_score)
             assert errors == [], errors
             if width < 900:
                 page.locator(".ql-menu-toggle").click()

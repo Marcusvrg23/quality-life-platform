@@ -143,7 +143,7 @@ class QuestionnaireV2BrowserTests(StaticLiveServerTestCase):
                 "!window.gsap || gsap.globalTimeline.getChildren(true, true, false)"
                 ".every(t => t.totalProgress() === 1)"
             )
-            assert page.get_by_text("Nome do colaborador").is_visible()
+            assert page.get_by_text("Identificação do colaborador").is_visible()
             assert page.get_by_text(NAME).is_visible()
             assert page.get_by_text("Data da avaliação").is_visible()
             self.check_layout(page, "result", screenshot=True)

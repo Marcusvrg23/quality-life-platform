@@ -906,8 +906,8 @@ progress::-moz-progress-bar {
     border-top-color: var(--app-accent);
 }
 
-/* Individual map: a light "document" card inside the dark app (to be rebuilt
-   from a printable light model). Same SVG and logic; only tokens swap. */
+/* Individual map: a light "document" card inside the dark app. Layout and
+   print sheet live in quality-map.css (spec 10); only tokens swap here. */
 .quality-map {
     --app-text: #153b3c;
     --app-text-soft: #41615d;
