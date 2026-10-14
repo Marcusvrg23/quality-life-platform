@@ -9,12 +9,7 @@
         <div><p class="eyebrow">GINÁSTICA LABORAL</p><h1>Exercícios</h1><p>Movimentos guiados para pequenas pausas durante o seu dia.</p></div>
         <div class="exercise-guide"><img src="{% static 'quality_life/images/exercise-guide.webp' %}" alt="Mascote oficial Quality Life, seu guia de mobilidade"><span>Vamos alongar?</span></div>
     </header>
-    <details class="exercise-safety" open>
-        <summary>Antes de começar</summary>
-        <p>Evite movimentos abruptos. Faça movimentos suaves e lentos, inclusive ao trocar de exercício. Respeite seu corpo: a dor é um sinal de alerta; reduza a intensidade e não insista se houver dor. Mantenha a respiração profunda e lenta.</p>
-        <p>Evite exercícios logo depois de uma contusão aguda. Consulte o médico se a dor persistir por mais de dois dias ou se os sintomas piorarem após os exercícios, sem recuperação no dia seguinte. Procure orientação de um profissional de fisioterapia ou educação física para aprender a execução.</p>
-        <small>Orientações do material Quality Life · páginas 1 e 28.</small>
-    </details>
+    {% include 'exercises/_safety.html' %}
     <section id="exercise-library" aria-labelledby="library-title">
         <div class="exercise-library-top"><div><h2 id="library-title">Uma pausa para se movimentar</h2><p>Explore os movimentos do material Quality Life.</p></div><button class="button exercise-enhanced" type="button" data-start-sequence hidden>Começar sequência <span aria-hidden="true">→</span></button></div>
         <div class="exercise-filters exercise-enhanced" aria-label="Filtrar exercícios" hidden>

@@ -1,0 +1,35 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Ginástica Laboral{% endblock %}
+{% block page_title %}Ginástica Laboral{% endblock %}
+{% block header_title %}Ginástica Laboral{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/exercises.css' %}"><link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
+{% block content %}
+<section class="wb-page" aria-labelledby="gym-title" data-wellbeing data-record-url="{% url 'wellbeing_record' %}">
+    {% csrf_token %}
+    <header class="wb-intro">
+        <p class="ql-eyebrow">PAUSA GUIADA</p>
+        <h1 id="gym-title">Ginástica Laboral</h1>
+        <p>Escolha uma sessão de 3, 5 ou 10 minutos. O cronômetro passa de um exercício para o outro.</p>
+    </header>
+    <div class="exercise-page wb-safety">{% include 'exercises/_safety.html' %}</div>
+    <div class="wb-grid">
+        {% for category in categories %}
+        <article class="card wb-card" data-gym-category="{{ category.slug }}">
+            <h2>{{ category.title }}</h2>
+            <ul class="wb-steps">{% for exercise in category.exercises %}<li>{{ exercise.title }}{% if not exercise.video %} <small>(imagem do material)</small>{% endif %}</li>{% endfor %}</ul>
+            {% if category.chair_exercise %}
+            <label class="wb-check"><input type="checkbox" data-chair-toggle> Na cadeira</label>
+            <p class="wb-note">Na cadeira, “Braços e punhos” dá lugar a “{{ category.chair_exercise.title }}”.</p>
+            {% endif %}
+            <div class="wb-durations" role="group" aria-label="Duração: {{ category.title }}">
+                {% for session in category.sessions %}<button type="button" class="wb-chip" data-open-session="{{ session.slug }}"{% if session.chair %} data-chair hidden{% else %} data-standing{% endif %}>{{ session.minutes }} min{% if session.chair %} · na cadeira{% endif %}</button>{% endfor %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    <p class="wb-note wb-footnote">{{ catalog.PROPOSAL_NOTE }} {{ catalog.AI_VIDEO_NOTE }} Instruções: {{ source }}.</p>
+    {% include 'wellbeing/_player.html' with breathing=False noises=None note=catalog.AI_VIDEO_NOTE %}
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}

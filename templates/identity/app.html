@@ -3,14 +3,27 @@
 {% block title %}Hoje{% endblock %}
 {% block page_title %}Hoje{% endblock %}
 {% block header_title %}Hoje{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/dashboard.css' %}">{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/dashboard.css' %}"><link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
 {% block content %}
 <section class="dashboard" aria-labelledby="dashboard-title">
     <header class="dashboard-intro">
+        <p class="dashboard-greeting">{{ greeting }}{% if first_name %}, {{ first_name }}{% endif %}</p>
         <p class="ql-eyebrow">MINHA ÁREA</p>
         <h1 id="dashboard-title">Escolha sua atividade</h1>
         <p>Rotinas rápidas de ginástica laboral organizadas para o seu dia.</p>
     </header>
+    <nav class="wb-shortcuts" aria-label="Atalhos de bem-estar">
+        <a class="dashboard-link" href="{% url 'wellbeing_gym' %}"><span class="dashboard-link__icon" aria-hidden="true">↻</span><span><strong>Ginástica Laboral</strong><small>Sessões de 3, 5 e 10 minutos.</small></span></a>
+        <a class="dashboard-link" href="{% url 'wellbeing_meditation' %}"><span class="dashboard-link__icon dashboard-link__icon--purple" aria-hidden="true">◎</span><span><strong>Meditação</strong><small>Respiração guiada com vídeo.</small></span></a>
+        <a class="dashboard-link" href="{% url 'wellbeing_relax' %}"><span class="dashboard-link__icon" aria-hidden="true">≈</span><span><strong>Relaxamento</strong><small>Sons com timer para desligar.</small></span></a>
+        <a class="dashboard-link" href="{% url 'wellbeing_progress' %}"><span class="dashboard-link__icon dashboard-link__icon--purple" aria-hidden="true">★</span><span><strong>Meu Progresso</strong><small>Dias seguidos, minutos e troféus.</small></span></a>
+    </nav>
+    {% if tip %}
+    <aside class="card wb-tip" aria-labelledby="tip-title">
+        <p class="ql-eyebrow" id="tip-title">Dica do dia</p>
+        <p>{{ tip.text }}</p>
+    </aside>
+    {% endif %}
     {% if highlight %}
     <aside class="dashboard-notice" aria-labelledby="highlight-title">
         <h2 id="highlight-title">{{ highlight.title }}</h2>

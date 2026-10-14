@@ -1,0 +1,33 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Meu Progresso{% endblock %}
+{% block page_title %}Meu Progresso{% endblock %}
+{% block header_title %}Meu Progresso{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
+{% block content %}
+<section class="wb-page" aria-labelledby="progress-title">
+    <header class="wb-intro">
+        <p class="ql-eyebrow">SÓ VOCÊ VÊ</p>
+        <h1 id="progress-title">Meu Progresso</h1>
+        <p>Suas práticas de Ginástica Laboral, Meditação e Relaxamento. Uma prática conta quando você conclui a sessão ou passa de 1 minuto nela.</p>
+    </header>
+    <div class="wb-stats">
+        <div class="card wb-stat"><strong>{{ progress.streak }}</strong><span>{% if progress.streak == 1 %}dia seguido{% else %}dias seguidos{% endif %}</span></div>
+        <div class="card wb-stat"><strong>{{ progress.week_minutes }}</strong><span>minutos nesta semana</span></div>
+        <div class="card wb-stat"><strong>{{ progress.month_minutes }}</strong><span>minutos neste mês</span></div>
+    </div>
+    <section class="card wb-card" aria-labelledby="kinds-title">
+        <h2 id="kinds-title">Total por tipo</h2>
+        <ul class="wb-kinds">
+            {% for item in progress.by_kind %}<li><span>{{ item.label }}</span><b>{{ item.count }} {% if item.count == 1 %}prática{% else %}práticas{% endif %} · {{ item.minutes }} min</b></li>{% endfor %}
+        </ul>
+    </section>
+    <section class="card wb-card" aria-labelledby="trophies-title">
+        <h2 id="trophies-title">Troféus</h2>
+        <ul class="wb-trophies">
+            {% for trophy in progress.trophies %}<li class="wb-trophy{% if trophy.earned %} is-earned{% endif %}"><span class="wb-trophy__icon" aria-hidden="true">{% if trophy.earned %}★{% else %}☆{% endif %}</span><span><strong>{{ trophy.title }}</strong><small>{% if trophy.earned %}Conquistado{% else %}{{ trophy.rule }}{% endif %}</small></span></li>{% endfor %}
+        </ul>
+    </section>
+    {% if not progress.sessions %}<p class="wb-note wb-footnote">Você ainda não tem práticas registradas. Comece por uma <a href="{% url 'wellbeing_gym' %}">sessão de Ginástica Laboral</a>.</p>{% endif %}
+</section>
+{% endblock %}

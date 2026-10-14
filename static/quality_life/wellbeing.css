@@ -1,0 +1,129 @@
+/* Wellbeing pages and Home shortcuts (docs/specs/11-bem-estar.md).
+   Only new components; colors, glass and buttons come from app-dark.css
+   (--app-* tokens, .card, .button), which loads after this sheet. */
+
+.wb-page { max-width: 1080px; margin: auto; display: grid; gap: 1.1rem; min-width: 0; }
+.wb-intro h1 { font-size: clamp(2.1rem, 4vw, 2.9rem); margin: 0.4rem 0 0.6rem; }
+.wb-intro > p:last-child { margin: 0; max-width: 46rem; color: var(--app-text-soft); font-size: 0.92rem; line-height: 1.7; }
+.wb-safety { max-width: none; margin: 0; }
+.wb-safety .exercise-safety { margin: 0; }
+
+.wb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18.5rem), 1fr)); gap: 1.1rem; }
+.wb-card { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; padding: 1.3rem; overflow-wrap: anywhere; }
+.ql-main .wb-card h2 { margin: 0; font-size: 1.45rem; }
+.wb-card__visual { overflow: hidden; border-radius: var(--app-radius-sm); aspect-ratio: 832 / 480; background: #02090b; }
+.wb-card__visual img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.wb-card__meta { margin: 0; color: var(--app-text-soft); font-size: 0.85rem; }
+.wb-card > .button { align-self: flex-start; margin-top: auto; }
+.wb-steps { display: grid; gap: 0.35rem; margin: 0; padding-left: 1.1rem; color: var(--app-text-soft); font-size: 0.88rem; line-height: 1.5; }
+.wb-steps small { color: var(--app-text-muted); }
+.wb-note { margin: 0; color: var(--app-text-muted); font-size: 0.78rem; line-height: 1.6; }
+.wb-note a { color: var(--app-accent); }
+.wb-footnote { text-align: center; }
+
+.wb-check { display: inline-flex; align-items: center; gap: 0.55rem; min-height: 2.75rem; color: var(--app-text); font-size: 0.9rem; cursor: pointer; }
+.wb-check input { width: 1.15rem; height: 1.15rem; accent-color: var(--app-accent); }
+.wb-durations { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: auto; }
+.ql-main .wb-chip { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; padding: 0.5rem 1rem; color: var(--app-text); background: rgb(79 216 202 / 10%); border: 1px solid rgb(79 216 202 / 45%); border-radius: var(--ql-radius-pill); box-shadow: none; font-size: 0.86rem; font-weight: 600; cursor: pointer; }
+.ql-main .wb-chip:hover { background: rgb(79 216 202 / 18%); filter: none; box-shadow: 0 0 18px -6px rgb(79 216 202 / 70%); }
+.ql-main .wb-chip[hidden] { display: none; }
+.wb-chip:has(input:checked) { background: rgb(79 216 202 / 24%); border-color: var(--app-accent); }
+.wb-chip:has(input:focus-visible) { outline: 2px solid var(--app-focus); outline-offset: 3px; }
+.wb-chip input { position: absolute; opacity: 0; pointer-events: none; }
+.wb-badge { align-self: flex-start; margin-top: auto; padding: 0.35rem 0.75rem; color: var(--app-warn-fg); background: var(--app-warn-bg); border: 1px solid rgb(255 207 92 / 35%); border-radius: var(--ql-radius-pill); font-size: 0.78rem; font-weight: 600; }
+.ql-main .wb-link { min-height: 2.75rem; padding: 0.4rem 0; color: var(--app-accent); background: none; border: 0; box-shadow: none; font-weight: 600; }
+.ql-main .wb-link:hover { background: none; filter: none; box-shadow: none; text-decoration: underline; }
+.ql-main .wb-link[hidden] { display: none; }
+.wb-field { display: grid; gap: 0.35rem; color: var(--app-text-soft); font-size: 0.82rem; }
+.wb-field input[type="range"] { width: 100%; accent-color: var(--app-accent); }
+
+/* Player dialog: full screen on phones, centered panel on desktop. */
+.wb-modal-open { overflow: hidden; }
+.wb-player { width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; padding: 0; color: var(--app-text); background: #0b2129; border: 1px solid var(--app-line); }
+.wb-player:not([open]) { display: none; }
+.wb-player[open] { display: flex; flex-direction: column; overflow: hidden; }
+.wb-player::backdrop { background: rgb(3 10 13 / 78%); }
+.wb-player__bar { display: flex; flex-shrink: 0; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.25rem 1rem; color: var(--app-text-soft); font-size: 0.85rem; }
+.wb-player__progress { flex-shrink: 0; width: 100%; height: 4px; appearance: none; border: 0; background: rgb(255 255 255 / 10%); }
+.wb-player__progress::-webkit-progress-bar { background: rgb(255 255 255 / 10%); }
+.wb-player__progress::-webkit-progress-value { background: var(--app-accent); }
+.wb-player__progress::-moz-progress-bar { background: var(--app-accent); }
+.wb-player__body { display: grid; flex: 1; gap: 1rem; min-height: 0; padding: 1rem; overflow-y: auto; }
+.wb-player__media { position: relative; overflow: hidden; border-radius: 18px; aspect-ratio: 832 / 480; background: #02090b; }
+.wb-player__media video,
+.wb-player__media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.wb-player__media [hidden] { display: none; }
+.wb-player__media img.is-material { object-fit: contain; background: #f6f8f7; }
+.wb-player__info { display: grid; align-content: start; gap: 0.6rem; min-width: 0; }
+.wb-player__info .eyebrow { margin: 0; }
+.ql-main .wb-player h2 { margin: 0; font-size: 1.6rem; }
+.wb-player__text { margin: 0; color: var(--app-text-soft); font-size: 0.92rem; line-height: 1.65; }
+.wb-player__text:empty { display: none; }
+.wb-timer { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1rem; }
+.wb-timer strong { display: inline-block; color: var(--app-text); font-size: clamp(2.6rem, 9vw, 3.4rem); font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1; }
+.wb-timer small { color: var(--app-text-soft); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
+.wb-sound-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: 0.75rem; }
+.ql-main .wb-sound-options select { min-height: 2.75rem; }
+.wb-player__done { padding: 0.8rem 1rem; color: var(--app-ok-fg); background: var(--app-ok-bg); border-radius: var(--app-radius-sm); }
+.wb-player__done[hidden] { display: none; }
+.wb-player__done a { color: var(--app-text); }
+.wb-player__controls { display: flex; flex-shrink: 0; gap: 0.5rem; padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); background: #0b2129; border-top: 1px solid var(--app-line); }
+.wb-player__controls .button { flex: 1; min-width: 0; padding-inline: 0.75rem; }
+.wb-player__controls [hidden] { display: none; }
+
+/* Breathing guide over the video: scaled by GSAP (app never animates it with reduced motion). */
+.wb-breath { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.wb-breath__circle { width: min(42%, 11rem); aspect-ratio: 1; border: 2px solid rgb(127 243 230 / 85%); border-radius: 50%; background: radial-gradient(circle, rgb(79 216 202 / 28%), rgb(184 156 240 / 12%) 70%, transparent 72%); box-shadow: 0 0 40px -6px rgb(79 216 202 / 70%); transform: scale(0.62); }
+.wb-breath__label { margin: 0; color: var(--app-accent); font-family: var(--ql-font-serif); font-size: 1.7rem; font-weight: 600; }
+
+@media (min-width: 900px) {
+    .wb-player { width: min(1040px, calc(100% - 3rem)); height: auto; max-height: calc(100% - 3rem); margin: auto; border-radius: 24px; }
+    .wb-player__body { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; padding: 1.25rem 1.5rem; }
+    .wb-player__bar { padding-inline: 1.5rem; }
+    .wb-player__controls { justify-content: flex-end; padding-inline: 1.5rem; }
+    .wb-player__controls .button { flex: 0 1 12rem; }
+}
+
+/* Relaxamento */
+.wb-mixer { display: grid; gap: 1rem; padding: 1.3rem; }
+.wb-mixer__backdrop { overflow: hidden; border-radius: var(--app-radius-sm); aspect-ratio: 832 / 480; background: #02090b; }
+.wb-mixer__backdrop[hidden] { display: none; }
+.wb-mixer__backdrop video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.wb-mixer__controls { display: grid; gap: 0.9rem; align-content: start; }
+.wb-mixer__status { margin: 0; color: var(--app-text); font-size: 1rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.wb-timers { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; border: 0; }
+.wb-timers legend { width: 100%; margin-bottom: 0.4rem; padding: 0; color: var(--app-text-soft); font-size: 0.82rem; }
+.wb-timers .wb-chip { position: relative; }
+.wb-mixer .button { justify-self: start; }
+.wb-sound .button[aria-pressed="true"] { box-shadow: var(--app-glow-hover); }
+@media (min-width: 900px) {
+    .wb-mixer:has(.wb-mixer__backdrop:not([hidden])) { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; }
+}
+
+/* Meu Progresso */
+.wb-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: 1rem; }
+.wb-stat { display: grid; gap: 0.3rem; padding: 1.2rem 1.3rem; }
+.wb-stat strong { color: var(--app-text); font-family: var(--ql-font-serif); font-size: 2.6rem; line-height: 1; }
+.wb-stat span { color: var(--app-text-soft); font-size: 0.86rem; }
+.wb-kinds,
+.wb-trophies { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.wb-kinds li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; padding: 0.75rem 0.9rem; color: var(--app-text); background: var(--app-sunken); border: 1px solid var(--app-line); border-radius: 12px; font-size: 0.9rem; }
+.wb-trophies { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+.wb-trophy { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 0.9rem; background: var(--app-sunken); border: 1px solid var(--app-line); border-radius: 12px; }
+.wb-trophy strong { display: block; color: var(--app-text); font-size: 0.9rem; }
+.wb-trophy small { display: block; color: var(--app-text-soft); font-size: 0.78rem; }
+.wb-trophy__icon { flex: none; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; color: var(--app-text-muted); background: rgb(255 255 255 / 5%); border-radius: 50%; font-size: 1.2rem; }
+.wb-trophy.is-earned { border-color: rgb(255 207 92 / 45%); }
+.wb-trophy.is-earned .wb-trophy__icon { color: var(--app-warn-fg); background: var(--app-warn-bg); }
+
+/* Home: greeting, four large shortcuts and the optional tip. */
+.dashboard-greeting { margin: 0 0 0.35rem; color: var(--app-accent); font-size: 0.95rem; font-weight: 600; }
+.wb-shortcuts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin: 0 0 1.1rem; }
+.wb-shortcuts .dashboard-link { flex-direction: column; align-items: flex-start; gap: 0.7rem; min-width: 0; padding: 1.1rem; }
+.wb-shortcuts .dashboard-link strong { font-size: 0.95rem; }
+.wb-shortcuts .dashboard-link small { overflow-wrap: anywhere; }
+.wb-tip { margin: 0 0 1rem; padding: 1.1rem 1.3rem; }
+.wb-tip p { margin: 0.3rem 0 0; color: var(--app-text-soft); font-size: 0.9rem; line-height: 1.6; }
+@media (min-width: 900px) {
+    .wb-shortcuts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

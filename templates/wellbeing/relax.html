@@ -1,0 +1,44 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Relaxamento{% endblock %}
+{% block page_title %}Relaxamento{% endblock %}
+{% block header_title %}Relaxamento{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
+{% block content %}
+<section class="wb-page" aria-labelledby="relax-title" data-wellbeing data-record-url="{% url 'wellbeing_record' %}" data-relax>
+    {% csrf_token %}
+    <header class="wb-intro">
+        <p class="ql-eyebrow">SONS PARA PAUSAR</p>
+        <h1 id="relax-title">Relaxamento</h1>
+        <p>Escolha um som, ajuste o volume e o tempo. O som diminui sozinho até parar.</p>
+    </header>
+    <div class="card wb-mixer" data-relax-panel>
+        <div class="wb-mixer__backdrop" data-backdrop hidden><video data-backdrop-video data-src="{% static background %}" poster="{% static background_poster %}" muted playsinline loop preload="none" aria-label="Fundo visual ilustrativo gerado por IA"></video></div>
+        <div class="wb-mixer__controls">
+            <p class="wb-mixer__status" data-relax-status role="status">Nenhum som tocando.</p>
+            <label class="wb-field">Volume <input type="range" min="0" max="100" value="40" data-relax-volume></label>
+            <fieldset class="wb-timers">
+                <legend>Desligar em</legend>
+                {% for minutes in timers %}<label class="wb-chip"><input type="radio" name="wb-timer" value="{{ minutes }}"{% if minutes == default_timer %} checked{% endif %}> {{ minutes }} min</label>{% endfor %}
+            </fieldset>
+            <label class="wb-check"><input type="checkbox" data-backdrop-toggle> Fundo visual</label>
+            <button type="button" class="button button-secondary" data-relax-stop disabled>Parar</button>
+        </div>
+    </div>
+    <div class="wb-grid wb-grid--sounds">
+        {% for sound in sounds %}
+        <article class="card wb-card wb-sound" data-sound-card="{{ sound.slug }}">
+            <h2>{{ sound.title }}</h2>
+            <p class="wb-card__meta">{{ sound.category }}</p>
+            {% if sound.status == catalog.AVAILABLE %}
+            <button type="button" class="button" data-sound-play data-slug="{{ sound.slug }}" data-noise="{{ sound.noise }}" aria-pressed="false">Tocar <span aria-hidden="true">▶</span></button>
+            {% else %}
+            <span class="wb-badge">Em preparação</span>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+    <p class="wb-note wb-footnote">Ruídos gerados no próprio navegador. Os sons “Em preparação” entram quando a Quality Life enviar os arquivos. Fundo visual: vídeo ilustrativo gerado por IA.</p>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}

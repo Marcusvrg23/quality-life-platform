@@ -6,14 +6,18 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.http import Http404, JsonResponse
+from django.shortcuts import render
+from django.templatetags.static import static
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from config import wellbeing_catalog as catalog
+from config.exercises import EXERCISES, SOURCE, image_path, poster_path
 from config.tenant import resolve_tenant_context
 from identity.models import Membership
 
 from .models import MIN_RECORD_SECONDS, ActivitySession
+from .services import personal_progress
 
 # Two records of the same person may not overlap in time (a resent or
 # duplicated request would otherwise count the same minutes twice).
@@ -25,6 +29,160 @@ def _tenant(request):
     if tenant is None:
         raise PermissionDenied("Organization unavailable.")
     return tenant
+
+
+def _static(path):
+    return static(path) if path else None
+
+
+def _step(exercise, seconds):
+    return {
+        "slug": exercise["slug"],
+        "seconds": seconds,
+        "title": exercise["title"],
+        "category": exercise["category"],
+        "text": exercise["instruction"],
+        "video": _static(exercise.get("video")),
+        "poster": _static(poster_path(exercise)),
+        "image": _static(image_path(exercise)),
+    }
+
+
+def _noises():
+    return [
+        item
+        for item in catalog.SOUNDS
+        if item["type"] == "noise" and item["status"] == catalog.AVAILABLE
+    ]
+
+
+@login_required
+@require_GET
+def gym(request):
+    tenant = _tenant(request)
+    exercises = {item["slug"]: item for item in EXERCISES}
+    sessions = [
+        {
+            "kind": session["kind"],
+            "slug": session["slug"],
+            "title": session["title"],
+            "label": f"{session['minutes']} min",
+            "duration": session["duration_seconds"],
+            "breathing": None,
+            "steps": [
+                _step(exercises[slug], catalog.SECONDS_PER_EXERCISE)
+                for slug in session["steps"]
+            ],
+        }
+        for session in catalog.GYM_SESSIONS
+    ]
+    categories = [
+        {
+            **category,
+            "exercises": [exercises[slug] for slug in category["exercises"]],
+            "chair_exercise": (
+                exercises[next(iter(category["chair"].values()))]
+                if category["chair"]
+                else None
+            ),
+            "sessions": [
+                session
+                for session in catalog.GYM_SESSIONS
+                if session["category_slug"] == category["slug"]
+            ],
+        }
+        for category in catalog.GYM_CATEGORIES
+    ]
+    return render(
+        request,
+        "wellbeing/gym.html",
+        {
+            "tenant": tenant,
+            "categories": categories,
+            "sessions": sessions,
+            "catalog": catalog,
+            "source": SOURCE,
+        },
+    )
+
+
+@login_required
+@require_GET
+def meditation(request):
+    tenant = _tenant(request)
+    breathing = {
+        "inhale": catalog.BREATH_IN_SECONDS,
+        "exhale": catalog.BREATH_OUT_SECONDS,
+    }
+    sessions = [
+        {
+            "kind": item["kind"],
+            "slug": item["slug"],
+            "title": item["title"],
+            "label": f"{item['duration_seconds'] // 60} min",
+            "duration": item["duration_seconds"],
+            "breathing": breathing,
+            "steps": [
+                {
+                    "slug": item["slug"],
+                    "seconds": item["duration_seconds"],
+                    "title": item["title"],
+                    "category": item["category"],
+                    "text": "",
+                    "video": _static(item["file"]),
+                    "poster": _static(item["file"].removesuffix(".mp4") + ".webp"),
+                    "image": None,
+                }
+            ],
+        }
+        for item in catalog.MEDITATIONS
+        if item["status"] == catalog.AVAILABLE
+    ]
+    return render(
+        request,
+        "wellbeing/meditation.html",
+        {
+            "tenant": tenant,
+            "meditations": sessions,
+            "sessions": sessions,
+            "noises": _noises(),
+            "catalog": catalog,
+        },
+    )
+
+
+@login_required
+@require_GET
+def relax(request):
+    tenant = _tenant(request)
+    return render(
+        request,
+        "wellbeing/relax.html",
+        {
+            "tenant": tenant,
+            "sounds": catalog.SOUNDS,
+            "timers": catalog.RELAX_TIMER_MINUTES,
+            "default_timer": 15,
+            "background": catalog.RELAX_BACKGROUND,
+            "background_poster": catalog.RELAX_BACKGROUND.removesuffix(".mp4")
+            + ".webp",
+            "catalog": catalog,
+        },
+    )
+
+
+@login_required
+@require_GET
+def progress(request):
+    tenant = _tenant(request)
+    return render(
+        request,
+        "wellbeing/progress.html",
+        {
+            "tenant": tenant,
+            "progress": personal_progress(request.user, tenant.organization),
+        },
+    )
 
 
 @login_required

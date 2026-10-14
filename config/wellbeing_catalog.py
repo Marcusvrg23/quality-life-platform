@@ -39,6 +39,13 @@ BREATH_IN_SECONDS = 4
 # PROPOSTA — aguardando aprovação da Quality Life.
 BREATH_OUT_SECONDS = 6
 
+# Shown next to every timed session while the constants above are proposals.
+PROPOSAL_NOTE = "Tempos em proposta, aguardando aprovação da Quality Life."
+AI_VIDEO_NOTE = (
+    "Vídeos ilustrativos gerados por IA a partir do material Quality Life;"
+    " revisão por profissional de educação física pendente."
+)
+
 GYM_MINUTES = (3, 5, 10)
 GYM_CATEGORIES = (
     {

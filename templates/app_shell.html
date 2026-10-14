@@ -29,6 +29,10 @@
             <a href="{% url 'app' %}" {% if request.resolver_match.url_name == 'app' or request.resolver_match.url_name == 'organization_home' %}aria-current="page"{% endif %}><span aria-hidden="true">⌂</span>Hoje</a>
             <a href="{% url 'exercises' %}" {% if request.resolver_match.url_name == 'exercises' %}aria-current="page"{% endif %}><span aria-hidden="true">↗</span>Exercícios</a>
             <a href="{% url 'lessons' %}" {% if request.resolver_match.url_name == 'lessons' %}aria-current="page"{% endif %}><span aria-hidden="true">▶</span>Aulas</a>
+            <a href="{% url 'wellbeing_gym' %}" {% if request.resolver_match.url_name == 'wellbeing_gym' %}aria-current="page"{% endif %}><span aria-hidden="true">↻</span>Ginástica Laboral</a>
+            <a href="{% url 'wellbeing_meditation' %}" {% if request.resolver_match.url_name == 'wellbeing_meditation' %}aria-current="page"{% endif %}><span aria-hidden="true">◎</span>Meditação</a>
+            <a href="{% url 'wellbeing_relax' %}" {% if request.resolver_match.url_name == 'wellbeing_relax' %}aria-current="page"{% endif %}><span aria-hidden="true">≈</span>Relaxamento</a>
+            <a href="{% url 'wellbeing_progress' %}" {% if request.resolver_match.url_name == 'wellbeing_progress' %}aria-current="page"{% endif %}><span aria-hidden="true">★</span>Meu Progresso</a>
             {% if tenant.role == 'COLLABORATOR' %}<a href="{% url 'assessment_hub' %}" {% if 'assessment' in request.resolver_match.url_name %}aria-current="page"{% endif %}><span aria-hidden="true">♡</span>Minha avaliação</a>{% endif %}
             {% if tenant.role == 'CORPORATE_MANAGER' or tenant.role == 'ADMIN' %}<a href="{% url 'executive_report' %}" {% if request.resolver_match.url_name == 'executive_report' %}aria-current="page"{% endif %}><span aria-hidden="true">▤</span>Relatório da empresa</a>{% endif %}
             {% if tenant.role == 'CORPORATE_MANAGER' or tenant.role == 'ADMIN' %}<a href="{% url 'team' %}" {% if 'team' in request.resolver_match.url_name %}aria-current="page"{% endif %}><span aria-hidden="true">☷</span>Equipe</a>{% endif %}
