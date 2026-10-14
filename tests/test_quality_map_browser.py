@@ -153,7 +153,14 @@ class QualityMapBrowserTests(StaticLiveServerTestCase):
             "rgb(255, 255, 255)",
             "rgba(0, 0, 0, 0)",
         )
+        # No shell transition may run while printing (margin of the menu).
+        assert page.evaluate(
+            "getComputedStyle(document.querySelector('.ql-workspace'))"
+            ".transitionDuration"
+        ) in ("0s", "0s, 0s")
         heart = page.locator(".quality-heart").bounding_box()
+        # As large as in the client's model (about half the page width).
+        assert heart["width"] >= 440, heart
         assert heart["y"] >= 0, heart
         assert heart["y"] + heart["height"] <= PAGE_HEIGHT, heart
         assert heart["x"] >= 0 and heart["x"] + heart["width"] <= PAGE_WIDTH, heart
