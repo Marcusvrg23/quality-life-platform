@@ -77,3 +77,24 @@ PERGUNTAS (não bloqueiam)
   (`BREATH_IN_SECONDS`/`BREATH_OUT_SECONDS`) aguardam aprovação da Quality Life.
 - Exercícios ilustrados por IA aguardam revisão de profissional de educação
   física.
+
+COMPOSIÇÃO DAS SESSÕES DE GINÁSTICA (`config/wellbeing_catalog.py`)
+Cada sessão repete, em ciclo, os exercícios da categoria até somar a duração;
+cada exercício fica `SECONDS_PER_EXERCISE` = 30 s (PROPOSTA). Se a Quality Life
+aprovar outro valor, ele precisa dividir 180, 300 e 600 (o teste confere).
+
+| Categoria | Ciclo de exercícios | 3 min | 5 min | 10 min |
+|---|---|---|---|---|
+| Alongamento para pescoço e ombros | pescoco, abertura-peito, punhos, autoabraco | 6 passos | 10 | 20 |
+| … na cadeira | pescoco, abertura-peito, **sentado**, autoabraco | 6 | 10 | 20 |
+| Pausa ativa para coluna | inclinacao-frente, lateral, passo-largo, abertura-peito | 6 | 10 | 20 |
+| Energização matinal | passo-largo, lateral, punhos, abertura-peito | 6 | 10 | 20 |
+
+Exemplo, pescoço e ombros 3 min: pescoco, abertura-peito, punhos, autoabraco,
+pescoco, abertura-peito. Autoabraço (sem vídeo) mostra a foto do material.
+
+EM PREPARAÇÃO / ONDE PREENCHER
+- Sons da natureza, Mar, Chuva, Música para concentração: arquivo em
+  `static/quality_life/audio/`, "file" e "status" em `SOUNDS`.
+- Dica do dia: `TIPS` (começa vazio; a Home só mostra se houver texto).
+- Página do PDF e imagem de "Inclinação do tronco à frente": `config/exercises.py`.
