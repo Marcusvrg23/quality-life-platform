@@ -365,3 +365,19 @@ class LandingAssetTests(SimpleTestCase):
         self.assertEqual(pillar_icon("sleep_recovery"), "moon")
         self.assertEqual(pillar_icon("unknown-code"), DEFAULT_PILLAR_ICON)
         self.assertEqual(len(PILLAR_ICONS), 9)
+
+
+class LiningNumeralsTests(SimpleTestCase):
+    """Cormorant's default old-style figures made "101" read as "ioi"."""
+
+    def test_brand_css_sets_lining_figures_for_the_whole_page(self):
+        css = Path(finders.find("quality_life/brand.css")).read_text(encoding="utf-8")
+
+        self.assertRegex(css, r"html\s*\{[^}]*font-variant-numeric:\s*lining-nums")
+
+    def test_overrides_keep_lining_figures(self):
+        for name in ("brand.css", "home.css"):
+            css = Path(finders.find(f"quality_life/{name}")).read_text(encoding="utf-8")
+            for value in re.findall(r"font-variant-numeric:\s*([^;]+);", css):
+                with self.subTest(file=name, value=value):
+                    self.assertIn("lining-nums", value)
