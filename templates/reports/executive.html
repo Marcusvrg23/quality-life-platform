@@ -110,6 +110,24 @@
     <p class="report-note">Os dados descrevem o período avaliado e não indicam relações de causa e efeito.</p>
   </section>
   {% endif %}
+
+  <section class="card report-section" aria-labelledby="usage-title">
+    <h2 id="usage-title">Uso das práticas de bem-estar</h2>
+    <p class="report-note">Ginástica Laboral, Meditação e Relaxamento. Só números agregados: cada recorte aparece apenas com pelo menos {{ usage.min_group }} pessoas, sem nomes nem dados individuais.</p>
+    <dl class="report-facts">
+      {% for period in usage.periods %}
+      <div>
+        <dt>{{ period.label }} ({{ period.start|date:"d/m" }} a {{ period.end|date:"d/m" }})</dt>
+        {% if period.visible %}
+        <dd>{{ period.people }} pessoas ativas · {{ period.minutes }} min · {{ period.practices }} práticas</dd>
+        {% if period.by_kind %}{% for item in period.by_kind %}<dd>{{ item.label }}: {{ item.count }} práticas, {{ item.minutes }} min</dd>{% endfor %}{% else %}<dd>Divisão por tipo oculta: algum tipo teve menos de {{ usage.min_group }} pessoas.</dd>{% endif %}
+        {% else %}
+        <dd>Sem números: menos de {{ usage.min_group }} pessoas praticaram.</dd>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </dl>
+  </section>
 </article>
 {% endblock %}
 {% block extra_js %}<script src="{% static 'quality_life/report.js' %}" defer></script>{% endblock %}

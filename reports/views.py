@@ -10,6 +10,7 @@ from django.views.decorators.http import require_GET
 
 from config.tenant import resolve_tenant_context
 from identity.models import Membership
+from wellbeing.services import company_usage
 
 from .services import MIN_GROUP, build_executive_report
 
@@ -46,5 +47,6 @@ def executive_report(request):
             "generated_at": timezone.now(),
             "min_group": MIN_GROUP,
             "period_days": DEFAULT_PERIOD_DAYS,
+            "usage": company_usage(tenant.organization),
         },
     )

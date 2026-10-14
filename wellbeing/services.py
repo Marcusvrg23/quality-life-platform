@@ -9,7 +9,7 @@ Rules (docs/specs/11-bem-estar.md):
 - Minutes are the summed seconds divided by 60, rounded down.
 """
 
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -17,6 +17,7 @@ from django.utils import timezone
 
 from assessments.models import Assessment
 from assessments.services import collaborator_name
+from reports.services import MIN_GROUP
 
 from .models import ActivitySession
 
@@ -163,3 +164,62 @@ def first_name(user, organization):
         return ""
     words = collaborator_name(latest).split()
     return words[0] if words else ""
+
+
+def company_usage(organization, *, now=None):
+    """Aggregated practice use of one organization for the corporate report.
+
+    Current local week and month. A period with fewer than MIN_GROUP distinct
+    people shows no number at all. Inside a visible period the split by
+    practice type appears only if every type has 0 or MIN_GROUP+ people;
+    otherwise the whole split is hidden, because total minus the visible types
+    would reveal the small group. User ids are only counted here and never
+    returned.
+    """
+    today = local_date(now or timezone.now())
+    week_start = today - timedelta(days=today.weekday())
+    month_start = today.replace(day=1)
+    since = min(week_start, month_start)
+    rows = [
+        (local_date(started_at), user_id, kind, seconds)
+        for started_at, user_id, kind, seconds in ActivitySession.objects.filter(
+            organization=organization,
+            started_at__gte=timezone.make_aware(
+                datetime.combine(since, time.min), LOCAL_TZ
+            ),
+        ).values_list("started_at", "user_id", "kind", "duration_seconds")
+    ]
+    periods = []
+    for label, start in (("Esta semana", week_start), ("Este mês", month_start)):
+        chosen = [row for row in rows if start <= row[0] <= today]
+        period = {"label": label, "start": start, "end": today}
+        people = len({user_id for _, user_id, _, _ in chosen})
+        if people < MIN_GROUP:
+            periods.append({**period, "visible": False})
+            continue
+        by_kind = []
+        for kind, kind_label in ActivitySession.Kind.choices:
+            of_kind = [row for row in chosen if row[2] == kind]
+            kind_people = len({user_id for _, user_id, _, _ in of_kind})
+            if 0 < kind_people < MIN_GROUP:
+                by_kind = None
+                break
+            by_kind.append(
+                {
+                    "kind": kind,
+                    "label": kind_label,
+                    "count": len(of_kind),
+                    "minutes": sum(row[3] for row in of_kind) // 60,
+                }
+            )
+        periods.append(
+            {
+                **period,
+                "visible": True,
+                "people": people,
+                "minutes": sum(row[3] for row in chosen) // 60,
+                "practices": len(chosen),
+                "by_kind": by_kind,
+            }
+        )
+    return {"min_group": MIN_GROUP, "periods": periods}
