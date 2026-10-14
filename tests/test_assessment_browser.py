@@ -183,17 +183,17 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
             self._agent_checkpoint(viewport, "checkpoint-1")
             page.locator("main").get_by_role("link", name="Explorar exercícios").click()
             page.get_by_role("heading", name="Exercícios", exact=True).wait_for()
-            assert page.locator(".exercise-card").count() == 8
+            assert page.locator(".exercise-card").count() == 9
             self._capture(page, viewport, "exercises")
             page.get_by_role("button", name="Começar sequência").click()
             assert (
                 page.locator("[data-sequence-position]").inner_text()
-                == "Exercício 1 de 8"
+                == "Exercício 1 de 9"
             )
             page.get_by_role("button", name="Próximo").click()
             assert (
                 page.locator("[data-sequence-position]").inner_text()
-                == "Exercício 2 de 8"
+                == "Exercício 2 de 9"
             )
             page.get_by_role("button", name="Anterior").click()
             self._capture(page, viewport, "exercise-open")
@@ -201,11 +201,11 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
                 "el => { const r=el.getBoundingClientRect(); return r.bottom <= innerHeight && r.top >= 0; }"
             )
             assert page.get_by_role("button", name="Anterior").is_disabled()
-            for index in range(1, 8):
+            for index in range(1, 9):
                 page.get_by_role("button", name="Próximo").click()
                 assert (
                     page.locator("[data-sequence-position]").inner_text()
-                    == f"Exercício {index + 1} de 8"
+                    == f"Exercício {index + 1} de 9"
                 )
             assert page.get_by_role("button", name="Próximo").is_disabled()
             page.keyboard.press("Escape")

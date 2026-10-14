@@ -24,11 +24,11 @@
         <div class="exercise-grid">
             {% for exercise in exercises %}
             <article class="exercise-card" data-exercise="{{ exercise.slug }}" data-category="{{ exercise.category }}">
-                <div class="exercise-card-visual"><img src="{% static 'quality_life/images/exercises/' %}{{ exercise.slug }}.webp" alt="{{ exercise.title }}: demonstração extraída do material Quality Life" loading="lazy" width="710" height="525"><span class="exercise-index">{{ forloop.counter|stringformat:'02d' }}</span></div>
+                <div class="exercise-card-visual">{% if exercise.has_image %}<img src="{% static exercise.visual %}" alt="{{ exercise.title }}: demonstração extraída do material Quality Life" loading="lazy" width="710" height="525">{% else %}<img src="{% static exercise.visual %}" alt="{{ exercise.title }}: quadro do vídeo ilustrativo" loading="lazy" width="832" height="480">{% endif %}<span class="exercise-index">{{ forloop.counter|stringformat:'02d' }}</span></div>
                 <div class="exercise-card-body"><p class="eyebrow">{{ exercise.category }}</p><h3>{{ exercise.title }}</h3><p>{{ exercise.summary }}</p>
                 <details class="exercise-instructions"><summary>Ver exercício</summary>
                     {% if exercise.position %}<p><strong>Posição inicial</strong><br>{{ exercise.position }}</p>{% endif %}
-                    <p>{{ exercise.instruction }}</p><small>Fonte: {{ source }} · p. {{ exercise.page }}.</small>
+                    <p>{{ exercise.instruction }}</p><small>Fonte: {{ source }}{% if exercise.page %} · p. {{ exercise.page }}{% endif %}.</small>
                 </details>
                 <button type="button" class="exercise-open exercise-enhanced" data-open-exercise="{{ forloop.counter0 }}" aria-label="Ver exercício: {{ exercise.title }}" hidden>Ver exercício <span aria-hidden="true">↗</span></button>
                 </div>

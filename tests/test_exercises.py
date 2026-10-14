@@ -12,9 +12,13 @@ from identity.models import Membership, Organization
 
 class ExerciseContentTests(SimpleTestCase):
     def test_selection_has_sources_images_and_unique_slugs(self):
-        self.assertEqual(len(EXERCISES), 8)
-        self.assertEqual(len({item["slug"] for item in EXERCISES}), 8)
+        self.assertEqual(len(EXERCISES), 9)
+        self.assertEqual(len({item["slug"] for item in EXERCISES}), 9)
         for item in EXERCISES:
+            if item["slug"] == "inclinacao-frente":
+                # Série 1, exercício 10: PDF not in the repo, no page/image yet.
+                self.assertEqual((item["page"], item.get("image_page")), ("", None))
+                continue
             with self.subTest(exercise=item["slug"]):
                 self.assertTrue(item["instruction"])
                 self.assertTrue(item["page"])
@@ -44,7 +48,10 @@ class ExerciseAccessTests(TestCase):
         self.assertContains(response, "Autoabraço")
         self.assertContains(response, "Começar sequência")
         self.assertContains(response, "Antes de começar")
-        self.assertContains(response, "data-open-exercise=", count=8)
+        self.assertContains(response, "data-open-exercise=", count=9)
+        # No material image yet: the card shows the AI video poster instead.
+        self.assertContains(response, "videos/wellbeing/ex-inclinacao-frente.webp")
+        self.assertNotContains(response, "images/exercises/inclinacao-frente.webp")
         self.assertNotContains(response, "cronômetro")
         self.assertEqual(self.client.post(self.url).status_code, 405)
 

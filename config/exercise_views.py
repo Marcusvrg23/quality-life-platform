@@ -5,7 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render
 from django.views.decorators.http import require_GET
 
-from .exercises import EXERCISES, SOURCE
+from .exercises import EXERCISES, SOURCE, image_path, visual_path
 from .tenant import resolve_tenant_context
 
 
@@ -20,7 +20,14 @@ def exercises(request):
         "exercises/library.html",
         {
             "tenant": tenant,
-            "exercises": EXERCISES,
+            "exercises": [
+                {
+                    **item,
+                    "visual": visual_path(item),
+                    "has_image": bool(image_path(item)),
+                }
+                for item in EXERCISES
+            ],
             "categories": tuple(dict.fromkeys(item["category"] for item in EXERCISES)),
             "source": SOURCE,
         },
