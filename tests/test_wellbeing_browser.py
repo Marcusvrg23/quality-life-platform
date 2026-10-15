@@ -326,6 +326,9 @@ class WellbeingBrowserTests(StaticLiveServerTestCase):
             page.goto(f"{self.live_server_url}/app/meditacao/")
             page.wait_for_load_state("load")
             page.locator('[data-open-session="respiracao-foco"]').click()
+            # No background sound: the fake clock would fire every audio
+            # scheduler tick and run slower than real time.
+            page.locator("[data-player-noise]").select_option("")
             page.locator("[data-player-toggle]").click()
             with page.expect_response(lambda r: "pratica/registrar" in r.url) as info:
                 page.clock.run_for(125_000)

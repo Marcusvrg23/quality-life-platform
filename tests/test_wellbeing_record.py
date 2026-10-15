@@ -1,6 +1,7 @@
 """Practice records: owner-only writes, tenant scope, CSRF (spec 11, aceite 3)."""
 
 from datetime import timedelta
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, transaction
@@ -8,6 +9,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from config import wellbeing_catalog as catalog
 from config.tenant import SESSION_ORGANIZATION_KEY
 from identity.models import Membership, Organization
 from wellbeing.models import ActivitySession
@@ -85,9 +87,13 @@ class RecordPracticeTests(TestCase):
 
     def test_unknown_or_unavailable_items_are_404(self):
         self.client.force_login(self.user)
+        sea = next(item for item in catalog.SOUNDS if item["slug"] == "mar")
+        unavailable = mock.patch.dict(sea, status=catalog.IN_PREPARATION)
+        unavailable.start()
+        self.addCleanup(unavailable.stop)
         for kind, slug in (
             ("meditacao", "nao-existe"),
-            ("relaxamento", "mar"),  # em preparação: nothing to play
+            ("relaxamento", "mar"),  # patched to em preparação: nothing to play
             ("ginastica", "respiracao-foco"),  # wrong kind
             ("outro", "respiracao-foco"),
         ):
