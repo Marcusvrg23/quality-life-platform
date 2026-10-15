@@ -1,11 +1,11 @@
 """Wellbeing catalog: gym sessions, meditations, sounds and tips of the day.
 
 COMO PREENCHER (sem mexer em código de tela):
-- Vídeo novo: coloque o .mp4 (≤ 3 MB, sem áudio) e o poster .webp de mesmo
-  nome em static/quality_life/videos/wellbeing/ e aponte "file" para ele.
-- Áudio novo (natureza, mar, chuva, música): coloque o arquivo em
-  static/quality_life/audio/, preencha "file" com
-  "quality_life/audio/<nome>.mp3" e troque "status" para AVAILABLE.
+- Vídeo novo: coloque o .mp4 (≤ 3 MB) e o poster .webp de mesmo nome em
+  static/quality_life/videos/wellbeing/ e aponte "file" para ele.
+- Sons: todos são gerados no navegador por static/quality_life/wellbeing-noise.js
+  (window.QLNoise), sem arquivo de áudio; "noise" é o tipo tocado. Os sons
+  vêm do arquivo aprovado docs/design/sons/sons-relaxamento.html.
 - Dica do dia: acrescente {"slug": ..., "text": ..., "source": ...} em TIPS,
   só com texto aprovado pela Quality Life. A Home mostra a dica apenas se
   houver alguma.
@@ -135,30 +135,30 @@ MEDITATIONS = (
 )
 
 
-def _sound(slug, title, category, sound_type, *, noise=None):
+def _sound(slug, title, category, noise):
     return {
         "slug": slug,
         "title": title,
         "category": category,
         "duration_seconds": None,
-        "type": sound_type,
+        "type": "noise",
         "file": None,
-        "status": AVAILABLE if sound_type == "noise" else IN_PREPARATION,
+        "status": AVAILABLE,
         "kind": KIND_RELAXATION,
         "noise": noise,
     }
 
 
+# Generated in the browser with the Web Audio API (wellbeing-noise.js): no file.
+# Sounds first, then the noises.
 SOUNDS = (
-    # Generated in the browser with the Web Audio API: no file.
-    _sound("ruido-branco", "Ruído branco", "Ruídos", "noise", noise="white"),
-    _sound("ruido-rosa", "Ruído rosa", "Ruídos", "noise", noise="pink"),
-    _sound("ruido-marrom", "Ruído marrom", "Ruídos", "noise", noise="brown"),
-    # Em preparação until a file exists in static/quality_life/audio/.
-    _sound("natureza", "Sons da natureza", "Sons", "audio"),
-    _sound("mar", "Mar", "Sons", "audio"),
-    _sound("chuva", "Chuva", "Sons", "audio"),
-    _sound("musica-concentracao", "Música para concentração", "Sons", "audio"),
+    _sound("natureza", "Floresta calma com pássaros", "Sons", "forest"),
+    _sound("mar", "Ondas do mar", "Sons", "ocean"),
+    _sound("chuva", "Chuva suave", "Sons", "rain"),
+    _sound("musica-concentracao", "Acordes suaves", "Sons", "music"),
+    _sound("ruido-branco", "Ruído branco", "Ruídos", "white"),
+    _sound("ruido-rosa", "Ruído rosa", "Ruídos", "pink"),
+    _sound("ruido-marrom", "Ruído marrom", "Ruídos", "brown"),
 )
 RELAX_TIMER_MINUTES = (5, 10, 15, 30)
 RELAX_BACKGROUND = f"{VIDEO_DIR}med-relaxamento.mp4"

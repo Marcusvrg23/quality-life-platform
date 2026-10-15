@@ -100,6 +100,8 @@ def gym(request):
             "tenant": tenant,
             "categories": categories,
             "sessions": sessions,
+            "noises": _noises(),
+            "default_noise": "music",
             "catalog": catalog,
             "source": SOURCE,
         },
@@ -146,6 +148,7 @@ def meditation(request):
             "meditations": sessions,
             "sessions": sessions,
             "noises": _noises(),
+            "default_noise": "forest",
             "catalog": catalog,
         },
     )
