@@ -21,9 +21,12 @@ profissional de educação física da Quality Life.
 Não existe vídeo de Autoabraço nem de Panturrilha: essas telas mostram a imagem
 do material.
 
-Formato: 5 s, 832×480, H.264, feitos para tocar em loop, `muted` e
-`playsinline`. A trilha de som ambiente gerada pela IA foi removida por remux
-(`ffmpeg -c:v copy -an -movflags +faststart`, sem recompressão do vídeo). Cada
+Formato: 5 s, 832×480, H.264 + áudio AAC, feitos para tocar em loop e
+`playsinline`. O áudio original gerado pela IA é mantido: cada arquivo é o
+original do Higgsfield remuxado sem recompressão
+(`ffmpeg -i original.mp4 -c copy -movflags +faststart x.mp4`). No player o
+som do vídeo pode ser desligado pela opção "Som do vídeo"; o fundo do
+Relaxamento continua mudo. Cada
 `.webp` é o primeiro quadro do vídeo de mesmo nome (poster). Para trocar um
 vídeo, mantenha o nome, o limite de 3 MB e gere o poster de novo:
 `ffmpeg -i x.mp4 -frames:v 1 -c:v libwebp -quality 80 x.webp`.

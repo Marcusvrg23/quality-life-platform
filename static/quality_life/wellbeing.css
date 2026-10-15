@@ -51,7 +51,7 @@
 .wb-player__body { display: grid; flex: 1; align-content: start; gap: 1rem; min-height: 0; padding: 1rem; overflow-y: auto; }
 .wb-player__media { position: relative; overflow: hidden; border-radius: 18px; aspect-ratio: 832 / 480; background: #02090b; }
 .wb-player__media video,
-.wb-player__media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.wb-player__media img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .wb-player__media [hidden] { display: none; }
 .wb-player__media img.is-material { object-fit: contain; background: #f6f8f7; }
 .wb-player__info { display: grid; align-content: start; gap: 0.6rem; min-width: 0; }
