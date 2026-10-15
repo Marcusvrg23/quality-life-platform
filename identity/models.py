@@ -93,8 +93,15 @@ class Membership(models.Model):
         return f"{self.user} in {self.organization} ({self.role})"
 
 
+INVITATION_ROLES = (MembershipRole.COLLABORATOR, MembershipRole.CORPORATE_MANAGER)
+
+
 class Invitation(models.Model):
-    """Single-use COLLABORATOR invite; only the SHA-256 of the link token is kept."""
+    """Single-use invite; only the SHA-256 of the link token is kept.
+
+    Managers invite collaborators; only a superuser invites a corporate manager
+    (enforced in identity.invitations.issue_invitations).
+    """
 
     organization = models.ForeignKey(
         Organization, on_delete=models.CASCADE, related_name="invitations"
@@ -116,6 +123,19 @@ class Invitation(models.Model):
         related_name="used_invitations",
     )
     revoked_at = models.DateTimeField(null=True, blank=True)
+    role = models.CharField(
+        max_length=20,
+        choices=[(role.value, role.label) for role in INVITATION_ROLES],
+        default=MembershipRole.COLLABORATOR,
+    )
+
+    class Meta:
+        constraints = [  # noqa: RUF012 - Django model metadata convention.
+            models.CheckConstraint(
+                condition=Q(role__in=[role.value for role in INVITATION_ROLES]),
+                name="identity_invitation_valid_role",
+            ),
+        ]
 
     def is_usable(self, now):
         return (

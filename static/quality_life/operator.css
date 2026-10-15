@@ -1,0 +1,11 @@
+/* Operator panel: only the action row. Cards, rows, buttons and colors come from team.css and app-dark.css. */
+.team-row > .operator-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .5rem; flex: 0 1 auto; min-width: 0; }
+.operator-actions form { margin: 0; }
+.operator-enter { min-width: 0; }
+.operator-enter[open] { flex-basis: 100%; }
+.operator-enter summary { list-style: none; }
+.operator-enter summary::-webkit-details-marker { display: none; }
+.operator-enter__body { display: grid; gap: .5rem; margin-top: .6rem; }
+.operator-enter__body p { margin: 0; }
+.operator-form .team-field { flex: 1 1 16rem; }
+.operator-form input { max-width: none; }

@@ -3,6 +3,9 @@
 {% block eyebrow %}CONVITE{% endblock %}
 {% block heading %}Entre na equipe {{ invitation.organization.name }}{% endblock %}
 {% block body %}
+{% if invitation.role == 'CORPORATE_MANAGER' and not inactive_message %}
+<p class="login-description">Este convite é para você entrar como gestor da empresa: vai convidar a equipe e ver os relatórios agregados.</p>
+{% endif %}
 {% if inactive_message %}
 <p class="login-error" role="alert">{{ inactive_message }}</p>
 <p class="login-help"><a href="{% url 'app' %}">Voltar para o app</a></p>

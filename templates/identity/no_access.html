@@ -17,8 +17,13 @@
     <main class="foundation">
         <img class="foundation__logo" src="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" alt="" width="72" height="72">
         <p class="foundation__eyebrow">Quality Life</p>
-        <h1>Sem acesso a uma organização ativa</h1>
-        <p>Entre em contato com a equipe responsável pelo seu vínculo.</p>
+        <h1>Sem acesso a uma empresa</h1>
+        <p>Sua conta ainda não está ligada a uma empresa. Peça um novo convite ao RH da sua empresa.</p>
+        <p>Sua empresa ainda não usa a Quality Life? Fale com a gente: <a href="mailto:{{ sales_email }}">{{ sales_email }}</a></p>
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit">Sair</button>
+        </form>
     </main>
 </body>
 </html>

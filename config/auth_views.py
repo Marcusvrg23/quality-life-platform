@@ -1,5 +1,6 @@
 """Session authentication and tenant entry points."""
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
@@ -24,6 +25,7 @@ from .tenant import (
     require_membership_for_slug,
     resolve_tenant_context,
 )
+from .views import SALES_EMAIL_PLACEHOLDER
 
 
 def _render_home(request: HttpRequest, tenant) -> HttpResponse:
@@ -79,7 +81,15 @@ def app_home(request: HttpRequest) -> HttpResponse:
 
     memberships = list(active_memberships(request.user))
     if not memberships:
-        return render(request, "identity/no_access.html", status=403)
+        if request.user.is_superuser:
+            return redirect("operator_panel")
+        sales_email = getattr(settings, "QL_SALES_EMAIL", "") or SALES_EMAIL_PLACEHOLDER
+        return render(
+            request,
+            "identity/no_access.html",
+            {"sales_email": sales_email},
+            status=403,
+        )
     return render(
         request, "identity/select_organization.html", {"memberships": memberships}
     )

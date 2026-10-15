@@ -7,6 +7,7 @@ from django.contrib.auth.views import (
 )
 from django.urls import include, path, reverse_lazy
 
+from identity import operator_views
 from identity import views as identity_views
 
 from .auth_views import (
@@ -47,6 +48,27 @@ urlpatterns = [
         "app/equipe/convites/<int:invitation_id>/revogar/",
         identity_views.team_invitation_revoke,
         name="team_invitation_revoke",
+    ),
+    path("app/painel/", operator_views.operator_panel, name="operator_panel"),
+    path(
+        "app/painel/empresas/",
+        operator_views.operator_organization_create,
+        name="operator_organization_create",
+    ),
+    path(
+        "app/painel/empresas/<int:organization_id>/status/",
+        operator_views.operator_organization_status,
+        name="operator_organization_status",
+    ),
+    path(
+        "app/painel/empresas/<int:organization_id>/convite-gestor/",
+        operator_views.operator_manager_invitation,
+        name="operator_manager_invitation",
+    ),
+    path(
+        "app/painel/empresas/<int:organization_id>/entrar/",
+        operator_views.operator_enter,
+        name="operator_enter",
     ),
     path("app/privacidade/", privacy_settings, name="privacy_settings"),
     path("app/privacidade/revogar/", privacy_revoke, name="privacy_revoke"),

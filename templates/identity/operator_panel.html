@@ -1,0 +1,90 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Painel da Quality Life{% endblock %}
+{% block page_title %}Painel{% endblock %}
+{% block header_title %}Painel da Quality Life{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/assessment.css' %}"><link rel="stylesheet" href="{% static 'quality_life/team.css' %}"><link rel="stylesheet" href="{% static 'quality_life/operator.css' %}">{% endblock %}
+{% block content %}
+<div class="team operator">
+  <header class="team-intro">
+    <p class="eyebrow">Equipe Quality Life</p>
+    <h1>Painel da Quality Life</h1>
+    <p>Cadastre empresas, convide o gestor de cada uma e entre como administrador quando precisar dar suporte.</p>
+  </header>
+
+  {% if messages %}<ul class="team-messages" role="status">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
+
+  {% if manager_link %}
+  <section class="card team-section" aria-labelledby="manager-link-title">
+    <h2 id="manager-link-title">Convite de gestor: {{ manager_link.organization.name }}</h2>
+    <p class="team-warning">Copie ou envie agora: por segurança, este link não aparece de novo. Ele vale para 1 pessoa por 7 dias.</p>
+    <ol class="team-link-list">
+      <li>
+        <label for="manager-invite">Link do gestor</label>
+        <input id="manager-invite" type="text" readonly value="{{ manager_link.url }}" data-invite-link>
+        <div class="team-link-actions">
+          <button type="button" class="button" data-copy="manager-invite">Copiar</button>
+          <a class="button button-secondary" href="{{ manager_link.whatsapp }}" target="_blank" rel="noopener noreferrer">Enviar por WhatsApp</a>
+        </div>
+      </li>
+    </ol>
+  </section>
+  {% endif %}
+
+  <section class="card team-section" aria-labelledby="new-company-title">
+    <h2 id="new-company-title">Nova empresa</h2>
+    <form method="post" action="{% url 'operator_organization_create' %}" class="team-form operator-form">
+      {% csrf_token %}
+      <div class="team-field">
+        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+        {% if form.name.errors %}<ul class="team-errors" role="alert">{% for error in form.name.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <button type="submit" class="button">Criar empresa</button>
+    </form>
+  </section>
+
+  <section class="card team-section" aria-labelledby="companies-title">
+    <h2 id="companies-title">Empresas ({{ companies|length }})</h2>
+    {% if companies %}
+    <ul class="team-list">
+      {% for company in companies %}
+      <li class="team-row">
+        <div>
+          <strong>{{ company.name }}</strong>
+          <span><b class="team-status" data-active="{{ company.is_active|yesno:'1,0' }}">{{ company.is_active|yesno:"Ativa,Inativa" }}</b> · {{ company.collaborators }} colaborador{{ company.collaborators|pluralize:"es" }} ativo{{ company.collaborators|pluralize }} · {{ company.managers }} gestor{{ company.managers|pluralize:"es" }}</span>
+        </div>
+        <div class="operator-actions">
+          {% if company.is_active %}
+          <form method="post" action="{% url 'operator_manager_invitation' company.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="button">Gerar convite de gestor</button>
+          </form>
+          <details class="operator-enter">
+            <summary class="button button-secondary">Entrar como administrador</summary>
+            <div class="operator-enter__body">
+              <p class="team-hint">Sua conta vai virar administradora de {{ company.name }} e o app vai abrir nessa empresa. Nada é apagado.</p>
+              <form method="post" action="{% url 'operator_enter' company.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="confirmar" value="1">
+                <button type="submit" class="button">Confirmar e entrar</button>
+              </form>
+            </div>
+          </details>
+          {% endif %}
+          <form method="post" action="{% url 'operator_organization_status' company.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="ativo" value="{{ company.is_active|yesno:'0,1' }}">
+            <button type="submit" class="button button-secondary">{{ company.is_active|yesno:"Desativar,Reativar" }}</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Nenhuma empresa cadastrada.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/team.js' %}" defer></script>{% endblock %}

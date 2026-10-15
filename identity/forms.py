@@ -1,4 +1,4 @@
-"""Forms for the team page and invitation sign-up."""
+"""Forms for the team page, the operator panel and invitation sign-up."""
 
 from django import forms
 from django.contrib.auth.password_validation import (
@@ -18,6 +18,10 @@ class InvitationQuantityForm(forms.Form):
         max_value=MAX_INVITATIONS_PER_BATCH,
         initial=1,
     )
+
+
+class OrganizationCreateForm(forms.Form):
+    name = forms.CharField(label="Nome da empresa", max_length=255)
 
 
 class InvitationSignupForm(forms.Form):
