@@ -50,7 +50,7 @@ def _team_tenant(request):
     return tenant
 
 
-def _invitation_link(request, organization, token):
+def invitation_link(request, organization, token):
     url = request.build_absolute_uri(reverse("accept_invitation", args=[token]))
     text = f"Convite para a Quality Life da empresa {organization.name}: {url}"
     return {"url": url, "whatsapp": "https://wa.me/?text=" + quote(text, safe="")}
@@ -133,7 +133,7 @@ def team_invitations_create(request):
     tokens = issue_invitations(
         tenant.organization, request.user, form.cleaned_data["quantidade"]
     )
-    links = [_invitation_link(request, tenant.organization, t) for t in tokens]
+    links = [invitation_link(request, tenant.organization, t) for t in tokens]
     return _render_team(request, tenant, links=links)
 
 
@@ -145,6 +145,7 @@ def team_invitation_revoke(request, invitation_id):
     revoked = Invitation.objects.filter(
         pk=invitation_id,
         organization=tenant.organization,
+        role=Membership.Role.COLLABORATOR,
         used_at__isnull=True,
         revoked_at__isnull=True,
     ).update(revoked_at=timezone.now())
@@ -214,9 +215,7 @@ def _join(request, token, *, form=None):
             try:
                 with transaction.atomic():
                     Membership.objects.create(
-                        user=user,
-                        organization=organization,
-                        role=Membership.Role.COLLABORATOR,
+                        user=user, organization=organization, role=invitation.role
                     )
             except IntegrityError:
                 # Joined concurrently through another invite: keep this one unused.

@@ -189,6 +189,7 @@ class AppDarkBrowserTests(StaticLiveServerTestCase):
         manager = users.create_user(email="gestor@example.test", password=PASSWORD)
         multi = users.create_user(email="multi@example.test", password=PASSWORD)
         users.create_user(email="semacesso@example.test", password=PASSWORD)
+        users.create_superuser(email="ql@example.test", password=PASSWORD)
         self.reset_user = users.create_user(
             email="reset@example.test", password=PASSWORD
         )
@@ -304,7 +305,7 @@ class AppDarkBrowserTests(StaticLiveServerTestCase):
                 continue
             seen += 1
             assert focus["outline"] or focus["ring"], (label, focus)
-        # "Sem acesso" is plain text only; every other page must take focus.
+        # Any page with a link, button or field must take keyboard focus.
         focusable = page.evaluate(
             "document.querySelectorAll('a[href], button, input:not([type=hidden]),"
             " textarea, select, summary').length"
@@ -353,7 +354,25 @@ class AppDarkBrowserTests(StaticLiveServerTestCase):
 
                 page = self.open(browser, width, height)
                 self.login(page, "semacesso@example.test")
+                page.get_by_role("button", name="Sair").wait_for()
                 self.check_page(page, f"{name}-sem-acesso")
+                page.context.close()
+
+                # Spec 12: a superuser without a company lands on the panel.
+                page = self.open(browser, width, height)
+                self.login(page, "ql@example.test")
+                assert page.url.endswith("/app/painel/"), page.url
+                page.wait_for_function(GSAP_IDLE)
+                self.check_page(page, f"{name}-painel")
+                page.get_by_role("button", name="Gerar convite de gestor").first.click()
+                page.wait_for_load_state("load")
+                page.locator("#manager-invite").wait_for()
+                page.wait_for_function(GSAP_IDLE)
+                page.locator(
+                    "summary", has_text="Entrar como administrador"
+                ).first.click()
+                page.get_by_role("button", name="Confirmar e entrar").first.wait_for()
+                self.check_page(page, f"{name}-painel-convite")
                 page.context.close()
 
                 page = self.open(browser, width, height)

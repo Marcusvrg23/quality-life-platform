@@ -285,7 +285,14 @@ class IdentityTests(TestCase):
             email="root@example.com", password="strong-test-password-123"
         )
         self.client.force_login(superuser)
-        self.assertEqual(self.client.get(reverse("app")).status_code, 403)
+        # No dead end (spec 12): the operator panel, never a company's data.
+        self.assertRedirects(self.client.get(reverse("app")), reverse("operator_panel"))
+        self.assertEqual(
+            self.client.get(
+                reverse("organization_home", args=[self.organization_a.slug])
+            ).status_code,
+            403,
+        )
         self.assertEqual(self.client.get(reverse("admin:index")).status_code, 200)
 
         self.membership(role=Membership.Role.ADMIN)
