@@ -2,7 +2,8 @@
    breathing guide, relaxation sounds and the practice record.
 
    - Video and audio start only after a click ("Começar", "Tocar", "Fundo
-     visual"); videos have no src until then.
+     visual"); videos have no src until then. The player video plays its own
+     audio ("Som do vídeo"); if the browser blocks sound it plays muted.
    - With prefers-reduced-motion: reduce the video stays on its poster, the
      breathing circle does not scale and no GSAP loop runs; timers still work.
    - The only endless GSAP animation (breathing circle) is tagged data: 'loop'.
@@ -70,11 +71,17 @@
         };
     }
 
-    function startVideo(video, src) {
+    function startVideo(video, src, onMuted) {
         if (reduce.matches) return; // poster stays still
         if (video.getAttribute('src') !== src) video.src = src;
         const promise = video.play();
-        if (promise) promise.catch(() => {});
+        if (promise) promise.catch(error => {
+            if (error.name !== 'NotAllowedError' || video.muted) return;
+            // Sound blocked by the browser: keep the video, muted.
+            video.muted = true;
+            if (onMuted) onMuted();
+            video.play().catch(() => {});
+        });
     }
 
     function stopVideo(video) {
@@ -113,6 +120,7 @@
         const breathLabel = $('[data-breath-label]');
         const noiseSelect = $('[data-player-noise]');
         const noiseVolume = $('[data-player-volume]');
+        const videoSound = $('[data-player-video-sound]');
         let session = null;
         let index = 0;
         let stepStart = 0;
@@ -128,6 +136,9 @@
         const step = () => session.steps[index];
         const offset = () => session.steps.slice(0, index).reduce((sum, item) => sum + item.seconds, 0);
         const volume = () => (noiseVolume ? Number(noiseVolume.value) / 100 : 0.4) * 0.8;
+        const muteVideo = () => { videoSound.checked = false; };
+        video.volume = 0.5;
+        video.muted = !videoSound.checked;
 
         function renderMedia() {
             const current = step();
@@ -149,7 +160,7 @@
             if (!started || reduce.matches) {
                 if (video.hasAttribute('src')) stopVideo(video);
             } else if (watch.running) {
-                startVideo(video, current.video);
+                startVideo(video, current.video, muteVideo);
             } else if (video.getAttribute('src') !== current.video) {
                 video.src = current.video;
             }
@@ -323,6 +334,7 @@
             showImage = !showImage;
             renderMedia();
         });
+        videoSound.addEventListener('change', () => { video.muted = !videoSound.checked; });
         if (noiseSelect) {
             noiseSelect.addEventListener('change', () => { if (watch.running) startNoise(); });
             noiseVolume.addEventListener('input', () => { if (window.QLNoise) window.QLNoise.setVolume(volume()); });

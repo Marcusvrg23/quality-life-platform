@@ -1,10 +1,11 @@
-{# Session player (wellbeing.js). The video has no src until "Começar" is clicked. #}
+{# Session player (wellbeing.js). The video has no src until "Começar" is clicked;
+   it plays with its original audio unless "Som do vídeo" is unchecked. #}
 <dialog class="wb-player" aria-labelledby="wb-player-title" data-player{% if breathing %} data-breathing{% endif %}>
     <div class="wb-player__bar"><button type="button" class="wb-link" data-player-close>← Voltar</button><span data-player-position aria-live="polite" aria-atomic="true"></span></div>
     <progress class="wb-player__progress" max="1000" value="0" aria-label="Andamento da sessão"></progress>
     <div class="wb-player__body">
         <div class="wb-player__media">
-            <video data-player-video muted playsinline loop preload="none" aria-label="Vídeo ilustrativo gerado por IA"></video>
+            <video data-player-video playsinline loop preload="none" aria-label="Vídeo ilustrativo gerado por IA"></video>
             <img data-player-image alt="" hidden>
             {% if breathing %}<div class="wb-breath" aria-hidden="true"><span class="wb-breath__circle" data-breath-circle></span></div>{% endif %}
         </div>
@@ -15,7 +16,8 @@
             <button type="button" class="wb-link" data-player-toggle-image hidden>Ver imagem do material</button>
             {% if breathing %}<p class="wb-breath__label" data-breath-label>Clique em Começar</p>{% endif %}
             <div class="wb-timer" role="timer" aria-label="Cronômetro"><strong data-player-step-time>00:00</strong><small>Total restante <span data-player-total-time>00:00</span></small></div>
-            {% if noises %}<div class="wb-sound-options"><label class="wb-field">Som de fundo <select data-player-noise><option value="">Nenhum</option>{% for noise in noises %}<option value="{{ noise.noise }}">{{ noise.title }}</option>{% endfor %}</select></label><label class="wb-field">Volume <input type="range" min="0" max="100" value="40" data-player-volume></label></div>{% endif %}
+            <label class="wb-check"><input type="checkbox" data-player-video-sound checked> Som do vídeo</label>
+            {% if noises %}<div class="wb-sound-options"><label class="wb-field">Som de fundo <select data-player-noise><option value="">Nenhum</option>{% for noise in noises %}<option value="{{ noise.noise }}"{% if noise.noise == default_noise %} selected{% endif %}>{{ noise.title }}</option>{% endfor %}</select></label><label class="wb-field">Volume <input type="range" min="0" max="100" value="40" data-player-volume></label></div>{% endif %}
             <p class="wb-note">{{ catalog.PROPOSAL_NOTE }} {{ note }}</p>
             <div class="wb-player__done" data-player-done role="status" hidden><strong>Sessão concluída.</strong> <a href="{% url 'wellbeing_progress' %}">Ver meu progresso <span aria-hidden="true">→</span></a></div>
         </div>

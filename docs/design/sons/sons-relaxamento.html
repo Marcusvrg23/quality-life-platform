@@ -1,0 +1,538 @@
+<title>Sons do Relaxamento</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: one calm column — a live "agora tocando" panel on top, then a grid of sound cards; single dark look matching the Quality Life app */
+:root {
+  --bg: #061419;
+  --surface: #0c2329;
+  --surface-2: #11303a;
+  --line: #1f4650;
+  --fg: #e7f2f0;
+  --muted: #9fbab6;
+  --teal: #19b4a5;
+  --violet: #9b7cc4;
+  --magenta: #d3268e;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-body: "Figtree", "Segoe UI", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: radial-gradient(1200px 600px at 80% -10%, #12333d 0%, transparent 60%), var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  min-height: 100%;
+}
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding-block: 32px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 28px;
+}
+.eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); font-weight: 600; margin: 0; }
+h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(34px, 5vw, 48px); line-height: 1.05; margin: 6px 0 10px; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 62ch; margin: 0; }
+.now {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px;
+}
+.now canvas { width: 100%; height: 72px; display: block; }
+.now-label { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+.now-label strong { color: var(--fg); font-weight: 600; }
+.controls { display: grid; gap: 10px; justify-items: end; }
+.vol { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+input[type="range"] { accent-color: var(--teal); width: 150px; }
+button {
+  font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--surface-2); color: var(--fg); padding: 9px 16px; font-weight: 600; font-size: 14px;
+}
+button:hover { border-color: var(--teal); }
+button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.stop-all[disabled] { opacity: .45; cursor: default; }
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 26px; margin: 0; }
+.group { display: grid; gap: 14px; }
+.group-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.group-head p { margin: 0; color: var(--muted); font-size: 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px;
+  display: grid; grid-template-rows: auto 1fr auto; gap: 10px; min-width: 0;
+}
+.card.is-on { border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal) inset, 0 10px 30px -18px var(--teal); }
+.card h3 { margin: 0; font-size: 18px; font-weight: 600; }
+.card p { margin: 0; color: var(--muted); font-size: 14px; }
+.recipe { font-size: 12.5px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 9px; font-variant-numeric: tabular-nums; }
+.card button { justify-self: start; display: inline-flex; align-items: center; gap: 8px; }
+.card.is-on button { background: var(--teal); border-color: var(--teal); color: #04201c; }
+.tag { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--violet); font-weight: 600; }
+.option { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.option input { accent-color: var(--violet); width: 16px; height: 16px; }
+.note { font-size: 13px; color: var(--muted); max-width: 70ch; margin: 0; }
+@media (max-width: 640px) {
+  .now { grid-template-columns: 1fr; }
+  .controls { justify-items: start; }
+}
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">Quality Life · prévia antes do código</p>
+    <h1>Sons do Relaxamento</h1>
+    <p class="lede">Cada som abaixo é gerado ao vivo pelo navegador, sem arquivo de áudio e sem música de terceiros. É o mesmo tipo de código que vai para a tela de Relaxamento. Ouça com fone de ouvido, de preferência por pelo menos 30 segundos, porque os sons variam com o tempo.</p>
+  </header>
+
+  <section class="now" aria-live="polite">
+    <div>
+      <p class="now-label" id="now-label">Nada tocando. Escolha um som abaixo.</p>
+      <canvas id="scope" height="72" aria-hidden="true"></canvas>
+    </div>
+    <div class="controls">
+      <label class="vol" for="volume">Volume <input id="volume" type="range" min="0" max="100" value="70"></label>
+      <button class="stop-all" id="stop-all" type="button" disabled>Parar</button>
+    </div>
+  </section>
+
+  <section class="group" aria-labelledby="g-new">
+    <div class="group-head">
+      <h2 id="g-new">Sons novos</h2>
+      <p>Os 4 que hoje aparecem como "Em preparação".</p>
+    </div>
+    <div class="grid">
+      <article class="card" data-sound="rain">
+        <span class="tag">Chuva</span>
+        <div>
+          <h3>Chuva suave</h3>
+          <p>Fundo de chuva leve com pingos individuais caindo em lugares diferentes, à esquerda e à direita.</p>
+        </div>
+        <div style="display:grid;gap:10px">
+          <p class="recipe">Fundo filtrado em 1–4 kHz · 20–60 pingos por segundo · gotas maiores de vez em quando</p>
+          <button type="button">▶ Tocar</button>
+        </div>
+      </article>
+      <article class="card" data-sound="ocean">
+        <span class="tag">Mar</span>
+        <div>
+          <h3>Ondas do mar</h3>
+          <p>Ondas que crescem devagar e quebram, com espuma no topo. Cada onda tem duração diferente.</p>
+        </div>
+        <div style="display:grid;gap:10px">
+          <p class="recipe">Ondas de 6 a 12 s · subida lenta, quebra rápida · lados alternados</p>
+          <button type="button">▶ Tocar</button>
+        </div>
+      </article>
+      <article class="card" data-sound="forest">
+        <span class="tag">Natureza</span>
+        <div>
+          <h3>Floresta calma com pássaros</h3>
+          <p>Vento baixo, folhas se mexendo e um riacho correndo. Passarinhos piam ao longe, um sabiá canta e às vezes outro responde do outro lado, e uma rolinha arrulha de vez em quando.</p>
+        </div>
+        <div style="display:grid;gap:10px">
+          <p class="recipe">Vento grave abaixo de 750 Hz · riacho em 3 faixas com bolhas · sabiá a cada 7–15 s, piados a cada 2–7 s, rolinha a cada 16–30 s</p>
+          <button type="button">▶ Tocar</button>
+        </div>
+      </article>
+      <article class="card" data-sound="music">
+        <span class="tag">Concentração</span>
+        <div>
+          <h3>Acordes suaves</h3>
+          <p>Acordes lentos que se sucedem, com notas de sino ocasionais e eco leve. Sem melodia conhecida.</p>
+        </div>
+        <div style="display:grid;gap:10px">
+          <label class="option" for="binaural"><input id="binaural" type="checkbox" checked> Camada binaural 10 Hz (só com fone)</label>
+          <p class="recipe">Cmaj7 · Am7 · Fmaj7 · G6, 16 s cada · binaural 200 Hz / 210 Hz</p>
+          <button type="button">▶ Tocar</button>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="group" aria-labelledby="g-old">
+    <div class="group-head">
+      <h2 id="g-old">Ruídos que já estão no site</h2>
+      <p>Para comparar: são o "chiado" proposital.</p>
+    </div>
+    <div class="grid">
+      <article class="card" data-sound="white">
+        <span class="tag">Ruído</span>
+        <div><h3>Ruído branco</h3><p>Chiado uniforme, o mais agudo dos três.</p></div>
+        <div style="display:grid;gap:10px"><p class="recipe">Todas as frequências por igual</p><button type="button">▶ Tocar</button></div>
+      </article>
+      <article class="card" data-sound="pink">
+        <span class="tag">Ruído</span>
+        <div><h3>Ruído rosa</h3><p>Mais macio, lembra chuva forte constante.</p></div>
+        <div style="display:grid;gap:10px"><p class="recipe">Energia cai 3 dB por oitava</p><button type="button">▶ Tocar</button></div>
+      </article>
+      <article class="card" data-sound="brown">
+        <span class="tag">Ruído</span>
+        <div><h3>Ruído marrom</h3><p>Grave e abafado, lembra cachoeira ao longe.</p></div>
+        <div style="display:grid;gap:10px"><p class="recipe">Energia cai 6 dB por oitava</p><button type="button">▶ Tocar</button></div>
+      </article>
+    </div>
+  </section>
+
+  <p class="note">No site, cada som entra e sai com fade de 2 segundos e respeita o volume e o timer de desligar. No iPhone com a chave de silencioso ligada, o navegador não toca esse tipo de som.</p>
+</main>
+
+<script>
+(() => {
+  'use strict';
+  const NAMES = { rain: 'Chuva suave', ocean: 'Ondas do mar', forest: 'Floresta calma com pássaros', music: 'Acordes suaves', white: 'Ruído branco', pink: 'Ruído rosa', brown: 'Ruído marrom' };
+  const FADE = 2;
+  let ctx = null, master, comp, analyser, impulse, buffers = null;
+  let current = null; // { key, out, stop() }
+
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = list => list[Math.floor(Math.random() * list.length)];
+
+  function makeNoise(type, seconds) {
+    const len = Math.floor(ctx.sampleRate * seconds);
+    const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0, last = 0;
+      for (let i = 0; i < len; i++) {
+        const w = Math.random() * 2 - 1;
+        if (type === 'white') d[i] = w * 0.5;
+        else if (type === 'pink') {
+          b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852;
+          b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
+          d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
+        } else { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
+      }
+    }
+    return buf;
+  }
+  function makeImpulse(seconds, decay) {
+    const len = Math.floor(ctx.sampleRate * seconds);
+    const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+    }
+    return buf;
+  }
+  function ensure() {
+    if (ctx) return;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    master = ctx.createGain(); master.gain.value = volume();
+    comp = ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 3;
+    analyser = ctx.createAnalyser(); analyser.fftSize = 1024;
+    master.connect(comp).connect(analyser).connect(ctx.destination);
+    buffers = { white: makeNoise('white', 6), pink: makeNoise('pink', 8), brown: makeNoise('brown', 8) };
+    impulse = makeImpulse(2.6, 2.4);
+  }
+  function loopNoise(type, dest) {
+    const src = ctx.createBufferSource(); src.buffer = buffers[type]; src.loop = true;
+    src.connect(dest); src.start(ctx.currentTime, rand(0, buffers[type].duration)); return src;
+  }
+  function scheduler(tick) { // lookahead scheduler on the audio clock
+    let next = ctx.currentTime;
+    const id = setInterval(() => { while (next < ctx.currentTime + 0.25) next = tick(next); }, 50);
+    return () => clearInterval(id);
+  }
+  // Loudness balance between sounds (measured RMS, so switching sounds keeps a similar volume).
+  const LEVEL = { rain: 1.6, ocean: 0.55, forest: 4.2, music: 1.3, white: 1.2, pink: 1, brown: 0.9 };
+  function voice(level) { // per-sound output with fade
+    const out = ctx.createGain(); out.gain.setValueAtTime(0.0001, ctx.currentTime);
+    out.gain.exponentialRampToValueAtTime(level, ctx.currentTime + FADE); out.connect(master);
+    // Per-sound reverb that feeds the same faded output, so stopping silences its tail too.
+    out.rv = ctx.createConvolver(); out.rv.buffer = impulse;
+    const rg = ctx.createGain(); rg.gain.value = 0.5; out.rv.connect(rg).connect(out);
+    return out;
+  }
+  function stopAfterFade(out, parts) {
+    const t = ctx.currentTime;
+    out.gain.cancelScheduledValues(t); out.gain.setValueAtTime(Math.max(out.gain.value, 0.0001), t);
+    out.gain.exponentialRampToValueAtTime(0.0001, t + FADE);
+    parts.timers.forEach(fn => fn());
+    setTimeout(() => { parts.sources.forEach(s => { try { s.stop(); } catch (e) {} }); out.disconnect(); }, FADE * 1000 + 100);
+  }
+
+  // ---------- Chuva ----------
+  function rain(out) {
+    const parts = { sources: [], timers: [] };
+    const bedF = ctx.createBiquadFilter(); bedF.type = 'bandpass'; bedF.frequency.value = 2200; bedF.Q.value = 0.45;
+    const bedG = ctx.createGain(); bedG.gain.value = 0.32; bedF.connect(bedG).connect(out);
+    parts.sources.push(loopNoise('pink', bedF));
+    const rumF = ctx.createBiquadFilter(); rumF.type = 'lowpass'; rumF.frequency.value = 180;
+    const rumG = ctx.createGain(); rumG.gain.value = 0.18; rumF.connect(rumG).connect(out);
+    parts.sources.push(loopNoise('brown', rumF));
+    let density = 35;
+    parts.timers.push(scheduler(t => {
+      if (Math.random() < 0.02) { density = rand(20, 60); bedG.gain.setTargetAtTime(rand(0.24, 0.4), t, 2); }
+      const dur = rand(0.005, 0.03);
+      const s = ctx.createBufferSource(); s.buffer = buffers.white;
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = rand(2000, 8000); f.Q.value = rand(2, 6);
+      const g = ctx.createGain(); const peak = rand(0.05, 0.28);
+      g.gain.setValueAtTime(peak, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.04);
+      const p = ctx.createStereoPanner(); p.pan.value = rand(-1, 1);
+      s.connect(f).connect(g).connect(p).connect(out);
+      s.start(t, rand(0, 5)); s.stop(t + dur + 0.06);
+      if (Math.random() < 0.12) { // bigger drop: short rising "plink"
+        const o = ctx.createOscillator(); o.type = 'sine';
+        const f0 = rand(900, 1700); o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * rand(1.6, 2.4), t + 0.02);
+        const og = ctx.createGain(); og.gain.setValueAtTime(rand(0.02, 0.05), t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+        const op = ctx.createStereoPanner(); op.pan.value = rand(-0.9, 0.9);
+        o.connect(og).connect(op).connect(out); o.start(t); o.stop(t + 0.06);
+      }
+      return t + (-Math.log(1 - Math.random()) / density); // random (Poisson) spacing
+    }));
+    return parts;
+  }
+
+  // ---------- Mar ----------
+  function ocean(out) {
+    const parts = { sources: [], timers: [] };
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 300; lp.Q.value = 0.4;
+    const g = ctx.createGain(); g.gain.value = 0.12;
+    const pan = ctx.createStereoPanner(); pan.pan.value = 0;
+    lp.connect(g).connect(pan).connect(out);
+    parts.sources.push(loopNoise('brown', lp));
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3200;
+    const fg = ctx.createGain(); fg.gain.value = 0.0001;
+    hp.connect(fg).connect(pan);
+    parts.sources.push(loopNoise('white', hp));
+    let side = 1;
+    parts.timers.push(scheduler(t => {
+      const D = rand(6, 12), rise = D * 0.58, crest = t + rise, brk = crest + D * 0.14, end = t + D;
+      const top = rand(1100, 2100);
+      lp.frequency.setTargetAtTime(top, t, rise / 3);
+      g.gain.setTargetAtTime(rand(0.5, 0.75), t, rise / 3);
+      fg.gain.setTargetAtTime(0.0001, t, 0.5);
+      fg.gain.setTargetAtTime(rand(0.08, 0.16), crest - 0.4, 0.25);
+      fg.gain.setTargetAtTime(0.0001, brk, 0.6);
+      lp.frequency.setTargetAtTime(rand(260, 420), brk, (end - brk) / 3);
+      g.gain.setTargetAtTime(rand(0.1, 0.18), brk, (end - brk) / 3);
+      side = -side; pan.pan.setTargetAtTime(side * rand(0.15, 0.35), t, D / 3);
+      return end;
+    }));
+    return parts;
+  }
+
+  // ---------- Floresta (v3: vento baixo, folhas, riacho, sabiá, piados e rolinha) ----------
+  // Rajada de vento 0..1, função do tempo: controla o vento e a densidade das folhas.
+  function gustAt(t) {
+    const g = 0.42 + 0.28 * Math.sin(2 * Math.PI * t / 23) + 0.18 * Math.sin(2 * Math.PI * t / 9.7 + 1.3) + 0.08 * Math.sin(2 * Math.PI * t / 4.1 + 0.4);
+    return Math.min(1, Math.max(0, g));
+  }
+  // Uma nota de pássaro: seno com deslize de altura, ataque macio e um pouco do 2º harmônico
+  function birdNote(t, f0, f1, d, amp, dest, vib = 0) {
+    [[1, 1], [2, 0.08]].forEach(([h, a]) => {
+      const o = ctx.createOscillator(); o.type = 'sine';
+      o.frequency.setValueAtTime(f0 * h, t); o.frequency.exponentialRampToValueAtTime(f1 * h, t + d);
+      if (vib) { const v = ctx.createOscillator(); v.frequency.value = rand(22, 32); const vg = ctx.createGain(); vg.gain.value = f0 * h * vib; v.connect(vg).connect(o.frequency); v.start(t); v.stop(t + d + 0.05); }
+      const e = ctx.createGain(); e.gain.setValueAtTime(0.0001, t);
+      e.gain.exponentialRampToValueAtTime(amp * a, t + Math.min(0.02, d * 0.3));
+      e.gain.setValueAtTime(amp * a, t + d * 0.6);
+      e.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(e).connect(dest); o.start(t); o.stop(t + d + 0.05);
+    });
+  }
+  // Cadeia de cada ave: posição no estéreo, distância (agudos e volume caem, reverb sobe)
+  function birdChain(out, pan, far, level) {
+    const p = ctx.createStereoPanner(); p.pan.value = pan;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 9000 - 4500 * far;
+    const dry = ctx.createGain(); dry.gain.value = level * (1 - 0.7 * far);
+    const wet = ctx.createGain(); wet.gain.value = level * (0.5 + 0.8 * far);
+    p.connect(lp); lp.connect(dry).connect(out); lp.connect(wet).connect(out.rv);
+    setTimeout(() => { p.disconnect(); lp.disconnect(); dry.disconnect(); wet.disconnect(); }, 9000);
+    return p;
+  }
+  // Pássaro cantor (tipo sabiá): frase melódica de 4 a 7 notas, cada frase diferente
+  function songbird(t, out, pan, far, shift = 1) {
+    const dest = birdChain(out, pan, far, 0.05);
+    const scale = [1900, 2130, 2390, 2530, 2840, 3190, 3380].map(f => f * shift);
+    let at = t, i = Math.floor(rand(1, 5));
+    const n = Math.round(rand(4, 7));
+    for (let k = 0; k < n; k++) {
+      i = Math.min(scale.length - 1, Math.max(0, i + pick([-2, -1, 1, 1, 2])));
+      const f = scale[i] * rand(0.99, 1.01), kind = Math.random(), d = rand(0.09, 0.24);
+      if (kind < 0.35) birdNote(at, f * 0.9, f * 1.08, d, 1, dest);             // sobe
+      else if (kind < 0.65) birdNote(at, f * 1.08, f * 0.92, d, 1, dest);       // desce
+      else if (kind < 0.85) birdNote(at, f, f, d * 1.2, 0.9, dest, 0.02);       // nota com vibrato
+      else { birdNote(at, f * 1.2, f * 1.1, 0.04, 0.7, dest); birdNote(at + 0.06, f * 1.2, f * 1.1, 0.04, 0.7, dest); } // "ti-ti"
+      at += d + rand(0.04, 0.12);
+    }
+    return at;
+  }
+  // Piados ao longe (passarinhos conversando baixinho no fundo)
+  function chirps(t, out) {
+    const dest = birdChain(out, rand(-0.9, 0.9), rand(0.6, 0.9), 0.045);
+    let at = t; const f = rand(3600, 4800), n = Math.round(rand(2, 5));
+    for (let k = 0; k < n; k++) { birdNote(at, f * 1.12, f * 0.86, rand(0.035, 0.06), 1, dest); at += rand(0.08, 0.15); }
+  }
+  // Rolinha: arrulho grave e lento "hu-HUU-hu-hu", o som mais calmante da floresta
+  function dove(t, out) {
+    const dest = birdChain(out, rand(-0.75, -0.4), 0.55, 0.08);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1300; lp.connect(dest);
+    const base = rand(440, 520);
+    [[0, 0.22, 1, 1.04], [0.34, 0.5, 1.08, 0.95], [1.0, 0.26, 0.97, 0.94], [1.42, 0.26, 0.96, 0.92]].forEach(([dt, d, a, b]) => birdNote(t + dt, base * a, base * b, d, 0.9, lp));
+  }
+  function forest(out) {
+    const parts = { sources: [], timers: [] };
+    // Vento: grave e baixo, só sobe um pouco nas rajadas
+    const wf = ctx.createBiquadFilter(); wf.type = 'lowpass'; wf.frequency.value = 480; wf.Q.value = 0.3;
+    const wg = ctx.createGain(); wg.gain.value = 0.03; wf.connect(wg).connect(out);
+    parts.sources.push(loopNoise('brown', wf));
+    parts.timers.push(scheduler(t => {
+      const g = gustAt(t);
+      wg.gain.setTargetAtTime(0.02 + 0.045 * g, t, 0.4);
+      wf.frequency.setTargetAtTime(360 + 380 * g, t, 0.6);
+      return t + 0.25;
+    }));
+    // Folhas: grãos curtos e agudos, mais densos quando venta
+    parts.timers.push(scheduler(t => {
+      const g = gustAt(t), dur = rand(0.02, 0.09);
+      const s = ctx.createBufferSource(); s.buffer = buffers.white;
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2400;
+      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = rand(3500, 7500); bp.Q.value = 0.8;
+      const e = ctx.createGain(); const peak = rand(0.012, 0.04) * (0.4 + g);
+      e.gain.setValueAtTime(0.0001, t); e.gain.exponentialRampToValueAtTime(peak, t + 0.006); e.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      const pp = ctx.createStereoPanner(); pp.pan.value = rand(-1, 1);
+      s.connect(hp).connect(bp).connect(e).connect(pp).connect(out);
+      s.start(t, rand(0, 5)); s.stop(t + dur + 0.02);
+      const density = 3 + 45 * g * g;
+      return t + (-Math.log(1 - Math.random()) / density);
+    }));
+    // Riacho: três faixas com variação rápida + bolhas, à esquerda
+    const brook = ctx.createStereoPanner(); brook.pan.value = -0.45;
+    const bm = ctx.createGain(); bm.gain.value = 1; bm.connect(brook).connect(out);
+    [[520, 2.2], [1150, 2.6], [2300, 3.2]].forEach(([fq, q]) => {
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = fq; f.Q.value = q;
+      const g = ctx.createGain(); g.gain.value = 0.03; f.connect(g).connect(bm);
+      parts.sources.push(loopNoise('white', f));
+      parts.timers.push(scheduler(t => { g.gain.setTargetAtTime(rand(0.012, 0.05), t, 0.025); return t + rand(0.03, 0.08); }));
+    });
+    parts.timers.push(scheduler(t => {
+      const o = ctx.createOscillator(); o.type = 'sine';
+      const f0 = rand(380, 950), d = rand(0.025, 0.05);
+      o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * rand(1.3, 1.9), t + d);
+      const e = ctx.createGain(); e.gain.setValueAtTime(0.0001, t); e.gain.exponentialRampToValueAtTime(rand(0.012, 0.035), t + 0.006); e.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.02);
+      o.connect(e).connect(bm); o.start(t); o.stop(t + d + 0.03);
+      return t + (-Math.log(1 - Math.random()) / 7);
+    }));
+    // Aves: piados ao longe, um sabiá que às vezes recebe resposta do outro lado, e a rolinha de vez em quando
+    parts.timers.push(scheduler(t => { if (t > ctx.currentTime + 0.01) chirps(t, out); return t + rand(2.5, 7); }));
+    parts.timers.push(scheduler(t => {
+      if (t > ctx.currentTime + 0.01) {
+        const side = Math.random() < 0.5 ? -1 : 1;
+        const end = songbird(t, out, side * rand(0.45, 0.8), 0.2);
+        if (Math.random() < 0.55) { const t2 = end + rand(0.8, 2.2); songbird(t2, out, -side * rand(0.5, 0.9), 0.65, rand(0.92, 1.08)); }
+      }
+      return t + rand(7, 15);
+    }));
+    parts.timers.push(scheduler(t => { if (t > ctx.currentTime + 0.5) dove(t, out); return t + rand(16, 30); }));
+    return parts;
+  }
+
+  // ---------- Música para concentração ----------
+  const midi = m => 440 * Math.pow(2, (m - 69) / 12);
+  const CHORDS = [[48, 52, 55, 59], [45, 48, 52, 55], [41, 45, 48, 52], [43, 47, 50, 52]]; // Cmaj7 Am7 Fmaj7 G6
+  const BELLS = [[72, 74, 76, 79, 81], [69, 72, 74, 76, 79], [65, 69, 72, 74, 77], [67, 71, 74, 76, 79]];
+  function music(out) {
+    const parts = { sources: [], timers: [] };
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1300; lp.Q.value = 0.3;
+    const bus = ctx.createGain(); bus.gain.value = 0.9; lp.connect(bus); bus.connect(out); bus.connect(out.rv);
+    const delay = ctx.createDelay(1); delay.delayTime.value = 0.45; const fb = ctx.createGain(); fb.gain.value = 0.32;
+    const dl = ctx.createBiquadFilter(); dl.type = 'lowpass'; dl.frequency.value = 2000; const dg = ctx.createGain(); dg.gain.value = 0.35;
+    bus.connect(delay); delay.connect(dl).connect(fb).connect(delay); dl.connect(dg).connect(out);
+    let i = 0; const LEN = 16;
+    parts.timers.push(scheduler(t => {
+      const chord = CHORDS[i % CHORDS.length];
+      chord.forEach(m => {
+        [['sine', -4], ['triangle', 4]].forEach(([type, cents]) => {
+          const o = ctx.createOscillator(); o.type = type; o.frequency.value = midi(m); o.detune.value = cents + rand(-2, 2);
+          const e = ctx.createGain(); e.gain.setValueAtTime(0.0001, t);
+          e.gain.exponentialRampToValueAtTime(type === 'sine' ? 0.05 : 0.025, t + 5);
+          e.gain.setValueAtTime(type === 'sine' ? 0.05 : 0.025, t + LEN - 1);
+          e.gain.exponentialRampToValueAtTime(0.0001, t + LEN + 6);
+          o.connect(e).connect(lp); o.start(t); o.stop(t + LEN + 6.2);
+        });
+      });
+      const bells = BELLS[i % BELLS.length];
+      for (let at = t + rand(3, 6); at < t + LEN; at += rand(4, 8)) {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = midi(pick(bells));
+        const e = ctx.createGain(); e.gain.setValueAtTime(0.0001, at);
+        e.gain.exponentialRampToValueAtTime(0.035, at + 0.02); e.gain.exponentialRampToValueAtTime(0.0001, at + 3.5);
+        const p = ctx.createStereoPanner(); p.pan.value = rand(-0.6, 0.6);
+        o.connect(e).connect(p).connect(bus); o.start(at); o.stop(at + 3.6);
+      }
+      i++; return t + LEN;
+    }));
+    if (document.getElementById('binaural').checked) {
+      [[200, -1], [210, 1]].forEach(([f, side]) => {
+        const o = ctx.createOscillator(); o.frequency.value = f;
+        const g = ctx.createGain(); g.gain.value = 0.035; const p = ctx.createStereoPanner(); p.pan.value = side;
+        o.connect(g).connect(p).connect(out); o.start(); parts.sources.push(o);
+      });
+    }
+    return parts;
+  }
+
+  // ---------- Ruídos ----------
+  function noise(type) {
+    return out => {
+      const g = ctx.createGain(); g.gain.value = type === 'white' ? 0.22 : type === 'pink' ? 0.42 : 0.5; g.connect(out);
+      return { sources: [loopNoise(type, g)], timers: [] };
+    };
+  }
+
+  const MAKERS = { rain, ocean, forest, music, white: noise('white'), pink: noise('pink'), brown: noise('brown') };
+  const cards = [...document.querySelectorAll('.card')];
+  const label = document.getElementById('now-label');
+  const stopAll = document.getElementById('stop-all');
+
+  function render() {
+    cards.forEach(card => {
+      const on = current && current.key === card.dataset.sound;
+      card.classList.toggle('is-on', Boolean(on));
+      const b = card.querySelector('button'); b.textContent = on ? '■ Parar' : '▶ Tocar'; b.setAttribute('aria-pressed', String(Boolean(on)));
+    });
+    label.innerHTML = current ? 'Tocando agora: <strong>' + NAMES[current.key] + '</strong>' : 'Nada tocando. Escolha um som abaixo.';
+    stopAll.disabled = !current;
+  }
+  function stop() {
+    if (!current) return;
+    stopAfterFade(current.out, current.parts); current = null; render();
+  }
+  function play(key) {
+    ensure(); if (ctx.state === 'suspended') ctx.resume();
+    stop();
+    const out = voice(LEVEL[key]);
+    current = { key, out, parts: MAKERS[key](out) };
+    render();
+  }
+  cards.forEach(card => card.querySelector('button').addEventListener('click', () => {
+    if (current && current.key === card.dataset.sound) stop(); else play(card.dataset.sound);
+  }));
+  stopAll.addEventListener('click', stop);
+  document.getElementById('binaural').addEventListener('change', () => { if (current && current.key === 'music') play('music'); });
+
+  function volume() { return Math.pow(Number(document.getElementById('volume').value) / 100, 2) * 0.9; }
+  document.getElementById('volume').addEventListener('input', () => { if (master) master.gain.setTargetAtTime(volume(), ctx.currentTime, 0.05); });
+
+  // Scope: live waveform of whatever is playing
+  const canvas = document.getElementById('scope'), c2 = canvas.getContext('2d');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function draw() {
+    const w = canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1), h = canvas.height = 72 * (window.devicePixelRatio || 1);
+    c2.clearRect(0, 0, w, h);
+    const grad = c2.createLinearGradient(0, 0, w, 0); grad.addColorStop(0, '#19b4a5'); grad.addColorStop(1, '#9b7cc4');
+    c2.strokeStyle = grad; c2.lineWidth = 2 * (window.devicePixelRatio || 1); c2.beginPath();
+    if (analyser && current && !reduce.matches) {
+      const data = new Float32Array(analyser.fftSize); analyser.getFloatTimeDomainData(data);
+      for (let i = 0; i < data.length; i++) { const x = i / (data.length - 1) * w, y = h / 2 - data[i] * h * 0.9; i ? c2.lineTo(x, y) : c2.moveTo(x, y); }
+    } else { c2.moveTo(0, h / 2); c2.lineTo(w, h / 2); }
+    c2.stroke(); requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>

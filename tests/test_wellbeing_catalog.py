@@ -1,6 +1,9 @@
 """Wellbeing catalog: files exist, nothing invented, sessions add up (spec 11)."""
 
+import shutil
+import subprocess
 from pathlib import Path
+from unittest import skipIf
 
 from django.conf import settings
 from django.contrib.staticfiles import finders
@@ -38,6 +41,30 @@ class WellbeingVideoFilesTests(SimpleTestCase):
         self.assertIn("gerados por IA", readme)
         self.assertIn("PENDENTES de revisão", readme)
         self.assertIn("MEMBROS INFERIORES E SUPERIORES — QUALITYLIFE AP", readme)
+        self.assertIn("áudio original gerado pela IA é mantido", readme)
+
+    @skipIf(shutil.which("ffprobe") is None, "ffprobe not installed")
+    def test_every_video_keeps_its_original_audio_track(self):
+        for name in VIDEOS:
+            with self.subTest(video=name):
+                streams = subprocess.run(
+                    [
+                        "ffprobe",
+                        "-v",
+                        "error",
+                        "-select_streams",
+                        "a",
+                        "-show_entries",
+                        "stream=codec_type",
+                        "-of",
+                        "csv=p=0",
+                        str(VIDEO_DIR / f"{name}.mp4"),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                ).stdout.split()
+                self.assertEqual(streams, ["audio"])
 
 
 class ExerciseVideoTests(SimpleTestCase):
@@ -156,12 +183,25 @@ class MeditationAndSoundTests(SimpleTestCase):
                 elif item["type"] in ("audio", "video", "breathing"):
                     self.assertIsNotNone(finders.find(item["file"]))
 
-    def test_noises_available_and_natural_sounds_in_preparation(self):
-        status = {item["slug"]: item["status"] for item in catalog.SOUNDS}
-        for slug in ("ruido-branco", "ruido-rosa", "ruido-marrom"):
-            self.assertEqual(status[slug], catalog.AVAILABLE)
-        for slug in ("natureza", "mar", "chuva", "musica-concentracao"):
-            self.assertEqual(status[slug], catalog.IN_PREPARATION)
+    def test_seven_generated_sounds_available_sounds_before_noises(self):
+        self.assertEqual(
+            [
+                (item["slug"], item["title"], item["type"], item["noise"])
+                for item in catalog.SOUNDS
+            ],
+            [
+                ("natureza", "Floresta calma com pássaros", "noise", "forest"),
+                ("mar", "Ondas do mar", "noise", "ocean"),
+                ("chuva", "Chuva suave", "noise", "rain"),
+                ("musica-concentracao", "Acordes suaves", "noise", "music"),
+                ("ruido-branco", "Ruído branco", "noise", "white"),
+                ("ruido-rosa", "Ruído rosa", "noise", "pink"),
+                ("ruido-marrom", "Ruído marrom", "noise", "brown"),
+            ],
+        )
+        for item in catalog.SOUNDS:
+            self.assertEqual(item["status"], catalog.AVAILABLE)
+            self.assertIsNone(item["file"])
         self.assertEqual(catalog.RELAX_TIMER_MINUTES, (5, 10, 15, 30))
 
     def test_tips_start_empty_and_proposals_are_marked(self):

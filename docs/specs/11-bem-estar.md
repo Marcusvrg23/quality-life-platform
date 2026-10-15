@@ -46,9 +46,8 @@ INVARIANTES
 - Mobile-first: sem scroll horizontal em 390×844.
 
 FORA DO ESCOPO
-Narração, sons da natureza/mar/chuva/música (vagas "Em preparação"), imagem do
-material para `inclinacao-frente`, PWA autenticada, edição do catálogo pelo
-admin, metas/lembretes.
+Narração, imagem do material para `inclinacao-frente`, PWA autenticada, edição
+do catálogo pelo admin, metas/lembretes.
 
 RISCO
 R2 (migração nova, dados por pessoa, agregado para gestor).
@@ -71,6 +70,20 @@ DECISÕES
   tiver 5+ pessoas.
 - Tenant forjado na sessão segue o padrão do projeto (`resolve_tenant_context`
   → 403); slug de outra coisa → 404. Não existe endpoint por id.
+- Sons gerados por código: Floresta calma com pássaros, Ondas do mar, Chuva
+  suave e Acordes suaves são gerados no navegador (`wellbeing-noise.js`,
+  `window.QLNoise`), portados só no áudio e com os mesmos números do arquivo
+  aprovado `docs/design/sons/sons-relaxamento.html`; nenhum arquivo de áudio,
+  nenhuma música de terceiros. A camada de 200/210 Hz dos acordes fica sempre
+  ligada. Ruídos branco/rosa/marrom continuam como estavam. Som de fundo
+  padrão: Floresta na Meditação, Acordes na Ginástica; tudo começa em
+  "Começar", pausa em "Pausar" e para em "← Voltar".
+- Áudio original dos vídeos: os 10 mp4 são os originais do Higgsfield com o
+  áudio da IA, remuxados sem recompressão. No player o vídeo toca com som
+  (volume 0,5) e a opção "Som do vídeo" (marcada) liga/desliga; se o navegador
+  bloquear o som, o vídeo segue mudo e a opção é desmarcada. O fundo visual do
+  Relaxamento continua mudo. Vídeo e poster do player usam `object-fit:
+  contain` para não cortar a pessoa.
 
 PERGUNTAS (não bloqueiam)
 - Segundos por exercício (`SECONDS_PER_EXERCISE`) e ritmo de respiração
@@ -94,7 +107,5 @@ Exemplo, pescoço e ombros 3 min: pescoco, abertura-peito, punhos, autoabraco,
 pescoco, abertura-peito. Autoabraço (sem vídeo) mostra a foto do material.
 
 EM PREPARAÇÃO / ONDE PREENCHER
-- Sons da natureza, Mar, Chuva, Música para concentração: arquivo em
-  `static/quality_life/audio/`, "file" e "status" em `SOUNDS`.
 - Dica do dia: `TIPS` (começa vazio; a Home só mostra se houver texto).
 - Página do PDF e imagem de "Inclinação do tronco à frente": `config/exercises.py`.

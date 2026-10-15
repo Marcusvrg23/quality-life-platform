@@ -29,7 +29,7 @@
         {% endfor %}
     </div>
     <p class="wb-note wb-footnote">{{ catalog.PROPOSAL_NOTE }} {{ catalog.AI_VIDEO_NOTE }} Instruções: {{ source }}.</p>
-    {% include 'wellbeing/_player.html' with breathing=False noises=None note=catalog.AI_VIDEO_NOTE %}
+    {% include 'wellbeing/_player.html' with breathing=False note=catalog.AI_VIDEO_NOTE %}
 </section>
 {% endblock %}
 {% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}

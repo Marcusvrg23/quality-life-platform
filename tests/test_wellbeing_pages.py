@@ -107,6 +107,34 @@ class WellbeingPageTests(TestCase):
         self.assertContains(response, "sem narração")
         self.assertContains(response, "data-player-noise")
 
+    def test_player_has_video_sound_on_and_default_background_sound(self):
+        self.client.force_login(self.user)
+        for page, default in (
+            ("wellbeing_gym", "music"),
+            ("wellbeing_meditation", "forest"),
+        ):
+            with self.subTest(page=page):
+                html = self.client.get(reverse(page)).content.decode()
+                video = re.search(r"<video data-player-video[^>]*>", html).group(0)
+                self.assertNotIn("muted", video)
+                self.assertRegex(
+                    html,
+                    r'<input type="checkbox" data-player-video-sound checked>'
+                    r"\s*Som do vídeo",
+                )
+                options = re.findall(
+                    r'<option value="([a-z]*)"( selected)?>',
+                    re.search(r"<select data-player-noise>.*?</select>", html).group(0),
+                )
+                self.assertEqual(
+                    options,
+                    [("", "")]
+                    + [
+                        (item["noise"], " selected" if item["noise"] == default else "")
+                        for item in catalog.SOUNDS
+                    ],
+                )
+
     def test_relax_pending_sounds_have_no_play_control(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse("wellbeing_relax"))
@@ -124,6 +152,9 @@ class WellbeingPageTests(TestCase):
                     self.assertNotIn("<audio", card)
                 else:
                     self.assertIn(f'data-noise="{item["noise"]}"', card)
+        self.assertEqual(html.count("data-sound-play"), 7)
+        self.assertNotContains(response, "Em preparação")
+        self.assertContains(response, "Todos os sons são gerados no próprio navegador.")
         for minutes in catalog.RELAX_TIMER_MINUTES:
             self.assertContains(response, f'value="{minutes}"')
         self.assertContains(response, "med-relaxamento.webp")

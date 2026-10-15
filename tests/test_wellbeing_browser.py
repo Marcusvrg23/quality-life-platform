@@ -210,7 +210,7 @@ class WellbeingBrowserTests(StaticLiveServerTestCase):
             for name, width, height in VIEWPORTS:
                 page = self.open(browser, width, height)
                 self.visit(page, "/app/relaxamento/")
-                assert page.locator("[data-sound-play]").count() == 3
+                assert page.locator("[data-sound-play]").count() == 7
                 page.locator('input[name="wb-timer"][value="5"]').check(force=True)
                 page.locator('[data-slug="ruido-rosa"]').click()
                 page.wait_for_function("window.__audioContexts === 1")
@@ -229,6 +229,69 @@ class WellbeingBrowserTests(StaticLiveServerTestCase):
                 assert status.inner_text() == "Nenhum som tocando."
                 assert page.evaluate("!window.QLNoise.playing")
                 page.context.close()
+            browser.close()
+
+    def test_default_sound_and_video_sound_start_on_click_and_stop_on_back(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = self.open(browser, 390, 844)
+            for path, slug, default in (
+                ("/app/meditacao/", "respiracao-foco", "forest"),
+                ("/app/ginastica/", "pausa-coluna-3min", "music"),
+            ):
+                self.visit(page, path)
+                page.locator(f'[data-open-session="{slug}"]').click()
+                noise = page.locator("[data-player-noise]")
+                assert noise.input_value() == default, path
+                sound = page.locator("[data-player-video-sound]")
+                assert sound.is_checked()
+                assert page.evaluate(MEDIA_IDLE), path
+                assert page.evaluate(
+                    "!document.querySelector('[data-player-video]').muted"
+                )
+                page.locator("[data-player-toggle]").click()
+                page.wait_for_function("window.QLNoise.playing")
+                assert page.evaluate("window.__audioContexts") == 1, path
+                sound.uncheck()
+                assert page.evaluate(
+                    "document.querySelector('[data-player-video]').muted"
+                )
+                self.assert_fits(page, f"390-{slug}-som")
+                page.get_by_role("button", name="← Voltar").click()
+                assert page.evaluate("!window.QLNoise.playing"), path
+            page.context.close()
+            browser.close()
+
+    def test_each_generated_sound_plays_and_stops(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = self.open(browser, 390, 844)
+            self.visit(page, "/app/relaxamento/")
+            buttons = page.locator("[data-sound-play]")
+            noises = [
+                buttons.nth(i).get_attribute("data-noise")
+                for i in range(buttons.count())
+            ]
+            assert noises == [
+                "forest",
+                "ocean",
+                "rain",
+                "music",
+                "white",
+                "pink",
+                "brown",
+            ]
+            for index, noise in enumerate(noises):
+                buttons.nth(index).click()
+                assert page.evaluate("window.QLNoise.playing"), noise
+                page.wait_for_timeout(1000)
+                assert page.evaluate("window.QLNoise.playing"), noise
+                page.get_by_role("button", name="Parar").click()
+                assert page.evaluate("!window.QLNoise.playing"), noise
+                assert page.errors == [], (noise, page.errors)
+            assert page.evaluate("window.__audioContexts") == 1
+            self.assert_fits(page, "390-relaxamento-sete-sons")
+            page.context.close()
             browser.close()
 
     def test_reduced_motion_keeps_poster_and_runs_no_loop(self):
@@ -263,6 +326,9 @@ class WellbeingBrowserTests(StaticLiveServerTestCase):
             page.goto(f"{self.live_server_url}/app/meditacao/")
             page.wait_for_load_state("load")
             page.locator('[data-open-session="respiracao-foco"]').click()
+            # No background sound: the fake clock would fire every audio
+            # scheduler tick and run slower than real time.
+            page.locator("[data-player-noise]").select_option("")
             page.locator("[data-player-toggle]").click()
             with page.expect_response(lambda r: "pratica/registrar" in r.url) as info:
                 page.clock.run_for(125_000)
