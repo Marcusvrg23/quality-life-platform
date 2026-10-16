@@ -150,6 +150,19 @@ class EnvironmentConfigurationTests(SimpleTestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("mailto:", result.stderr)
 
+    def test_scheduler_refresh_is_a_whole_number_of_at_least_five_minutes(self):
+        for value in ("4", "três"):
+            with self.subTest(value=value):
+                result = self.import_settings(
+                    overrides={"WEB_PUSH_SCHEDULER_REFRESH_MINUTES": value}
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("WEB_PUSH_SCHEDULER_REFRESH_MINUTES", result.stderr)
+        result = self.import_settings(
+            overrides={"WEB_PUSH_SCHEDULER_REFRESH_MINUTES": "360"}
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_vapid_variables_are_optional(self):
         result = self.import_settings(
             missing=("VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT")

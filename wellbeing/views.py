@@ -21,6 +21,7 @@ from config.exercises import EXERCISES, SOURCE, image_path, poster_path
 from config.tenant import resolve_tenant_context
 from identity.models import Membership
 
+from . import scheduler
 from .forms import WEEKDAYS, ReminderForm
 from .models import (
     MIN_RECORD_SECONDS,
@@ -274,6 +275,7 @@ def reminders(request):
         ReminderSetting.objects.filter(membership=tenant.membership).update(
             active=False, updated_at=timezone.now()
         )
+        transaction.on_commit(scheduler.wake)
         messages.success(request, "Lembretes desativados.")
         return redirect("wellbeing_reminders")
     setting = _reminder_setting(tenant.membership)
@@ -293,6 +295,8 @@ def reminders(request):
                 setting.workday_end = data["workday_end"]
                 setting.weekdays = form.weekday_digits()
                 setting.save()
+                # This worker's scheduler reloads at once (spec 13).
+                transaction.on_commit(scheduler.wake)
             messages.success(
                 request,
                 "Lembretes ativados."
@@ -438,6 +442,7 @@ def push_subscribe(request):
             "user_agent": request.META.get("HTTP_USER_AGENT", "")[:USER_AGENT_MAX],
         },
     )
+    transaction.on_commit(scheduler.wake)
     return _json({"status": "subscribed"}, status=201 if created else 200)
 
 
@@ -455,4 +460,5 @@ def push_unsubscribe(request):
     ).delete()
     if not removed:
         raise Http404("No such subscription for this account.")
+    transaction.on_commit(scheduler.wake)
     return _json({"status": "unsubscribed"})
