@@ -1,11 +1,12 @@
-"""Practice records (docs/specs/11-bem-estar.md) and break reminders
-(docs/specs/13-pwa-lembretes.md) for the wellbeing pages."""
+"""Practice records (docs/specs/11-bem-estar.md), break reminders and the
+push notification channel (docs/specs/13-pwa-lembretes.md)."""
 
 from datetime import time
 
 from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
+from django.utils import timezone
 
 from identity.models import Membership, Organization
 
@@ -124,3 +125,109 @@ class ReminderSetting(models.Model):
 
     def __str__(self):
         return f"lembrete {self.membership_id} ({self.interval_minutes} min)"
+
+
+class PushSubscription(models.Model):
+    """One device of one person in one organization, subscribed to Web Push.
+
+    Created and removed only by its owner (``wellbeing.views.push_subscribe``
+    and ``push_unsubscribe``); the endpoint identifies the device, so a device
+    that signs in as someone else moves to the new Membership. It holds the
+    push service address and the browser's encryption keys, never health data.
+    """
+
+    membership = models.ForeignKey(
+        Membership, on_delete=models.CASCADE, related_name="push_subscriptions"
+    )
+    endpoint = models.CharField(max_length=1000, unique=True)
+    p256dh = models.CharField(max_length=200)
+    auth = models.CharField(max_length=100)
+    user_agent = models.CharField(max_length=120, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_success_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"aparelho {self.pk} da membership {self.membership_id}"
+
+
+class NotificationCategory(models.TextChoices):
+    BREAKS = "pausas", "Lembretes de pausa"
+    TIPS = "dicas", "Dicas e datas especiais"
+
+
+class NotificationPreference(models.Model):
+    """Which categories a person accepts; only the owner changes it.
+
+    Both are on by default, so activating the notifications is enough.
+    """
+
+    membership = models.OneToOneField(
+        Membership, on_delete=models.CASCADE, related_name="notification_preference"
+    )
+    pausas = models.BooleanField(default=True)
+    dicas = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def allows(self, category):
+        return bool(getattr(self, category))
+
+    def __str__(self):
+        return f"preferências da membership {self.membership_id}"
+
+
+class NotificationDelivery(models.Model):
+    """One ``notify()`` call that reached at least one device.
+
+    Only ids, category, time and device count are kept, never the text: it
+    exists for the per-category daily limits.
+    """
+
+    membership = models.ForeignKey(
+        Membership, on_delete=models.CASCADE, related_name="notification_deliveries"
+    )
+    category = models.CharField(max_length=10, choices=NotificationCategory.choices)
+    devices = models.PositiveSmallIntegerField()
+    sent_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        indexes = [  # noqa: RUF012 - Django model metadata convention.
+            models.Index(
+                fields=["membership", "category", "sent_at"],
+                name="wellbeing_delivery_member_sent",
+            ),
+        ]
+        constraints = [  # noqa: RUF012 - Django model metadata convention.
+            models.CheckConstraint(
+                condition=Q(category__in=NotificationCategory.values),
+                name="wellbeing_delivery_valid_category",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.category} para membership {self.membership_id}"
+
+
+class ReminderDispatch(models.Model):
+    """One reminder slot handed to the notification channel by the scheduler.
+
+    Unique per (setting, slot), so two gunicorn workers that wake up in the
+    same minute never send the same reminder twice: the second insert fails
+    and that worker skips the slot.
+    """
+
+    setting = models.ForeignKey(
+        ReminderSetting, on_delete=models.CASCADE, related_name="dispatches"
+    )
+    slot_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [  # noqa: RUF012 - Django model metadata convention.
+            models.UniqueConstraint(
+                fields=["setting", "slot_at"],
+                name="wellbeing_dispatch_setting_slot_unique",
+            ),
+        ]
+
+    def __str__(self):
+        return f"lembrete {self.setting_id} às {self.slot_at:%Y-%m-%d %H:%M}"

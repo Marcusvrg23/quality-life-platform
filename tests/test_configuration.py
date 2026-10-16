@@ -129,3 +129,37 @@ class EnvironmentConfigurationTests(SimpleTestCase):
             }
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_vapid_variables_must_be_set_together(self):
+        vapid = {
+            "VAPID_PUBLIC_KEY": "public-for-the-test",
+            "VAPID_PRIVATE_KEY": "private-for-the-test",
+            "VAPID_SUBJECT": "mailto:contato@example.test",
+        }
+        for missing in vapid:
+            with self.subTest(missing=missing):
+                result = self.import_settings(
+                    overrides={k: v for k, v in vapid.items() if k != missing},
+                    missing=(missing,),
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("must be set together", result.stderr)
+        result = self.import_settings(
+            overrides={**vapid, "VAPID_SUBJECT": "contato@example.test"}
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("mailto:", result.stderr)
+
+    def test_vapid_variables_are_optional(self):
+        result = self.import_settings(
+            missing=("VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT")
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        result = self.import_settings(
+            overrides={
+                "VAPID_PUBLIC_KEY": "public-for-the-test",
+                "VAPID_PRIVATE_KEY": "private-for-the-test",
+                "VAPID_SUBJECT": "https://quality-life.example.test",
+            }
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
