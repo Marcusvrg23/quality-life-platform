@@ -15,6 +15,8 @@
       <div><dt>Período</dt><dd>{{ report.start_date|date:"d/m/Y" }} a {{ report.end_date|date:"d/m/Y" }}</dd></div>
       <div><dt>Avaliados</dt><dd>{{ report.evaluated }} de {{ report.population }} colaboradores</dd></div>
       <div><dt>Participação</dt><dd>{{ report.participation_percent }}%</dd></div>
+      <div><dt>E-mails liberados</dt><dd>{{ access.allowed }}</dd></div>
+      <div><dt>Pessoas cadastradas</dt><dd>{{ access.registered }}</dd></div>
     </dl>
     <p class="report-note">Gerado em {{ generated_at|date:"d/m/Y H:i" }}. Dados agregados: considera a avaliação concluída mais recente de cada colaborador no período e exige no mínimo {{ min_group }} avaliações.</p>
     <p class="report-note">Período fixo: últimos {{ period_days }} dias até hoje.</p>

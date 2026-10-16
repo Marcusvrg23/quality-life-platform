@@ -227,3 +227,52 @@ class ConsentRecord(models.Model):
 
     def __str__(self):
         return f"Consent {self.purpose} v{self.version} of {self.user} in {self.organization}"
+
+
+ALLOWED_EMAIL_ROLES = (MembershipRole.COLLABORATOR, MembershipRole.CORPORATE_MANAGER)
+
+
+class AllowedEmail(models.Model):
+    """One e-mail a company has cleared to enter it, with the role it gets.
+
+    Access decisions live in identity.eligibility; this model only stores the
+    list. The e-mail is kept lowercase and stripped.
+    """
+
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name="allowed_emails"
+    )
+    email = models.EmailField(max_length=254)
+    role = models.CharField(
+        max_length=20,
+        choices=[(role.value, role.label) for role in ALLOWED_EMAIL_ROLES],
+        default=MembershipRole.COLLABORATOR,
+    )
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="allowed_emails_added",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [  # noqa: RUF012 - Django model metadata convention.
+            models.UniqueConstraint(
+                fields=["organization", "email"],
+                name="identity_allowed_email_organization_email_unique",
+            ),
+            models.CheckConstraint(
+                condition=Q(role__in=[role.value for role in ALLOWED_EMAIL_ROLES]),
+                name="identity_allowed_email_valid_role",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        self.email = User.objects.normalize_email(self.email)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.email} allowed in {self.organization} ({self.role})"

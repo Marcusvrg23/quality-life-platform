@@ -9,7 +9,7 @@
   <header class="team-intro">
     <p class="eyebrow">Gestão da equipe</p>
     <h1>Equipe {{ tenant.organization.name }}</h1>
-    <p>Convide colaboradores por link e desative o acesso de quem saiu da empresa.</p>
+    <p>Libere o e-mail de quem deve entrar e desative o acesso de quem saiu da empresa.</p>
   </header>
 
   {% if messages %}<ul class="team-messages" role="status">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
@@ -33,40 +33,41 @@
   </section>
   {% endif %}
 
-  <section class="card team-section" aria-labelledby="invite-title">
-    <h2 id="invite-title">Convidar colaboradores</h2>
-    <p>Gere os links e envie pelo WhatsApp. Quem abrir o link cria o próprio acesso como colaborador.</p>
-    <form method="post" action="{% url 'team_invitations_create' %}" class="team-form">
+  <section class="card team-section" aria-labelledby="allow-title">
+    <h2 id="allow-title">Liberar e-mails</h2>
+    <p>Quem está na lista entra em <strong>{{ request.scheme }}://{{ request.get_host }}</strong> com "Continuar com o Google" usando o próprio e-mail, como colaborador.</p>
+    <form method="post" action="{% url 'team_emails_add' %}" class="team-form team-form--stack">
       {% csrf_token %}
       <div class="team-field">
-        <label for="{{ form.quantidade.id_for_label }}">Quantidade (1 a 50)</label>
-        {{ form.quantidade }}
-        {% if form.quantidade.errors %}<ul class="team-errors" role="alert">{% for error in form.quantidade.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+        <label for="{{ emails_form.emails.id_for_label }}">{{ emails_form.emails.label }}</label>
+        {{ emails_form.emails }}
       </div>
-      <button type="submit" class="button">Gerar convites</button>
+      <button type="submit" class="button">Liberar</button>
     </form>
+    <p class="team-hint">Mensagem pronta para o WhatsApp: "{{ whatsapp.text }}" <a href="{{ whatsapp.url }}" target="_blank" rel="noopener noreferrer">Enviar por WhatsApp</a></p>
   </section>
 
-  <section class="card team-section" aria-labelledby="pending-title">
-    <h2 id="pending-title">Convites pendentes</h2>
-    {% if pending %}
+  <section class="card team-section" aria-labelledby="allowed-title">
+    <h2 id="allowed-title">E-mails liberados ({{ allowed|length }})</h2>
+    {% if allowed %}
     <ul class="team-list">
-      {% for invitation in pending %}
+      {% for item in allowed %}{% with entry=item.entry %}
       <li class="team-row">
         <div>
-          <strong>Convite nº {{ invitation.pk }}</strong>
-          <span>Criado em {{ invitation.created_at|date:"d/m/Y H:i" }}</span>
-          <span>Expira em {{ invitation.expires_at|date:"d/m/Y H:i" }}</span>
+          <strong>{{ entry.email }}</strong>
+          <span>{{ item.role_label }} · liberado em {{ entry.created_at|date:"d/m/Y" }}</span>
         </div>
-        <form method="post" action="{% url 'team_invitation_revoke' invitation.pk %}">
+        {% if entry.role == 'COLLABORATOR' %}
+        <form method="post" action="{% url 'team_email_remove' entry.pk %}">
           {% csrf_token %}
-          <button type="submit" class="button button-secondary">Revogar</button>
+          <button type="submit" class="button button-secondary">Remover</button>
         </form>
+        {% endif %}
       </li>
-      {% endfor %}
+      {% endwith %}{% endfor %}
     </ul>
     {% else %}
-    <p>Nenhum convite pendente.</p>
+    <p>Nenhum e-mail liberado ainda.</p>
     {% endif %}
   </section>
 

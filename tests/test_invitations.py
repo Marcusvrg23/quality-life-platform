@@ -119,8 +119,9 @@ class InvitationGenerationTests(InvitationTestCase):
         later = self.client.get(reverse("team")).content.decode()
         for token in tokens:
             self.assertNotIn(token, later)
-        self.assertIn("Convites pendentes", later)
-        self.assertEqual(later.count("Revogar"), 3)
+        # Spec 14: the invitation UI is gone; the legacy route only answers POSTs.
+        self.assertNotIn("Convites pendentes", later)
+        self.assertNotIn("Gerar convites", later)
 
     def test_plain_token_is_never_stored(self):
         self.login(self.manager)
@@ -533,9 +534,11 @@ class LoginHelpTests(TestCase):
 class TeamInvitationBrowserTests(StaticLiveServerTestCase):
     def setUp(self):
         self.org = Organization.objects.create(name="QA Equipe", slug="qa-equipe")
-        manager = get_user_model().objects.create_user("gestor-qa@a.test", PASSWORD)
+        self.manager = get_user_model().objects.create_user(
+            "gestor-qa@a.test", PASSWORD
+        )
         Membership.objects.create(
-            user=manager, organization=self.org, role=Role.CORPORATE_MANAGER
+            user=self.manager, organization=self.org, role=Role.CORPORATE_MANAGER
         )
         for index in range(3):
             user = get_user_model().objects.create_user(
@@ -558,13 +561,10 @@ class TeamInvitationBrowserTests(StaticLiveServerTestCase):
                 path=str(path / f"team-{viewport}-{stage}.png"), full_page=True
             )
 
-    def _flow(self, browser, width, height, new_email):
+    def _flow(self, browser, width, height, new_email, link):
         viewport = f"{width}x{height}"
         size = {"width": width, "height": height}
         manager_context = browser.new_context(viewport=size)
-        manager_context.grant_permissions(
-            ["clipboard-read", "clipboard-write"], origin=self.live_server_url
-        )
         page = manager_context.new_page()
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
@@ -575,22 +575,12 @@ class TeamInvitationBrowserTests(StaticLiveServerTestCase):
         page.wait_for_url("**/app/")
         page.goto(f"{self.live_server_url}{reverse('team')}")
         self._check(page, viewport, "team")
-        page.locator("#id_quantidade").fill("2")
-        page.get_by_role("button", name="Gerar convites").click()
-        page.get_by_role("heading", name="Links gerados").wait_for()
-        self._check(page, viewport, "links")
-        links = page.locator("[data-invite-link]")
-        assert links.count() == 2
-        link = links.first.input_value()
-        page.get_by_role("button", name="Copiar").first.click()
-        page.get_by_role("button", name="Copiado").first.wait_for()
-        assert page.evaluate("navigator.clipboard.readText()") == link
-        whatsapp = page.get_by_role("link", name="Enviar por WhatsApp").first
-        assert whatsapp.get_attribute("href").startswith("https://wa.me/?text=")
         page.goto(f"{self.live_server_url}{reverse('password_change')}")
         self._check(page, viewport, "password")
         assert errors == [], errors
         manager_context.close()
+
+        # Spec 14 removed the invitation UI; a link issued before still works.
 
         guest_context = browser.new_context(viewport=size)
         guest = guest_context.new_page()
@@ -606,10 +596,15 @@ class TeamInvitationBrowserTests(StaticLiveServerTestCase):
         guest_context.close()
 
     def test_team_and_invitation_flow(self):
+        # Issued here: inside the Playwright block the ORM is off limits.
+        links = [
+            f"{self.live_server_url}{reverse('accept_invitation', args=[token])}"
+            for token in issue_invitations(self.org, self.manager, 2)
+        ]
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch()
-            self._flow(browser, 390, 844, "novo-390@a.test")
-            self._flow(browser, 1366, 768, "novo-desktop@a.test")
+            self._flow(browser, 390, 844, "novo-390@a.test", links[0])
+            self._flow(browser, 1366, 768, "novo-desktop@a.test", links[1])
             browser.close()
         self.assertEqual(
             Membership.objects.filter(

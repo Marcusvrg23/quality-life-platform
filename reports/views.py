@@ -9,12 +9,13 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET
 
 from config.tenant import resolve_tenant_context
-from identity.models import Membership
+from identity.models import AllowedEmail, Membership
 from wellbeing.services import company_usage
 
 from .services import MIN_GROUP, build_executive_report
 
 REPORT_ROLES = (Membership.Role.CORPORATE_MANAGER, Membership.Role.ADMIN)
+LISTED_ROLES = (Membership.Role.COLLABORATOR, Membership.Role.CORPORATE_MANAGER)
 DEFAULT_PERIOD_DAYS = 90
 
 
@@ -38,6 +39,16 @@ def executive_report(request):
         raise PermissionDenied("Report unavailable.")
     start, end = report_period()
     report = build_executive_report(tenant.organization, start, end)
+    # Spec 14: plain counts of the allowed list and of the people who already
+    # hold an active membership through it. No names, no e-mails.
+    access = {
+        "allowed": AllowedEmail.objects.filter(
+            organization=tenant.organization
+        ).count(),
+        "registered": Membership.objects.filter(
+            organization=tenant.organization, is_active=True, role__in=LISTED_ROLES
+        ).count(),
+    }
     return render(
         request,
         "reports/executive.html",
@@ -48,5 +59,6 @@ def executive_report(request):
             "min_group": MIN_GROUP,
             "period_days": DEFAULT_PERIOD_DAYS,
             "usage": company_usage(tenant.organization),
+            "access": access,
         },
     )

@@ -1,0 +1,76 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}E-mails liberados · {{ organization.name }}{% endblock %}
+{% block page_title %}Painel{% endblock %}
+{% block header_title %}E-mails liberados{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/assessment.css' %}"><link rel="stylesheet" href="{% static 'quality_life/team.css' %}"><link rel="stylesheet" href="{% static 'quality_life/operator.css' %}">{% endblock %}
+{% block content %}
+<div class="team operator">
+  <header class="team-intro">
+    <p class="eyebrow">Painel da Quality Life</p>
+    <h1>{{ organization.name }}</h1>
+    <p>Quem está nesta lista entra com "Continuar com o Google" e cai nesta empresa com o papel marcado. Remover tira o acesso na hora.</p>
+    <p><a href="{% url 'operator_panel' %}">← Voltar ao painel</a></p>
+  </header>
+
+  {% if messages %}<ul class="team-messages" role="status">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
+
+  <section class="card team-section" aria-labelledby="whatsapp-title">
+    <h2 id="whatsapp-title">Mensagem para o WhatsApp</h2>
+    <p>Copie e mande para as pessoas da lista.</p>
+    <label class="sr-only" for="whatsapp-message">Mensagem</label>
+    <textarea id="whatsapp-message" class="operator-message" rows="3" readonly>{{ whatsapp.text }}</textarea>
+    <div class="team-link-actions">
+      <button type="button" class="button" data-copy="whatsapp-message">Copiar</button>
+      <a class="button button-secondary" href="{{ whatsapp.url }}" target="_blank" rel="noopener noreferrer">Enviar por WhatsApp</a>
+    </div>
+  </section>
+
+  <section class="card team-section" aria-labelledby="add-title">
+    <h2 id="add-title">Liberar e-mails</h2>
+    <form method="post" action="{% url 'operator_email_add' organization.pk %}" class="team-form team-form--stack operator-form">
+      {% csrf_token %}
+      <div class="team-field">
+        <label for="{{ form.emails.id_for_label }}">{{ form.emails.label }}</label>
+        {{ form.emails }}
+        {% if form.emails.errors %}<ul class="team-errors" role="alert">{% for error in form.emails.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="team-field">
+        <label for="{{ form.papel.id_for_label }}">{{ form.papel.label }}</label>
+        {{ form.papel }}
+      </div>
+      <button type="submit" class="button">Liberar</button>
+    </form>
+  </section>
+
+  <section class="card team-section" aria-labelledby="list-title">
+    <h2 id="list-title">Lista ({{ entries|length }})</h2>
+    {% if entries %}
+    <ul class="team-list">
+      {% for item in entries %}{% with entry=item.entry %}
+      <li class="team-row">
+        <div>
+          <strong>{{ entry.email }}</strong>
+          <span>{{ item.role_label }} · liberado em {{ entry.created_at|date:"d/m/Y" }}</span>
+        </div>
+        <div class="operator-actions">
+          <form method="post" action="{% url 'operator_email_role' organization.pk entry.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="papel" value="{{ item.other_role }}">
+            <button type="submit" class="button button-secondary">{{ item.toggle_label }}</button>
+          </form>
+          <form method="post" action="{% url 'operator_email_remove' organization.pk entry.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="button button-secondary">Remover</button>
+          </form>
+        </div>
+      </li>
+      {% endwith %}{% endfor %}
+    </ul>
+    {% else %}
+    <p>Nenhum e-mail liberado ainda.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/team.js' %}" defer></script>{% endblock %}

@@ -19,7 +19,7 @@ from assessments.models import (
 from assessments.services import classify_score
 from config.tenant import SESSION_ORGANIZATION_KEY
 from identity.consent import grant_consent, revoke_consent
-from identity.models import Membership, Organization
+from identity.models import AllowedEmail, Membership, Organization
 from reports.catalog import CATALOG, PENDING_CONTENT, catalog_for
 from reports.services import (
     PRIORITY_HIGH,
@@ -417,6 +417,27 @@ class ExecutiveReportTests(TestCase):
         # Individual values that differ from every aggregate in the reference case.
         for value in ("63.25", "70.10", "55.55", "41.11", "90", "95", "88", "39.99"):
             self.assertNotIn(localize(Decimal(value).quantize(Decimal("0.01"))), html)
+
+    def test_header_counts_allowed_emails_and_registered_people_without_names(self):
+        for email in (
+            "collab0@example.test",
+            "nova@example.test",
+            "manager@example.test",
+        ):
+            AllowedEmail.objects.create(organization=self.org, email=email)
+        AllowedEmail.objects.create(organization=self.other_org, email="b@example.test")
+        Membership.objects.create(
+            user=self.other_manager, organization=self.org, role=Membership.Role.ADMIN
+        )
+        self.login(self.manager, self.org)
+        response = self.client.get(self.url)
+        self.assertEqual(response.context["access"], {"allowed": 3, "registered": 7})
+        self.assertContains(response, "<dt>E-mails liberados</dt><dd>3</dd>", html=True)
+        self.assertContains(
+            response, "<dt>Pessoas cadastradas</dt><dd>7</dd>", html=True
+        )
+        self.assertNotContains(response, "nova@example.test")
+        self.assertNotContains(response, "collab0@example.test")
 
     def test_menu_link_only_for_manager(self):
         self.login(self.manager, self.org)

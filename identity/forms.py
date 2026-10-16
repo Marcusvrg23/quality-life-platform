@@ -8,7 +8,19 @@ from django.contrib.auth.password_validation import (
 from django.core.exceptions import ValidationError
 
 from .invitations import MAX_INVITATIONS_PER_BATCH
-from .models import User
+from .models import ALLOWED_EMAIL_ROLES, User
+
+EMAILS_LABEL = (
+    "Cole os e-mails dos colaboradores (um por linha ou separados por "
+    "vírgula/ponto e vírgula; dá para colar a coluna do Excel)"
+)
+ROLE_LABELS = {"COLLABORATOR": "Colaborador", "CORPORATE_MANAGER": "Gestor"}
+
+
+def _emails_widget(rows):
+    return forms.Textarea(
+        attrs={"rows": rows, "autocomplete": "off", "spellcheck": "false"}
+    )
 
 
 class InvitationQuantityForm(forms.Form):
@@ -21,7 +33,31 @@ class InvitationQuantityForm(forms.Form):
 
 
 class OrganizationCreateForm(forms.Form):
+    """One-screen company wizard: name, collaborator e-mails, manager e-mails."""
+
     name = forms.CharField(label="Nome da empresa", max_length=255)
+    collaborators = forms.CharField(
+        label=EMAILS_LABEL, required=False, widget=_emails_widget(8)
+    )
+    managers = forms.CharField(
+        label="E-mail(s) do chefe/gestor", required=False, widget=_emails_widget(2)
+    )
+
+
+class AllowedEmailsForm(forms.Form):
+    """Pasted e-mails for the team page (always collaborators)."""
+
+    emails = forms.CharField(label=EMAILS_LABEL, widget=_emails_widget(6))
+
+
+class OperatorAllowedEmailsForm(AllowedEmailsForm):
+    """Same box for the operator, who also picks the role."""
+
+    papel = forms.ChoiceField(
+        label="Papel",
+        choices=[(role.value, ROLE_LABELS[role.value]) for role in ALLOWED_EMAIL_ROLES],
+        initial="COLLABORATOR",
+    )
 
 
 class InvitationSignupForm(forms.Form):

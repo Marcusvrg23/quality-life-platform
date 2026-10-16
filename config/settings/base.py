@@ -69,6 +69,12 @@ INSTALLED_APPS = [
     "assessments",
     "reports",
     "wellbeing",
+    # Google sign-in (docs/specs/14-login-google-elegibilidade.md). Only the
+    # Google OAuth routes are exposed; allauth's own pages are never included.
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
 ]
 
 AUTH_USER_MODEL = "identity.User"
@@ -83,6 +89,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -166,3 +173,35 @@ LEGAL_DPO_EMAIL = (
 
 # Commercial contact shown on the public landing page ("Fale com a Quality Life").
 QL_SALES_EMAIL = os.environ.get("QL_SALES_EMAIL", "").strip() or "[EMAIL-COMERCIAL]"
+
+# "Continuar com o Google": allauth limited to the Google OAuth 2.0 / OpenID
+# Connect flow. Access is decided by identity.eligibility, never by allauth.
+ACCOUNT_ADAPTER = "identity.google.AccountAdapter"
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*"]
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_ADAPTER = "identity.google.SocialAccountAdapter"
+SOCIALACCOUNT_STORE_TOKENS = False
+SOCIALACCOUNT_LOGIN_ON_GET = False
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = False
+SOCIALACCOUNT_QUERY_EMAIL = True
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "").strip()
+if bool(GOOGLE_CLIENT_ID) != bool(GOOGLE_CLIENT_SECRET):
+    raise ImproperlyConfigured(
+        "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set together."
+    )
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "SCOPE": ["openid", "email", "profile"],
+        "AUTH_PARAMS": {"prompt": "select_account"},
+        "OAUTH_PKCE_ENABLED": True,
+    }
+}
+# Without the credentials the button disappears and the Google routes 404.
+if GOOGLE_CLIENT_ID:
+    SOCIALACCOUNT_PROVIDERS["google"]["APPS"] = [
+        {"client_id": GOOGLE_CLIENT_ID, "secret": GOOGLE_CLIENT_SECRET, "key": ""}
+    ]

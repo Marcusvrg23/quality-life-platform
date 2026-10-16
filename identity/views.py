@@ -20,9 +20,10 @@ from django.views.decorators.http import (
 
 from config.tenant import SESSION_ORGANIZATION_KEY, resolve_tenant_context
 
-from .forms import InvitationQuantityForm, InvitationSignupForm
-from .invitations import find_invitation, issue_invitations, pending_invitations
-from .models import Invitation, Membership, User
+from .eligibility import add_allowed_emails, parse_emails, remove_allowed_email
+from .forms import AllowedEmailsForm, InvitationQuantityForm, InvitationSignupForm
+from .invitations import find_invitation, issue_invitations
+from .models import AllowedEmail, Invitation, Membership, User
 
 TEAM_ROLES = (Membership.Role.CORPORATE_MANAGER, Membership.Role.ADMIN)
 ROLE_LABELS = {
@@ -40,6 +41,42 @@ EXISTING_ACCOUNT_MESSAGE = (
 INACTIVE_MEMBERSHIP_MESSAGE = (
     "Seu acesso a esta empresa está desativado. Fale com o gestor da sua empresa."
 )
+WHATSAPP_TEXT = (
+    "Acesse {site} e clique em Continuar com o Google usando o e-mail que você "
+    "passou ao RH."
+)
+
+
+def whatsapp_message(request):
+    """Ready-to-send text telling listed people how to get in."""
+    text = WHATSAPP_TEXT.format(site=request.build_absolute_uri("/"))
+    return {"text": text, "url": "https://wa.me/?text=" + quote(text, safe="")}
+
+
+def emails_added_messages(request, added, invalid, repeated):
+    """One success line with the count, plus what was ignored and why."""
+    count = len(added)
+    messages.success(
+        request,
+        f"{count} e-mail{'s' if count != 1 else ''} liberado{'s' if count != 1 else ''}.",
+    )
+    if invalid:
+        messages.warning(
+            request, "Ignorados por serem inválidos: " + ", ".join(invalid) + "."
+        )
+    if repeated:
+        messages.warning(
+            request, "Ignorados por estarem repetidos: " + ", ".join(repeated) + "."
+        )
+
+
+def allowed_entries(organization):
+    return [
+        {"entry": entry, "role_label": ROLE_LABELS.get(entry.role, entry.role)}
+        for entry in AllowedEmail.objects.filter(organization=organization).order_by(
+            "email", "pk"
+        )
+    ]
 
 
 def _team_tenant(request):
@@ -79,7 +116,9 @@ def _render_team(request, tenant, *, form=None, links=None, status=200):
             "members": members,
             "form": form or InvitationQuantityForm(),
             "links": links or [],
-            "pending": pending_invitations(tenant.organization),
+            "emails_form": AllowedEmailsForm(),
+            "allowed": allowed_entries(tenant.organization),
+            "whatsapp": whatsapp_message(request),
         },
         status=status,
     )
@@ -118,6 +157,40 @@ def team_member_status(request, membership_id):
     membership.save(update_fields=["is_active", "updated_at"])
     action = "reativado" if membership.is_active else "desativado"
     messages.success(request, f"{membership.user.email} foi {action}.")
+    return redirect("team")
+
+
+@login_required
+@require_POST
+def team_emails_add(request):
+    """Managers clear collaborators only; the role is never taken from the form."""
+    tenant = _team_tenant(request)
+    form = AllowedEmailsForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Cole ao menos um e-mail.")
+        return redirect("team")
+    valid, invalid, repeated = parse_emails(form.cleaned_data["emails"])
+    added, already = add_allowed_emails(
+        tenant.organization, valid, Membership.Role.COLLABORATOR, request.user
+    )
+    emails_added_messages(request, added, invalid, repeated + already)
+    return redirect("team")
+
+
+@login_required
+@require_POST
+def team_email_remove(request, entry_id):
+    """Only collaborator entries of the active company; anything else is 404."""
+    tenant = _team_tenant(request)
+    entry = get_object_or_404(
+        AllowedEmail,
+        pk=entry_id,
+        organization=tenant.organization,
+        role=Membership.Role.COLLABORATOR,
+    )
+    email = entry.email
+    remove_allowed_email(entry, request.user)
+    messages.success(request, f"{email} foi removido da lista e perdeu o acesso.")
     return redirect("team")
 
 
