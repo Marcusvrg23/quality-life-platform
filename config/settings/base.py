@@ -205,3 +205,23 @@ if GOOGLE_CLIENT_ID:
     SOCIALACCOUNT_PROVIDERS["google"]["APPS"] = [
         {"client_id": GOOGLE_CLIENT_ID, "secret": GOOGLE_CLIENT_SECRET, "key": ""}
     ]
+
+# Web Push for break reminders and the general notification channel
+# (docs/specs/13-pwa-lembretes.md). The three VAPID variables come together
+# or not at all; without them nothing is sent and the in-page notice remains.
+VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "").strip()
+VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "").strip()
+VAPID_SUBJECT = os.environ.get("VAPID_SUBJECT", "").strip()
+_vapid = (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT)
+if any(_vapid) and not all(_vapid):
+    raise ImproperlyConfigured(
+        "VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT must be set together."
+    )
+if VAPID_SUBJECT and not VAPID_SUBJECT.startswith(("mailto:", "https://")):
+    raise ImproperlyConfigured(
+        "VAPID_SUBJECT must be a mailto: address or an https:// URL."
+    )
+# The in-process scheduler (wellbeing/scheduler.py) only starts under the WSGI
+# server and only with the VAPID keys; this switch turns it off without
+# removing the keys.
+WEB_PUSH_SCHEDULER = _boolean("WEB_PUSH_SCHEDULER", default=True)

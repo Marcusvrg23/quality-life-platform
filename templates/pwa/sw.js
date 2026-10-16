@@ -1,6 +1,7 @@
 {% autoescape off %}/* Quality Life service worker (docs/specs/13-pwa-lembretes.md).
    Caches only the public offline page, the icon and hashed static files.
-   App pages, authenticated responses and non-GET requests are never stored. */
+   App pages, authenticated responses and non-GET requests are never stored.
+   Shows the generic push notifications sent by the server. */
 'use strict';
 const CACHE = '{{ cache_name }}';
 const PRECACHE = {{ precache }};
@@ -50,6 +51,30 @@ self.addEventListener('fetch', event => {
       }))
     );
   }
+});
+
+// Web Push from the server (wellbeing/notifications.py). The payload is always
+// generic (title, body, same-origin url); without one a neutral text is shown.
+self.addEventListener('push', event => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (error) {
+    payload = {};
+  }
+  if (!payload || typeof payload !== 'object') payload = {};
+  const title = typeof payload.title === 'string' && payload.title ? payload.title : 'Quality Life';
+  const body = typeof payload.body === 'string' ? payload.body : 'Você tem uma novidade no app.';
+  const url = typeof payload.url === 'string' ? payload.url : '/';
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: PRECACHE[1],
+      badge: PRECACHE[1],
+      tag: typeof payload.tag === 'string' ? payload.tag : 'ql-notificacao',
+      data: { url },
+    })
+  );
 });
 
 self.addEventListener('notificationclick', event => {

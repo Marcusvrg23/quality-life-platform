@@ -49,6 +49,19 @@ class PublicPwaFilesTests(SimpleTestCase):
         # but are never written to the cache.
         self.assertIn("request.method !== 'GET'", body)
         self.assertEqual(body.count("cache.put("), 1)
+
+    def test_service_worker_shows_generic_push_and_keeps_click_handler(self):
+        body = self.client.get("/sw.js").content.decode()
+        self.assertIn("addEventListener('push'", body)
+        self.assertIn("addEventListener('notificationclick'", body)
+        self.assertIn("self.registration.showNotification(title", body)
+        # The server's title/body/url are used; nothing sensitive is baked in.
+        self.assertIn("payload.title", body)
+        self.assertIn("payload.body", body)
+        self.assertIn("payload.url", body)
+        self.assertIn("'Quality Life'", body)
+        self.assertNotIn("/app/", body)
+        self.assertEqual(body.count("cache.put("), 1)
         self.assertIn("HASHED_STATIC.test(url.pathname)", body)
 
     def test_service_worker_cache_name_changes_with_precache(self):
@@ -97,6 +110,12 @@ class ShellPwaTests(TestCase):
         self.assertContains(response, f'href="{reverse("wellbeing_reminders")}"')
         self.assertContains(
             response, f'data-schedule="{reverse("wellbeing_reminder_schedule")}"'
+        )
+        self.assertContains(
+            response, f'data-subscribe="{reverse("wellbeing_push_subscribe")}"'
+        )
+        self.assertContains(
+            response, f'data-unsubscribe="{reverse("wellbeing_push_unsubscribe")}"'
         )
 
     def test_operator_panel_without_tenant_still_opens_without_reminders(self):

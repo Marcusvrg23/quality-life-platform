@@ -61,9 +61,11 @@ class ReminderTests(TestCase):
         self.assertContains(response, "Ativar lembretes")
         self.assertContains(
             response,
-            "Os lembretes aparecem enquanto o Quality Life estiver aberto no "
-            "navegador ou no app da tela inicial. No iPhone, as notificações "
-            "exigem o app adicionado à tela inicial e iOS 16.4 ou mais novo.",
+            "Com as notificações ativas, o lembrete chega como notificação mesmo "
+            "com o app fechado, a tela bloqueada ou outro app em uso. Sem elas, o "
+            "aviso aparece enquanto o Quality Life estiver aberto no navegador ou "
+            "no app da tela inicial. No iPhone, as notificações exigem o app "
+            "adicionado à tela inicial e iOS 16.4 ou mais novo.",
         )
         self.assertContains(response, 'value="08:00"')
         self.assertContains(response, 'value="18:00"')
@@ -76,6 +78,7 @@ class ReminderTests(TestCase):
                 "start": "08:00",
                 "end": "18:00",
                 "days": [1, 2, 3, 4, 5],
+                "push_key": None,
             },
         )
 
@@ -100,6 +103,7 @@ class ReminderTests(TestCase):
                 "start": "09:00",
                 "end": "17:30",
                 "days": [1, 3, 5],
+                "push_key": None,
             },
         )
         page = self.client.get(reverse("wellbeing_reminders"))

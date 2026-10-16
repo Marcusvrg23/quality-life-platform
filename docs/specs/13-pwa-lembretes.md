@@ -1,12 +1,14 @@
 # 13 — App instalável (PWA) e lembretes de pausa
 
 OBJETIVO
-O colaborador instala o Quality Life na tela inicial do celular a partir do navegador e recebe, enquanto o app estiver aberto, um lembrete de pausa para a Ginástica Laboral no horário que escolheu.
+O colaborador instala o Quality Life na tela inicial do celular a partir do navegador e recebe um lembrete de pausa para a Ginástica Laboral no horário que escolheu: como notificação no celular mesmo com o app fechado, a tela bloqueada ou outro app em uso (Web Push) e, sem isso, como aviso enquanto o app estiver aberto. O mesmo canal de notificações servirá às dicas e datas especiais do futuro assistente.
 
 ATORES E FLUXO
 - Qualquer pessoa logada (inclusive no painel, sem empresa): menu → "Instalar o app" (`/app/instalar/`). No Android/Chrome, o botão "Adicionar à tela inicial" aparece só quando o navegador oferece a instalação (`beforeinstallprompt`). No iPhone, segue o passo a passo do Safari "Compartilhar → Adicionar à Tela de Início". Aberto pela tela inicial, vê "O app já está na sua tela inicial.". A tela sempre diz "Apps na App Store e no Google Play: em breve.".
 - Membro de uma empresa (colaborador, gestor ou admin): menu → "Lembretes" (`/app/lembretes/`). Escolhe intervalo (60, 90 ou 120 min), início e fim do expediente (padrão 08:00–18:00) e dias (padrão seg–sex) e toca "Ativar lembretes"; só nesse clique o navegador pede permissão de notificação. Depois pode salvar alterações ou desativar. Cada ação confirma com "Lembretes ativados.", "Alterações salvas." ou "Lembretes desativados." (`role="status"`).
-- Entrega: em qualquer página do app aberta (aba ou app da tela inicial), o JS busca a própria agenda (`/app/lembretes/agenda/`), agenda o próximo horário e mostra a notificação "Hora da pausa. Que tal alguns minutos de Ginástica Laboral?" via `registration.showNotification`; o clique abre `/app/ginastica/`. Sem permissão ou sem suporte, o mesmo texto aparece como aviso dentro da página, no mesmo horário.
+- Entrega com o app fechado (push): ao ativar com a permissão concedida, o navegador assina o push (`PushManager.subscribe` com a chave VAPID pública) e o JS grava a assinatura do aparelho em `/app/lembretes/push/inscrever/`. O agendador do servidor calcula os horários em America/Sao_Paulo e envia, pelo canal `wellbeing.notifications.notify(..., category="pausas")`, a notificação "Hora da pausa. Que tal alguns minutos de Ginástica Laboral?"; o `sw.js` a mostra com o ícone e o clique abre `/app/ginastica/`. A tela diz "Notificações ativas neste aparelho, mesmo com o app fechado." e, nesse aparelho, o aviso dentro da página não aparece (seria duplicado). Desativar os lembretes ou sair da conta cancela a assinatura daquele aparelho (`/app/lembretes/push/cancelar/`).
+- Entrega com o app aberto (alternativa): em qualquer página do app aberta (aba ou app da tela inicial), o JS busca a própria agenda (`/app/lembretes/agenda/`), agenda o próximo horário e mostra a notificação via `registration.showNotification`; o clique abre `/app/ginastica/`. Sem permissão ou sem suporte, o mesmo texto aparece como aviso dentro da página, no mesmo horário. A tela explica o motivo de o push não estar ativo (sem permissão, bloqueado, navegador sem suporte, servidor sem chaves, iPhone sem o app na tela de início).
+- Preferências: na tela de Lembretes, dois interruptores "Lembretes de pausa" e "Dicas e datas especiais", ligados por padrão e alterados só pela própria pessoa (`wellbeing.NotificationPreference`). Uma categoria desligada não recebe nada daquele tipo.
 
 ACEITE
 1. Dado qualquer visitante, quando pede `/manifest.webmanifest`, então recebe 200 `application/manifest+json` com name "Quality Life", start_url "/app/", display "standalone", cores do `brand.css` e ícones 192/512 oficiais.
@@ -20,12 +22,22 @@ ACEITE
 9. Dado lembretes ativos, quando o membro toca "Desativar lembretes", então eles são desativados mesmo com campos inválidos na tela (formulário próprio, só CSRF + `action=deactivate`), e as escolhas salvas são mantidas.
 10. Dado o turno da noite 22:00–06:00 de 60 min às segundas, então os avisos saem segunda às 23:00 e terça às 00:00 … 05:00; nada na madrugada de segunda (turno de domingo) nem na noite de terça. Início = fim ou intervalo ≥ duração → 400.
 11. Dado 390×844 no iPhone, então os campos de horário ficam dentro do cartão.
+12. Dado um membro logado, quando o aparelho envia a assinatura de push (POST JSON com CSRF: endpoint, p256dh, auth), então ela é gravada só na própria Membership; cancelar apaga só uma assinatura da própria Membership; sem login → 302; sem CSRF → 403; empresa forjada → 403; o id da Membership nunca vem do cliente.
+13. Dado o relógio do servidor em UTC e lembrete ativo de 60 min, 08:00–18:00, seg–sex, quando são 12:00 UTC de uma segunda (09:00 em São Paulo), então o agendador envia uma notificação para cada aparelho inscrito da Membership; às 08:00, num sábado, com o lembrete desativado, com a Membership ou a empresa inativa, nada é enviado; o turno 22:00–06:00 envia 23:00 … 05:00 de São Paulo.
+14. Dado o mesmo horário processado por dois workers, então só um envia (registro único por (lembrete, horário)); um horário com mais de 5 minutos de atraso não é enviado; o serviço de push respondendo 404 ou 410 apaga a assinatura.
+15. Dado `notify(membership, category, title, body, url)`, então envia para todos os aparelhos da Membership, respeita a categoria desligada, aplica o limite diário (1 de "dicas" por dia, em America/Sao_Paulo), nunca envia para Membership inativa ou de empresa inativa, recusa texto com nome, e-mail ou dado de saúde e registra em log só ids e contagens.
+16. Dado o servidor sem as três variáveis VAPID, então nada quebra: a tela explica, nenhum endpoint de push é oferecido ao JS, o agendador não inicia e o comportamento do aceite 7 continua.
+17. Dado o `sw.js`, então ele tem o handler `push` (título e corpo vindos do servidor, ícone oficial, `data.url` na mesma origem) e continua sem `/app/` e sem gravar páginas no cache.
+18. Dado o navegador com Notification e PushManager simulados (Playwright), quando o membro ativa os lembretes, então a assinatura é gravada, a tela mostra "Notificações ativas neste aparelho, mesmo com o app fechado." sem erro no console; ao desativar, a assinatura é apagada.
 
 INVARIANTES
 - Dado de saúde nunca vai para o cache: o worker não intercepta POST e não grava navegação; só a página offline pública, o ícone e static com hash.
 - Isolamento e autorização no servidor: lembrete é lido e alterado só pelo dono, na empresa de `resolve_tenant_context`; o id da Membership nunca vem do cliente; POST com CSRF.
-- Gestor não vê lembretes de ninguém (não há tela nem endpoint que liste lembretes).
+- Gestor não vê lembretes de ninguém (não há tela nem endpoint que liste lembretes ou aparelhos).
 - Mobile-first: sem rolagem horizontal em 390×844.
+- Conteúdo de notificação sempre genérico (pode aparecer na tela bloqueada): nunca nome, nota, pilar, resposta ou qualquer dado de saúde. `notify()` recusa texto com o nome ou o e-mail da pessoa ou com palavras de resultado.
+- Chaves VAPID só por variável de ambiente; nenhuma chave no repositório. Logs com ids e contagens, nunca e-mail nem texto.
+- Nenhuma parte do código chama `pywebpush` fora de `wellbeing/notifications.py`.
 
 DECISÕES
 - Modelo `wellbeing.ReminderSetting` (1:1 com Membership): `active`, `interval_minutes` ∈ {60, 90, 120}, `workday_start` ≠ `workday_end` (restrição `wellbeing_reminder_workday_distinct`, migração 0003, que substituiu `workday_start` < `workday_end`), `weekdays` como dígitos ISO ordenados ("12345" = seg–sex), com restrições no banco.
@@ -35,12 +47,19 @@ DECISÕES
 - Uma aba por horário: várias abas abertas não repetem o aviso do mesmo horário (marca em `localStorage`, best effort).
 - A URL `/app/ginastica/` vai nos dados da notificação; o `sw.js` não contém `/app/`.
 - Os arquivos PWA antigos da raiz (`manifest.webmanifest`, `sw.js`, `index.html`…) não são usados nem alterados.
+- Push por aparelho: `wellbeing.PushSubscription` (FK Membership; `endpoint` único, `p256dh`, `auth`, `user_agent` curto, `created_at`, `last_success_at`; migração 0004). Um aparelho que entra com outra conta ou empresa passa para a nova Membership (o endpoint é do aparelho). O servidor nunca lê o id da Membership do cliente.
+- Biblioteca de envio: `pywebpush==2.5.0` (requer Python ≥ 3.10; publicada em 29/08/2026; traz `WebPushException.status_code`, usado para apagar assinaturas em 404/410). Instala nas duas versões do CI (3.11 e 3.14); `http-ece` vem como sdist puro Python e `cryptography` com wheel abi3.
+- Agendador: thread daemon iniciada em `config/wsgi.py` (`wellbeing.scheduler.start_in_background`), ou seja, só dentro dos workers do gunicorn: `manage.py`, `migrate`, `release`, `collectstatic` e os testes nunca a iniciam. Começa só com as três variáveis VAPID e `WEB_PUSH_SCHEDULER` ≠ false. Escolhida em vez de um processo separado no `START` porque a Square Cloud reinicia só o processo principal: um worker morto renasce com a thread; um processo em segundo plano morreria em silêncio. A cada minuto cada worker calcula, em America/Sao_Paulo (o relógio da Square Cloud é UTC), os horários início + k × intervalo estritamente entre início e fim, inclusive o turno que passa da meia-noite, com as mesmas regras do `reminders.js`; horários com mais de 5 min de atraso são ignorados. `wellbeing.ReminderDispatch` tem restrição única (lembrete, horário): o segundo worker falha no insert e pula. Registros com mais de 2 dias são apagados a cada volta.
+- Canal geral: `wellbeing.notifications.notify(membership, category, title, body, url)` envia para todos os aparelhos da Membership, exige Membership e empresa ativas, respeita `NotificationPreference`, aplica `DAILY_LIMITS` (`dicas`: 1 por dia local; `pausas`: sem limite diário além do agendador), recusa texto não genérico, registra `wellbeing.NotificationDelivery` (ids, categoria, contagem) e devolve quantos aparelhos receberam. O futuro assistente só envia por `notify(..., category="dicas")`; o texto passa pela regra de conteúdo genérico. Sem VAPID, `notify()` devolve 0 sem tocar o banco.
+- Payload do push: JSON `{title, body, url, tag}`; o `sw.js` mostra o título/corpo recebidos, com o ícone oficial, e cai num texto genérico se o payload faltar. O `notificationclick` existente continua (só URLs da mesma origem).
+- Chaves VAPID: `python manage.py generate_vapid_keys` imprime `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY` (base64url, formato que o `PushManager` e o `pywebpush` aceitam). O par é gerado uma vez e guardado só nas variáveis do ambiente; trocar a chave invalida todas as assinaturas (os aparelhos reinscrevem na próxima abertura da tela de Lembretes).
+- Square Cloud, passo a passo: (1) no seu computador, com as dependências instaladas, rode `python manage.py generate_vapid_keys`; (2) no painel da Square Cloud, em variáveis de ambiente, crie `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` e `VAPID_SUBJECT=mailto:<e-mail de contato da Quality Life>`; (3) reinicie o app; (4) em `/app/lembretes/`, toque "Ativar lembretes" e aceite a permissão: a tela deve dizer "Notificações ativas neste aparelho, mesmo com o app fechado."; (5) para desligar o agendador sem apagar as chaves, `WEB_PUSH_SCHEDULER=false`. Detalhes em `docs/DEPLOY_SQUARE_CLOUD.md`.
 
 FORA DO ESCOPO
-Push com o app fechado (exige chaves VAPID e biblioteca de push); funcionamento offline das telas do app; metas; apps nas lojas; lembretes para outros tipos de prática; relatório agregado de lembretes.
+Quem envia as "dicas" (o assistente ainda não existe; só o canal e a preferência ficam prontos); funcionamento offline das telas do app; metas; apps nas lojas; lembretes para outros tipos de prática; relatório agregado de lembretes ou de aparelhos; repetição de envio quando o serviço de push falha (fica para o próximo horário).
 
 RISCO
-R2 (migração, dado por pessoa, tenant, service worker em páginas autenticadas).
+R2 (migração, dado por pessoa, tenant, service worker em páginas autenticadas, texto que aparece na tela bloqueada, chaves por ambiente).
 
 PERGUNTAS
 Nenhuma bloqueante.
@@ -50,4 +69,8 @@ PLANO (fatias)
 2. Modelo + migração + /app/lembretes/ + agenda JSON — testes de dono, gestor, tenant forjado e valores inválidos (aceite 5).
 3. reminders.js no shell (notificação ou aviso) + botão "Ativar lembretes" — Playwright com `page.clock` (aceite 6–7).
 4. /app/instalar/ + install.js + itens no menu — testes de servidor e Playwright (aceite 4, 6).
-— linha de corte — teste de notificação real com permissão concedida (fica para QA manual no celular).
+5. Push: modelos + migração 0004 + settings VAPID + `notify()` com pywebpush simulado (aceite 15, 16).
+6. Endpoints de inscrição/cancelamento + preferências na tela (aceite 12).
+7. Agendador por minuto no WSGI com registro único por horário (aceite 13, 14).
+8. `sw.js` com `push`, `reminders.js` inscreve/cancela e explica o estado, Playwright com PushManager simulado (aceite 17, 18).
+— linha de corte — teste de notificação real com permissão concedida no celular (QA manual, passo a passo em DEPLOY_SQUARE_CLOUD.md).

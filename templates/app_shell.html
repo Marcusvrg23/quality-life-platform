@@ -60,6 +60,6 @@
         <footer class="ql-footer"><a href="{% url 'privacy' %}">Política de privacidade</a><a href="{% url 'terms' %}">Termos de uso</a></footer>
     </div>
     {% block extra_js %}{% endblock %}
-    {% if tenant %}<script src="{% static 'quality_life/reminders.js' %}" data-schedule="{% url 'wellbeing_reminder_schedule' %}" data-target="{% url 'wellbeing_gym' %}" data-icon="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" defer></script>{% endif %}
+    {% if tenant %}<script src="{% static 'quality_life/reminders.js' %}" data-schedule="{% url 'wellbeing_reminder_schedule' %}" data-subscribe="{% url 'wellbeing_push_subscribe' %}" data-unsubscribe="{% url 'wellbeing_push_unsubscribe' %}" data-target="{% url 'wellbeing_gym' %}" data-icon="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}" defer></script>{% endif %}
 </body>
 </html>

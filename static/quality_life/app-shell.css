@@ -63,7 +63,7 @@ body.ql-app { margin: 0; min-width: 0; font-family: "Segoe UI", Arial, sans-seri
 /* Installable app and break reminders (docs/specs/13-pwa-lembretes.md). */
 .ql-main .button[hidden], .wb-card[hidden], .ql-reminder[hidden] { display: none; }
 .ql-pwa-state { margin: 0; color: var(--app-ok-fg, #6ee7a4); font-weight: 600; }
-.ql-pwa-form { gap: 1.1rem; }
+.ql-pwa-form, .ql-pwa-prefs { gap: 1.1rem; }
 .ql-pwa-group { display: grid; gap: .6rem; min-width: 0; margin: 0; padding: 0; border: 0; }
 .ql-pwa-group legend { margin-bottom: .6rem; padding: 0; color: var(--app-text, #f2f7f8); font-weight: 700; }
 .ql-pwa-times { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: 1rem; }

@@ -16,4 +16,19 @@ urlpatterns = [
         views.reminder_schedule,
         name="wellbeing_reminder_schedule",
     ),
+    path(
+        "lembretes/push/inscrever/",
+        views.push_subscribe,
+        name="wellbeing_push_subscribe",
+    ),
+    path(
+        "lembretes/push/cancelar/",
+        views.push_unsubscribe,
+        name="wellbeing_push_unsubscribe",
+    ),
+    path(
+        "lembretes/notificacoes/",
+        views.notification_preferences,
+        name="wellbeing_notification_preferences",
+    ),
 ]

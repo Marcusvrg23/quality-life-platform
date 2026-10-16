@@ -69,6 +69,9 @@ LEGAL_CNPJ=<CNPJ fornecido pelo cliente>
 LEGAL_DPO_EMAIL=<e-mail do encarregado de dados fornecido pelo cliente>
 GOOGLE_CLIENT_ID=<ID do cliente OAuth, veja docs/GOOGLE_CLOUD_LOGIN.md>
 GOOGLE_CLIENT_SECRET=<chave secreta do cliente OAuth>
+VAPID_PUBLIC_KEY=<gerada pelo comando generate_vapid_keys, veja a seção 3.1>
+VAPID_PRIVATE_KEY=<gerada pelo mesmo comando>
+VAPID_SUBJECT=mailto:<e-mail de contato da Quality Life>
 ```
 
 As duas variáveis do Google são opcionais, mas andam juntas: sem nenhuma, o botão "Continuar com o Google" não aparece e o login por senha continua; com só uma delas o app não sobe. O passo a passo para obtê-las está em `docs/GOOGLE_CLOUD_LOGIN.md`; a URI de redirecionamento é `https://quality-life-mvrg23.squareweb.app/accounts/google/login/callback/`.
@@ -88,6 +91,33 @@ Sobre o administrador:
 - **Depois do primeiro login em `/admin/`, apague a variável `DJANGO_SUPERUSER_PASSWORD`** e reinicie o app.
 
 Sem `LEGAL_COMPANY_NAME`, `LEGAL_CNPJ` e `LEGAL_DPO_EMAIL`, as páginas de privacidade e termos mostram `[RAZÃO SOCIAL]`, `[CNPJ]` e `[E-MAIL DO ENCARREGADO]`.
+
+### 3.1 Notificações no celular com o app fechado (Web Push)
+
+Os lembretes de pausa chegam como notificação no celular mesmo com o app fechado, a tela bloqueada ou outro app em uso. Para isso o servidor precisa de um par de chaves **VAPID**. Sem as três variáveis o site funciona normalmente: o aviso só aparece com o app aberto e a tela de Lembretes explica isso.
+
+1. No seu computador, na pasta do projeto e com as dependências instaladas (`pip install -r requirements.txt`), rode:
+
+   ```
+   python manage.py generate_vapid_keys --subject contato@suaempresa.com.br
+   ```
+
+   Ele imprime três linhas (`VAPID_PUBLIC_KEY=...`, `VAPID_PRIVATE_KEY=...`, `VAPID_SUBJECT=mailto:...`) e **não grava nada**. Gere **uma vez só**: trocar as chaves depois desliga as notificações de todos os aparelhos até cada pessoa abrir a tela de Lembretes de novo.
+2. No painel da Square Cloud, em variáveis de ambiente, crie as três variáveis com os valores impressos. As três andam juntas: com só uma ou duas, o app não sobe (a mensagem de erro diz quais faltam). Não mande a chave privada por e-mail ou chat.
+3. Reinicie o app.
+4. Teste no celular (iPhone ou Android), em 3 passos:
+   1. Abra o site no celular e entre. **No iPhone**, antes de tudo, toque em Compartilhar → **Adicionar à Tela de Início** e abra o app por lá (iOS 16.4 ou mais novo); no Safari comum o iPhone não recebe notificações. No Android, o Chrome funciona direto (e o app pode ser instalado em `/app/instalar/`).
+   2. Em **Lembretes**, escolha o intervalo e o horário, toque **Ativar lembretes** e aceite a permissão de notificação. A tela deve dizer **"Notificações ativas neste aparelho, mesmo com o app fechado."**. Se disser outra coisa, o texto explica o motivo (permissão negada, servidor sem chaves, navegador sem suporte).
+   3. Feche o app e bloqueie a tela. No próximo horário do intervalo (por exemplo, às 09:00 com expediente 08:00–18:00 e 60 min) a notificação "Hora da pausa" aparece; tocar nela abre a Ginástica Laboral.
+
+Como funciona por dentro, para quem for dar manutenção:
+
+- O envio roda **dentro do próprio app**, numa thread de cada worker do gunicorn, uma vez por minuto (`wellbeing/scheduler.py`, iniciada em `config/wsgi.py`). A Square Cloud não tem agendador de tarefas e reinicia só o processo principal; um worker que morre renasce com a thread, por isso não há processo separado no `START`.
+- O relógio da Square Cloud é UTC; os horários são calculados em `America/Sao_Paulo`, com as mesmas regras da tela (inclusive turno da noite). Um lembrete com mais de 5 minutos de atraso não é enviado.
+- Dois workers não mandam a mesma notificação: o banco tem um registro único por (lembrete, horário).
+- O texto é sempre genérico ("Hora da pausa. Que tal alguns minutos de Ginástica Laboral?"); nunca nome, nota ou dado de saúde. Os logs registram só ids e contagens.
+- Para desligar o envio sem apagar as chaves: `WEB_PUSH_SCHEDULER=false` e reinicie.
+- Aparelhos cuja assinatura expirou (o serviço de push responde 404/410) são esquecidos sozinhos.
 
 ### Se o navegador mostrar "redirecionamento em excesso"
 
@@ -123,6 +153,7 @@ Marque cada item:
 - [ ] Gestor abre o **relatório**.
 - [ ] `/privacidade/` e `/termos/` mostram razão social, CNPJ e e-mail do encarregado corretos.
 - [ ] Um vídeo de `/app/aulas/` toca no **iPhone** (Safari).
+- [ ] Com as variáveis VAPID configuradas, a tela de Lembretes diz "Notificações ativas neste aparelho, mesmo com o app fechado." e a notificação chega com o app fechado (seção 3.1).
 - [ ] No terminal, este comando responde `206`:
 
   ```

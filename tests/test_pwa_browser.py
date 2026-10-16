@@ -7,18 +7,25 @@ service worker stores no /app/ page; with a simulated clock the in-page notice
 shows up at the configured time. Screenshots go to QA_ARTIFACT_DIR/pwa/.
 """
 
+import base64
+import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, time, timedelta
 from pathlib import Path
 from unittest import skipIf
 from zoneinfo import ZoneInfo
 
+from cryptography.hazmat.primitives import serialization
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.db import connection
+from django.test import override_settings
+from py_vapid import Vapid, b64urlencode
 
 from identity.models import Membership, Organization, User
 from tests.test_app_dark_browser import CONTRAST
 from tests.test_wellbeing_browser import GSAP_IDLE
-from wellbeing.models import ReminderSetting
+from wellbeing.models import PushSubscription, ReminderSetting
 
 try:
     from playwright.sync_api import Error as PlaywrightError
@@ -62,12 +69,82 @@ CACHED_REQUESTS = """async () => {
     }
     return entries;
 }"""
+# Notification permission granted and a PushManager that never talks to a push
+# service: subscriptions live in sessionStorage so they survive navigations.
+FAKE_ENDPOINT = "https://push.example.test/device-1"
+FAKE_PUSH = """(() => {
+    if (!('Notification' in window)) return;
+    Object.defineProperty(Notification, 'permission', {
+        configurable: true, get: () => 'granted',
+    });
+    const KEY = '__qlFakePush';
+    const read = () => JSON.parse(sessionStorage.getItem(KEY) || 'null');
+    const write = value => sessionStorage.setItem(KEY, JSON.stringify(value));
+    const wrap = stored => stored && ({
+        endpoint: stored.endpoint,
+        options: { applicationServerKey: Uint8Array.from(stored.key).buffer },
+        toJSON() {
+            return { endpoint: stored.endpoint,
+                     keys: { p256dh: 'BFakeP256dhKeyForTheTest', auth: 'fakeAuthForTheTest' } };
+        },
+        unsubscribe() { write(null); return Promise.resolve(true); },
+    });
+    const manager = {
+        getSubscription: () => Promise.resolve(wrap(read())),
+        subscribe: options => {
+            const stored = { endpoint: 'ENDPOINT_PLACEHOLDER',
+                             key: Array.from(new Uint8Array(options.applicationServerKey)) };
+            write(stored);
+            return Promise.resolve(wrap(stored));
+        },
+    };
+    Object.defineProperty(ServiceWorkerRegistration.prototype, 'pushManager', {
+        configurable: true, get: () => manager,
+    });
+    if (!('PushManager' in window)) window.PushManager = function PushManager() {};
+})();""".replace("ENDPOINT_PLACEHOLDER", FAKE_ENDPOINT)
+PUSH_ACTIVE = "Notificações ativas neste aparelho, mesmo com o app fechado."
+PUSH_INACTIVE = (
+    "Notificações permitidas neste aparelho. Ative os lembretes para recebê-las "
+    "mesmo com o app fechado."
+)
 INSTALL_OFFER = """() => {
     const offer = new Event('beforeinstallprompt', { cancelable: true });
     offer.prompt = () => Promise.resolve();
     offer.userChoice = Promise.resolve({ outcome: 'accepted' });
     window.dispatchEvent(offer);
 }"""
+
+
+def vapid_public_key():
+    """A fresh, valid application server key; the private half is never used."""
+    vapid = Vapid()
+    vapid.generate_keys()
+    return b64urlencode(
+        vapid.public_key.public_bytes(
+            serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint
+        )
+    )
+
+
+def presubscribed(key):
+    """The device already holds a subscription for ``key`` (another visit)."""
+    raw = base64.urlsafe_b64decode(key + "=" * (-len(key) % 4))
+    stored = json.dumps({"endpoint": FAKE_ENDPOINT, "key": list(raw)})
+    return f"sessionStorage.setItem('__qlFakePush', {json.dumps(stored)});"
+
+
+def in_thread(function):
+    """Run an ORM query outside Playwright's event loop (committed data)."""
+
+    def query():
+        try:
+            return function()
+        finally:
+            connection.close()
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        return executor.submit(query).result()
 
 
 @skipIf(sync_playwright is None, "Install requirements-browser.txt for browser QA")
@@ -244,6 +321,103 @@ class PwaBrowserTests(StaticLiveServerTestCase):
                 notice.get_by_role("button", name="Agora não").click()
                 expect(notice).to_be_hidden()
                 page.context.close()
+            browser.close()
+
+    def subscriptions(self):
+        return in_thread(
+            lambda: list(
+                PushSubscription.objects.filter(membership=self.membership).values_list(
+                    "endpoint", flat=True
+                )
+            )
+        )
+
+    @override_settings(
+        VAPID_PRIVATE_KEY="private-key-for-the-test",
+        VAPID_SUBJECT="mailto:contato@example.test",
+    )
+    def test_activating_subscribes_the_device_and_deactivating_cancels(self):
+        key = vapid_public_key()
+        with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = self.open(browser, init=(FAKE_PUSH,))
+            self.visit(page, "/app/lembretes/")
+            status = page.locator("[data-reminder-status]")
+            expect(status).to_have_text(PUSH_INACTIVE)
+            assert self.subscriptions() == []
+            page.get_by_role("button", name="Ativar lembretes").click()
+            expect(
+                page.get_by_role("button", name="Desativar lembretes")
+            ).to_be_visible()
+            expect(status).to_have_text(PUSH_ACTIVE)
+            assert status.get_attribute("data-push") == "active"
+            # Permission was already granted: nothing asked again.
+            assert page.evaluate(PERMISSION_REQUESTS) == 0
+            assert self.subscriptions() == [FAKE_ENDPOINT]
+            self.assert_fits(page, "lembretes-push-ativo")
+            self.screenshot(page, "390-push-ativo")
+            # Another page keeps the subscription and shows no in-page notice.
+            self.visit(page, "/app/")
+            assert self.subscriptions() == [FAKE_ENDPOINT]
+            self.visit(page, "/app/lembretes/")
+            page.get_by_role("button", name="Desativar lembretes").click()
+            expect(
+                page.get_by_role("status").filter(has_text="Lembretes desativados.")
+            ).to_be_visible()
+            expect(status).to_have_text(PUSH_INACTIVE)
+            assert self.subscriptions() == []
+            assert (
+                page.evaluate(
+                    "JSON.parse(sessionStorage.getItem('__qlFakePush') || 'null')"
+                )
+                is None
+            )
+            self.assert_fits(page, "lembretes-push-cancelado")
+            browser.close()
+
+    @override_settings(
+        VAPID_PRIVATE_KEY="private-key-for-the-test",
+        VAPID_SUBJECT="mailto:contato@example.test",
+    )
+    def test_signing_out_cancels_the_device_subscription(self):
+        key = vapid_public_key()
+        with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            # Desktop: the menu with "Sair" is always visible.
+            page = self.open(browser, 1280, 800, init=(FAKE_PUSH,))
+            self.visit(page, "/app/lembretes/")
+            page.get_by_role("button", name="Ativar lembretes").click()
+            expect(page.locator("[data-reminder-status]")).to_have_text(PUSH_ACTIVE)
+            assert self.subscriptions() == [FAKE_ENDPOINT]
+            page.get_by_role("button", name="Sair").click()
+            page.wait_for_url(lambda url: "/login/" in url)
+            assert self.subscriptions() == []
+            assert page.errors == [], page.errors
+            browser.close()
+
+    @override_settings(
+        VAPID_PRIVATE_KEY="private-key-for-the-test",
+        VAPID_SUBJECT="mailto:contato@example.test",
+    )
+    def test_no_in_page_notice_when_the_device_receives_push(self):
+        ReminderSetting.objects.create(membership=self.membership, active=True)
+        key = vapid_public_key()
+        zone = ZoneInfo(TIMEZONE)
+        with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = self.open(
+                browser,
+                clock=datetime(2026, 10, 19, 9, 57, tzinfo=zone),
+                init=(FAKE_PUSH, presubscribed(key)),
+            )
+            self.visit(page, "/app/")
+            # The existing device subscription was sent to the server.
+            assert self.subscriptions() == [FAKE_ENDPOINT]
+            page.clock.pause_at(datetime(2026, 10, 19, 9, 59, 30, tzinfo=zone))
+            page.clock.fast_forward("01:00")
+            page.wait_for_timeout(500)
+            expect(page.locator("[data-reminder-notice]")).to_have_count(0)
+            assert page.errors == [], page.errors
             browser.close()
 
     def iphone(self, playwright):
