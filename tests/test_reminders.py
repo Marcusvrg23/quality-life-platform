@@ -76,6 +76,7 @@ class ReminderTests(TestCase):
                 "start": "08:00",
                 "end": "18:00",
                 "days": [1, 2, 3, 4, 5],
+                "push_key": None,
             },
         )
 
@@ -100,6 +101,7 @@ class ReminderTests(TestCase):
                 "start": "09:00",
                 "end": "17:30",
                 "days": [1, 3, 5],
+                "push_key": None,
             },
         )
         page = self.client.get(reverse("wellbeing_reminders"))

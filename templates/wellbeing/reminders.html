@@ -39,6 +39,17 @@
         <p class="wb-note" data-reminder-status data-active="{{ setting.active|yesno:'1,0' }}" aria-live="polite"></p>
     </form>
     {% if setting.active %}<form method="post" id="reminder-deactivate" hidden>{% csrf_token %}<input type="hidden" name="action" value="deactivate"></form>{% endif %}
+    <form method="post" action="{% url 'wellbeing_notification_preferences' %}" class="card wb-card ql-pwa-form" aria-labelledby="notification-preferences-title">
+        {% csrf_token %}
+        <fieldset class="ql-pwa-group">
+            <legend id="notification-preferences-title">Notificações que você quer receber</legend>
+            <div class="wb-durations">
+                {% for value, label in categories %}<label class="wb-chip ql-switch"><input type="checkbox" name="{{ value }}"{% if value == 'pausas' and preference.pausas or value == 'dicas' and preference.dicas %} checked{% endif %}><span class="ql-switch__mark" aria-hidden="true"></span>{{ label }}</label>{% endfor %}
+            </div>
+        </fieldset>
+        <p class="wb-note">Só você altera estas escolhas. As dicas e datas especiais ainda não são enviadas; a preferência já fica guardada.</p>
+        <div class="ql-pwa-actions"><button type="submit" class="button button-secondary">Salvar preferências</button></div>
+    </form>
     <p class="wb-note wb-footnote">Os lembretes aparecem enquanto o Quality Life estiver aberto no navegador ou no app da tela inicial. No iPhone, as notificações exigem o app adicionado à tela inicial e iOS 16.4 ou mais novo.</p>
     <p class="wb-note wb-footnote"><a href="{% url 'install_app' %}">Como adicionar o app à tela inicial</a></p>
 </section>

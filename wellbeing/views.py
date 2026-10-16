@@ -1,12 +1,16 @@
-"""Wellbeing pages and the owner-only practice record."""
+"""Wellbeing pages, the owner-only practice record, break reminders and the
+push subscriptions of the caller's own devices."""
 
+import json
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.validators import URLValidator
 from django.db import transaction
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
 from django.utils import timezone
@@ -22,8 +26,12 @@ from .models import (
     MIN_RECORD_SECONDS,
     REMINDER_INTERVALS,
     ActivitySession,
+    NotificationCategory,
+    NotificationPreference,
+    PushSubscription,
     ReminderSetting,
 )
+from .notifications import preference_for
 from .services import personal_progress
 
 # Two records of the same person may not overlap in time (a resent or
@@ -315,9 +323,29 @@ def reminders(request):
             "current": current,
             "intervals": [str(minutes) for minutes in REMINDER_INTERVALS],
             "weekdays": WEEKDAYS,
+            "preference": preference_for(tenant.membership),
+            "categories": NotificationCategory.choices,
         },
         status=400 if form.is_bound else 200,
     )
+
+
+@login_required
+@require_POST
+def notification_preferences(request):
+    """The caller's own category switches; a missing checkbox means off."""
+    tenant = _tenant(request)
+    with transaction.atomic():
+        Membership.objects.select_for_update().get(pk=tenant.membership.pk)
+        NotificationPreference.objects.update_or_create(
+            membership=tenant.membership,
+            defaults={
+                category: category in request.POST
+                for category in NotificationCategory.values
+            },
+        )
+    messages.success(request, "Preferências salvas.")
+    return redirect("wellbeing_reminders")
 
 
 @login_required
@@ -333,7 +361,97 @@ def reminder_schedule(request):
             "start": setting.workday_start.strftime("%H:%M"),
             "end": setting.workday_end.strftime("%H:%M"),
             "days": [int(day) for day in setting.weekdays],
+            # The VAPID public key is what PushManager.subscribe needs; null
+            # means the server cannot push and the in-page notice stays.
+            "push_key": settings.VAPID_PUBLIC_KEY or None,
         }
     )
     response["Cache-Control"] = "no-store, private"
     return response
+
+
+# Push subscriptions ----------------------------------------------------------
+
+ENDPOINT_MAX = PushSubscription._meta.get_field("endpoint").max_length
+P256DH_MAX = PushSubscription._meta.get_field("p256dh").max_length
+AUTH_MAX = PushSubscription._meta.get_field("auth").max_length
+USER_AGENT_MAX = PushSubscription._meta.get_field("user_agent").max_length
+_https_only = URLValidator(schemes=["https"])
+
+
+def _json_body(request):
+    try:
+        body = json.loads(request.body.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return None
+    return body if isinstance(body, dict) else None
+
+
+def _endpoint(body):
+    endpoint = body.get("endpoint") if body else None
+    if not isinstance(endpoint, str) or not endpoint or len(endpoint) > ENDPOINT_MAX:
+        return None
+    try:
+        _https_only(endpoint)
+    except ValidationError:
+        return None
+    return endpoint
+
+
+def _key(keys, name, limit):
+    value = keys.get(name) if isinstance(keys, dict) else None
+    if not isinstance(value, str) or not value or len(value) > limit:
+        return None
+    return value
+
+
+def _json(payload, status=200):
+    response = JsonResponse(payload, status=status)
+    response["Cache-Control"] = "no-store, private"
+    return response
+
+
+@login_required
+@require_POST
+def push_subscribe(request):
+    """Save this device's push subscription on the caller's own Membership.
+
+    The endpoint identifies the device: a device that signs in as someone
+    else (or in another company) moves to that Membership. The client never
+    chooses the Membership.
+    """
+    tenant = _tenant(request)
+    body = _json_body(request)
+    endpoint = _endpoint(body)
+    keys = body.get("keys") if body else None
+    p256dh = _key(keys, "p256dh", P256DH_MAX)
+    auth = _key(keys, "auth", AUTH_MAX)
+    if not (endpoint and p256dh and auth):
+        return HttpResponseBadRequest("Invalid push subscription.")
+    _, created = PushSubscription.objects.update_or_create(
+        endpoint=endpoint,
+        defaults={
+            "membership": tenant.membership,
+            "p256dh": p256dh,
+            "auth": auth,
+            "user_agent": request.META.get("HTTP_USER_AGENT", "")[:USER_AGENT_MAX],
+        },
+    )
+    return _json({"status": "subscribed"}, status=201 if created else 200)
+
+
+@login_required
+@require_POST
+def push_unsubscribe(request):
+    """Forget this device; only a subscription of the caller's own Membership."""
+    tenant = _tenant(request)
+    body = _json_body(request)
+    endpoint = body.get("endpoint") if body else None
+    if not isinstance(endpoint, str) or not endpoint:
+        return HttpResponseBadRequest("Invalid push subscription.")
+    removed, _ = PushSubscription.objects.filter(
+        membership=tenant.membership, endpoint=endpoint
+    ).delete()
+    if not removed:
+        raise Http404("No such subscription for this account.")
+    return _json({"status": "unsubscribed"})
