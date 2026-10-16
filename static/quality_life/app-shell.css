@@ -82,3 +82,6 @@ body.ql-app { margin: 0; min-width: 0; font-family: "Segoe UI", Arial, sans-seri
 .ql-reminder__start { color: #0b2129; background: #4fd8ca; border: 1px solid #4fd8ca; }
 .ql-reminder__close { color: #f2f7f8; background: transparent; border: 1px solid rgb(255 255 255 / 24%); }
 .ql-reminder a:focus-visible, .ql-reminder button:focus-visible { outline: 2px solid #7ff3e6; outline-offset: 3px; }
+/* Practice notice (practice.js): always in the page, shown only with text. */
+.practice-notice { position: fixed; z-index: 55; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); left: 16px; max-width: 26rem; margin: 0 auto; padding: .9rem 1.1rem; box-sizing: border-box; color: #f2f7f8; background: #0d3329; border: 1px solid #4fd8ca; border-radius: 1rem; box-shadow: 0 18px 40px -16px rgb(0 0 0 / 80%); font-size: .92rem; line-height: 1.5; text-align: center; }
+.practice-notice:empty { padding: 0; border: 0; box-shadow: none; background: none; }

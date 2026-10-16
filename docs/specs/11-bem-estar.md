@@ -85,11 +85,43 @@ DECISÕES
   Relaxamento continua mudo. Vídeo e poster do player usam `object-fit:
   contain` para não cortar a pessoa.
 
+CONCLUSÃO DAS ATIVIDADES (spec 15, `docs/specs/15-app-empresas.md`)
+- Player (Ginástica e Meditação): ao terminar, uma tela de conclusão cobre o
+  player (cabe em 390×844 sem rolar): "Sessão concluída", "Você praticou X
+  min. A prática entrou no seu progresso.", "Ver meu progresso" e "Fazer outra
+  sessão" (fecha o player). O foco vai para o título; com reduced motion não
+  há animação. Abaixo de 60 s (pulando passos) mostra a frase de 60 s.
+- Saída com "← Voltar" ou Esc depois de "Começar": aviso na página
+  (`role="status"`, some em 6 s): de 60 s em diante "Prática registrada: X
+  min." (minutos devolvidos pelo servidor); abaixo, "Práticas com menos de 1
+  minuto não entram no seu progresso.". Sem "Começar", nenhum aviso.
+- Relaxamento: no fim do timer o status continua "Tempo concluído. O som foi
+  desligado." e aparece "Ver meu progresso". "Parar" ou trocar de som antes do
+  fim usa a mesma regra de aviso.
+- Exercícios: no último exercício "Próximo" vira "Concluir sequência"; ao
+  clicar aparece "Sequência concluída" no diálogo. O tempo com o diálogo aberto
+  é registrado como `ginastica` / `sequencia-exercicios` (catálogo, sem
+  duração fixa, máximo 30 min) só de 60 s em diante; fechar sem concluir usa a
+  mesma regra de aviso.
+- Aulas: no evento `ended` o card mostra "Aula concluída". O tempo assistido
+  (só reprodução; saltos não contam; zera a cada fim) é registrado como
+  `ginastica` / `aula-<slug>` só de 60 s em diante. Os três vídeos atuais têm
+  10 s, então hoje uma aula nunca entra no progresso (aparece o aviso de 60 s).
+- Hoje: cartão "Hoje" com práticas, minutos e dias seguidos do dia
+  (`personal_progress`: `today_sessions`, `today_minutes`, `streak`), só da
+  própria pessoa na empresa ativa, com link para Meu Progresso; sem prática:
+  "Você ainda não praticou hoje." e link para a Ginástica Laboral.
+- Registro: mesmo POST, CSRF e `fetch keepalive` para todos
+  (`static/quality_life/practice.js`, `window.QLPractice`); a resposta 201
+  devolve `minutes`.
+
 PERGUNTAS (não bloqueiam)
 - Segundos por exercício (`SECONDS_PER_EXERCISE`) e ritmo de respiração
   (`BREATH_IN_SECONDS`/`BREATH_OUT_SECONDS`) aguardam aprovação da Quality Life.
 - Exercícios ilustrados por IA aguardam revisão de profissional de educação
   física.
+- Desde a spec 15 esses avisos não aparecem mais na tela; as pendências estão
+  em `docs/specs/15-app-empresas.md`.
 
 COMPOSIÇÃO DAS SESSÕES DE GINÁSTICA (`config/wellbeing_catalog.py`)
 Cada sessão repete, em ciclo, os exercícios da categoria até somar a duração;

@@ -81,7 +81,7 @@ class LegalBrowserTests(StaticLiveServerTestCase):
             ):
                 page.goto(f"{self.live_server_url}{url}")
                 page.wait_for_load_state("load")
-                page.get_by_text("MINUTA — pendente de revisão jurídica").wait_for()
+                page.locator(".legal-doc h1").wait_for()
                 assert no_horizontal_scroll(page), f"Horizontal overflow: {stage}"
 
             page.goto(f"{self.live_server_url}/login/")

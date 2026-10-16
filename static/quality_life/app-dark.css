@@ -967,10 +967,6 @@ progress::-moz-progress-bar {
 }
 
 /* Privacidade e Termos */
-.legal-draft {
-    position: relative;
-}
-
 .legal-brand {
     color: var(--app-text);
 }

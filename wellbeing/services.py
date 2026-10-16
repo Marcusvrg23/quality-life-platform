@@ -107,6 +107,7 @@ def personal_progress(user, organization, *, now=None):
         s for day, s, _ in rows if (day.year, day.month) == (today.year, today.month)
     )
     total_seconds = sum(s for _, s, _ in rows)
+    today_rows = [s for day, s, _ in rows if day == today]
     by_kind = [
         {
             "kind": kind,
@@ -128,6 +129,8 @@ def personal_progress(user, organization, *, now=None):
     return {
         "today": today,
         "streak": streak,
+        "today_sessions": len(today_rows),
+        "today_minutes": sum(today_rows) // 60,
         "best_streak": metrics["best_streak"],
         "week_minutes": week_seconds // 60,
         "month_minutes": month_seconds // 60,

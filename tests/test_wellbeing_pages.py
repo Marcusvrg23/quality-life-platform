@@ -64,7 +64,7 @@ class WellbeingPageTests(TestCase):
     def test_gym_sessions_payload_lists_steps_with_videos_or_photos(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse("wellbeing_gym"))
-        self.assertContains(response, catalog.PROPOSAL_NOTE)
+        self.assertNotContains(response, "Tempos em proposta")  # spec 15
         for category in (
             "Alongamento para pescoço e ombros",
             "Pausa ativa para coluna",
@@ -154,7 +154,10 @@ class WellbeingPageTests(TestCase):
                     self.assertIn(f'data-noise="{item["noise"]}"', card)
         self.assertEqual(html.count("data-sound-play"), 7)
         self.assertNotContains(response, "Em preparação")
-        self.assertContains(response, "Todos os sons são gerados no próprio navegador.")
+        # Spec 15: no footnote about how the sounds and the background are made.
+        self.assertNotContains(
+            response, "Todos os sons são gerados no próprio navegador."
+        )
         for minutes in catalog.RELAX_TIMER_MINUTES:
             self.assertContains(response, f'value="{minutes}"')
         self.assertContains(response, "med-relaxamento.webp")

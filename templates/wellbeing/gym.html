@@ -5,7 +5,7 @@
 {% block header_title %}Ginástica Laboral{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/exercises.css' %}"><link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
 {% block content %}
-<section class="wb-page" aria-labelledby="gym-title" data-wellbeing data-record-url="{% url 'wellbeing_record' %}">
+<section class="wb-page" aria-labelledby="gym-title" data-wellbeing data-record-root data-record-url="{% url 'wellbeing_record' %}">
     {% csrf_token %}
     <header class="wb-intro">
         <p class="ql-eyebrow">PAUSA GUIADA</p>
@@ -28,8 +28,9 @@
         </article>
         {% endfor %}
     </div>
-    <p class="wb-note wb-footnote">{{ catalog.PROPOSAL_NOTE }} {{ catalog.AI_VIDEO_NOTE }} Instruções: {{ source }}.</p>
-    {% include 'wellbeing/_player.html' with breathing=False note=catalog.AI_VIDEO_NOTE %}
+    <p class="wb-note wb-footnote">Instruções: {{ source }}.</p>
+    {% include 'wellbeing/_player.html' with breathing=False %}
+    {% include 'wellbeing/_practice_notice.html' %}
 </section>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/practice.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}

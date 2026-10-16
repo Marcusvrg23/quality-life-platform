@@ -22,6 +22,7 @@ documented in docs/specs/11-bem-estar.md.
 from itertools import cycle, islice
 
 from .exercises import VIDEO_DIR
+from .lessons import LESSONS
 
 AVAILABLE = "disponivel"
 IN_PREPARATION = "em_preparacao"
@@ -38,13 +39,6 @@ SECONDS_PER_EXERCISE = 30
 BREATH_IN_SECONDS = 4
 # PROPOSTA — aguardando aprovação da Quality Life.
 BREATH_OUT_SECONDS = 6
-
-# Shown next to every timed session while the constants above are proposals.
-PROPOSAL_NOTE = "Tempos em proposta, aguardando aprovação da Quality Life."
-AI_VIDEO_NOTE = (
-    "Vídeos ilustrativos gerados por IA a partir do material Quality Life;"
-    " revisão por profissional de educação física pendente."
-)
 
 GYM_MINUTES = (3, 5, 10)
 GYM_CATEGORIES = (
@@ -163,11 +157,37 @@ SOUNDS = (
 RELAX_TIMER_MINUTES = (5, 10, 15, 30)
 RELAX_BACKGROUND = f"{VIDEO_DIR}med-relaxamento.mp4"
 
+# Practices recorded from the Exercícios page and the Aulas page (spec 15):
+# no fixed length, recorded as gym only from 60 s on.
+EXERCISE_SEQUENCE = {
+    "slug": "sequencia-exercicios",
+    "title": "Sequência de exercícios",
+    "category": "Exercícios",
+    "duration_seconds": None,
+    "type": "sequence",
+    "file": None,
+    "status": AVAILABLE,
+    "kind": KIND_GYM,
+}
+LESSON_ITEMS = tuple(
+    {
+        "slug": f"aula-{lesson['slug']}",
+        "title": lesson["title"],
+        "category": "Aulas",
+        "duration_seconds": None,
+        "type": "video",
+        "file": f"quality_life/videos/{lesson['slug']}.mp4",
+        "status": AVAILABLE,
+        "kind": KIND_GYM,
+    }
+    for lesson in LESSONS
+)
+
 TIPS = ()
 
 
 def all_items():
-    return (*GYM_SESSIONS, *MEDITATIONS, *SOUNDS)
+    return (*GYM_SESSIONS, *MEDITATIONS, *SOUNDS, EXERCISE_SEQUENCE, *LESSON_ITEMS)
 
 
 def find_available(kind, slug):

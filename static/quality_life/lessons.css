@@ -8,3 +8,4 @@
 .lesson-card__category { display: inline-block; background: #edf5ed; color: #618564; padding: .35rem .6rem; border-radius: 5rem; font-size: .6rem; letter-spacing: .1em; font-weight: 700; }
 .lesson-card h2 { font-size: 1rem; margin: .8rem 0 .45rem; color: #234b41; }
 .lesson-card p { font-size: .76rem; line-height: 1.65; color: #7c8b81; margin: 0; }
+.lesson-card .lesson-card__done:not(:empty) { margin-top: .8rem; padding: .55rem .8rem; color: var(--app-ok-fg, #1f6b4f); background: var(--app-ok-bg, #e5f4ec); border-radius: .7rem; font-size: .82rem; font-weight: 700; }

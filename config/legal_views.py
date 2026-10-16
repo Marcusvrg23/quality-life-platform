@@ -8,7 +8,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from identity.consent import active_consents, revoke_consent
 
-from .legal import CONSENT_VERSION
+from .legal import CONSENT_TEXT_LABEL
 from .tenant import resolve_tenant_context
 
 
@@ -17,7 +17,7 @@ def _legal_context():
         "company_name": settings.LEGAL_COMPANY_NAME,
         "cnpj": settings.LEGAL_CNPJ,
         "dpo_email": settings.LEGAL_DPO_EMAIL,
-        "consent_version": CONSENT_VERSION,
+        "consent_text_label": CONSENT_TEXT_LABEL,
     }
 
 

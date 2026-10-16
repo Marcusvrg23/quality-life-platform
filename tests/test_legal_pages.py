@@ -9,16 +9,16 @@ from django.urls import reverse
 from config.tenant import SESSION_ORGANIZATION_KEY
 from identity.models import Membership, Organization
 
-DRAFT = "MINUTA — pendente de revisão jurídica"
+DRAFT = "MINUTA — pendente de revisão jurídica"  # off the screen since spec 15
 
 
 class PublicLegalPagesTests(TestCase):
-    def test_pages_answer_without_login_and_show_draft_banner(self):
+    def test_pages_answer_without_login_and_hide_draft_banner(self):
         for name in ("privacy", "terms"):
             with self.subTest(page=name):
                 response = self.client.get(reverse(name))
                 self.assertEqual(response.status_code, 200)
-                self.assertContains(response, DRAFT)
+                self.assertNotContains(response, DRAFT)
                 self.assertContains(response, "[RAZÃO SOCIAL]")
                 self.assertContains(response, "[CNPJ]")
                 self.assertContains(response, "[E-MAIL DO ENCARREGADO]")
