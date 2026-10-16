@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -259,6 +260,13 @@ def reminders(request):
     the request can point to someone else's reminders.
     """
     tenant = _tenant(request)
+    if request.method == "POST" and request.POST.get("action") == "deactivate":
+        # Its own form: never blocked by whatever the time fields hold.
+        ReminderSetting.objects.filter(membership=tenant.membership).update(
+            active=False, updated_at=timezone.now()
+        )
+        messages.success(request, "Lembretes desativados.")
+        return redirect("wellbeing_reminders")
     setting = _reminder_setting(tenant.membership)
     form = ReminderForm(request.POST if request.method == "POST" else None)
     if request.method == "POST":
@@ -269,13 +277,19 @@ def reminders(request):
                 setting, _ = ReminderSetting.objects.get_or_create(
                     membership=tenant.membership
                 )
-                if data["action"] != "save":
-                    setting.active = data["action"] == "activate"
+                if data["action"] == "activate":
+                    setting.active = True
                 setting.interval_minutes = data["interval_minutes"]
                 setting.workday_start = data["workday_start"]
                 setting.workday_end = data["workday_end"]
                 setting.weekdays = form.weekday_digits()
                 setting.save()
+            messages.success(
+                request,
+                "Lembretes ativados."
+                if data["action"] == "activate"
+                else "Alterações salvas.",
+            )
             return redirect("wellbeing_reminders")
         current = {
             "interval": request.POST.get("interval_minutes", ""),
@@ -297,6 +311,7 @@ def reminders(request):
             "tenant": tenant,
             "setting": setting,
             "form": form,
+            "error": form.first_error() if form.errors else "",
             "current": current,
             "intervals": [str(minutes) for minutes in REMINDER_INTERVALS],
             "weekdays": WEEKDAYS,

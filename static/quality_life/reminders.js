@@ -22,15 +22,19 @@
   };
 
   // Slots are start + k * interval, strictly between start and end, on the
-  // chosen ISO weekdays (1 = Monday), in the device's local time.
+  // chosen ISO weekdays (1 = Monday), in the device's local time. An end at or
+  // before the start is on the next day (night shift); the shift belongs to
+  // the day it starts, so yesterday's shift may still be running.
   function nextSlot(after) {
     const start = toMinutes(schedule.start);
-    const end = toMinutes(schedule.end);
-    for (let offset = 0; offset < 8; offset += 1) {
+    let end = toMinutes(schedule.end);
+    if (end <= start) end += 24 * 60;
+    for (let offset = -1; offset < 8; offset += 1) {
       const day = new Date(after.getFullYear(), after.getMonth(), after.getDate() + offset);
       if (!schedule.days.includes(day.getDay() || 7)) continue;
       for (let at = start + schedule.interval; at < end; at += schedule.interval) {
-        const slot = new Date(day.getFullYear(), day.getMonth(), day.getDate(), Math.floor(at / 60), at % 60);
+        // Minutes past 24:00 roll over into the next day.
+        const slot = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, at);
         if (slot > after) return slot;
       }
     }
