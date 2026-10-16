@@ -106,7 +106,8 @@ class AppDarkTemplateTests(SimpleTestCase):
             next=reverse("app"),
         )
         self.assert_dark_assets(login)
-        self.assertEqual(login.count(RING_LOGO), 1)
+        # One visible logo; the apple-touch-icon link is the home screen icon.
+        self.assertEqual(login.count(f'src="/static/{RING_LOGO}'), 1)
         self.assertIn('name="username"', login)
         self.assertIn('name="password"', login)
         self.assertIn(f'method="post" action="{reverse("login")}"', login)

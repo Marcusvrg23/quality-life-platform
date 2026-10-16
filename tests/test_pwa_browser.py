@@ -192,8 +192,6 @@ class PwaBrowserTests(StaticLiveServerTestCase):
                 page.get_by_role("button", name="Desativar lembretes")
             ).to_be_visible()
             assert page.evaluate(PERMISSION_REQUESTS) == 1
-            setting = ReminderSetting.objects.get(membership=self.membership)
-            assert setting.active
             # Saving again does not ask again.
             page.get_by_role("button", name="Salvar alterações").click()
             expect(
@@ -202,6 +200,8 @@ class PwaBrowserTests(StaticLiveServerTestCase):
             assert page.evaluate(PERMISSION_REQUESTS) == 1
             self.assert_fits(page, "lembretes-ativos")
             browser.close()
+        # The ORM is not usable inside sync_playwright (async context).
+        assert ReminderSetting.objects.get(membership=self.membership).active
 
     def test_notice_appears_at_configured_time(self):
         ReminderSetting.objects.create(membership=self.membership, active=True)

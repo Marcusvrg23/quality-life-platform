@@ -80,7 +80,11 @@ class ShellPwaTests(TestCase):
     def setUp(self):
         self.organization = Organization.objects.create(name="Empresa", slug="empresa")
         self.user = User.objects.create_user("pessoa@empresa.test", PASSWORD)
-        Membership.objects.create(user=self.user, organization=self.organization)
+        Membership.objects.create(
+            user=self.user,
+            organization=self.organization,
+            role=Membership.Role.COLLABORATOR,
+        )
 
     def test_app_shell_links_manifest_menu_and_reminder_scheduler(self):
         self.client.force_login(self.user)
@@ -110,7 +114,11 @@ class InstallPageTests(TestCase):
     def setUp(self):
         self.organization = Organization.objects.create(name="Empresa", slug="empresa")
         self.user = User.objects.create_user("pessoa@empresa.test", PASSWORD)
-        Membership.objects.create(user=self.user, organization=self.organization)
+        Membership.objects.create(
+            user=self.user,
+            organization=self.organization,
+            role=Membership.Role.COLLABORATOR,
+        )
 
     def test_requires_login(self):
         response = self.client.get(reverse("install_app"))

@@ -178,13 +178,16 @@ class ReminderTests(TestCase):
         self.assertFalse(self.schedule()["active"])
 
     def test_forged_tenant_is_forbidden(self):
-        self.login(self.owner, self.other_org)
-        for response in (
-            self.client.get(reverse("wellbeing_reminders")),
-            self.client.get(reverse("wellbeing_reminder_schedule")),
-            self.client.post(reverse("wellbeing_reminders"), VALID),
+        for method, name, data in (
+            ("get", "wellbeing_reminders", None),
+            ("get", "wellbeing_reminder_schedule", None),
+            ("post", "wellbeing_reminders", VALID),
         ):
-            self.assertEqual(response.status_code, 403)
+            # A refused tenant is dropped from the session, so forge it again.
+            self.login(self.owner, self.other_org)
+            with self.subTest(name=name, method=method):
+                response = getattr(self.client, method)(reverse(name), data)
+                self.assertEqual(response.status_code, 403)
         self.assertFalse(ReminderSetting.objects.exists())
 
     def test_without_company_is_forbidden(self):

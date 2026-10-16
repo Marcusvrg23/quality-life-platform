@@ -10,6 +10,7 @@ import json
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.templatetags.static import static
@@ -56,8 +57,11 @@ def manifest(request):
 @cache_control(no_cache=True)
 def service_worker(request):
     precache = [reverse("offline"), static(ICON_192)]
+    # A deploy that changes any static file (new manifest hash in production)
+    # starts a new cache, so old hashed files do not pile up on the device.
+    manifest_hash = getattr(staticfiles_storage, "manifest_hash", "")
     digest = hashlib.sha256(
-        json.dumps([WORKER_REVISION, *precache]).encode()
+        json.dumps([WORKER_REVISION, manifest_hash, *precache]).encode()
     ).hexdigest()
     return render(
         request,
