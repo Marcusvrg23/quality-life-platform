@@ -108,6 +108,8 @@ class PwaBrowserTests(StaticLiveServerTestCase):
         page.locator("#id_username").fill(self.user.email)
         page.locator("#id_password").fill(PASSWORD)
         page.get_by_role("button", name="Entrar").click()
+        # The login POST must finish before the next goto, or WebKit cancels it.
+        page.wait_for_url(lambda url: "/login/" not in url)
         page.wait_for_load_state("load")
         return page
 
@@ -115,9 +117,15 @@ class PwaBrowserTests(StaticLiveServerTestCase):
         page.goto(f"{self.live_server_url}{path}")
         page.wait_for_load_state("load")
         # The reminder scheduler finished reading the owner's agenda.
-        page.wait_for_function(
-            "document.querySelector('script[data-schedule]')?.dataset.state === 'loaded'"
-        )
+        try:
+            page.wait_for_function(
+                "document.querySelector('script[data-schedule]')?.dataset.state"
+                " === 'loaded'"
+            )
+        except PlaywrightError as error:
+            raise AssertionError(
+                f"Agenda not loaded on {page.url}: {page.errors}"
+            ) from error
         # Cards rise in with GSAP; screenshots and contrast need the final state.
         page.wait_for_function(GSAP_IDLE)
 
