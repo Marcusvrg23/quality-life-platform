@@ -6,17 +6,23 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.http import Http404, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.templatetags.static import static
 from django.utils import timezone
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
 from config import wellbeing_catalog as catalog
 from config.exercises import EXERCISES, SOURCE, image_path, poster_path
 from config.tenant import resolve_tenant_context
 from identity.models import Membership
 
-from .models import MIN_RECORD_SECONDS, ActivitySession
+from .forms import WEEKDAYS, ReminderForm
+from .models import (
+    MIN_RECORD_SECONDS,
+    REMINDER_INTERVALS,
+    ActivitySession,
+    ReminderSetting,
+)
 from .services import personal_progress
 
 # Two records of the same person may not overlap in time (a resent or
@@ -236,3 +242,83 @@ def record(request):
             completed=request.POST.get("completed") == "1",
         )
     return JsonResponse({"ok": True}, status=201)
+
+
+def _reminder_setting(membership):
+    return ReminderSetting.objects.filter(membership=membership).first() or (
+        ReminderSetting(membership=membership)
+    )
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def reminders(request):
+    """The caller's own break reminders in the active tenant (spec 13).
+
+    The Membership always comes from ``resolve_tenant_context``; nothing in
+    the request can point to someone else's reminders.
+    """
+    tenant = _tenant(request)
+    setting = _reminder_setting(tenant.membership)
+    form = ReminderForm(request.POST if request.method == "POST" else None)
+    if request.method == "POST":
+        if form.is_valid():
+            data = form.cleaned_data
+            with transaction.atomic():
+                Membership.objects.select_for_update().get(pk=tenant.membership.pk)
+                setting, _ = ReminderSetting.objects.get_or_create(
+                    membership=tenant.membership
+                )
+                if data["action"] != "save":
+                    setting.active = data["action"] == "activate"
+                setting.interval_minutes = data["interval_minutes"]
+                setting.workday_start = data["workday_start"]
+                setting.workday_end = data["workday_end"]
+                setting.weekdays = form.weekday_digits()
+                setting.save()
+            return redirect("wellbeing_reminders")
+        current = {
+            "interval": request.POST.get("interval_minutes", ""),
+            "start": request.POST.get("workday_start", ""),
+            "end": request.POST.get("workday_end", ""),
+            "days": request.POST.getlist("weekdays"),
+        }
+    else:
+        current = {
+            "interval": str(setting.interval_minutes),
+            "start": setting.workday_start.strftime("%H:%M"),
+            "end": setting.workday_end.strftime("%H:%M"),
+            "days": list(setting.weekdays),
+        }
+    return render(
+        request,
+        "wellbeing/reminders.html",
+        {
+            "tenant": tenant,
+            "setting": setting,
+            "form": form,
+            "current": current,
+            "intervals": [str(minutes) for minutes in REMINDER_INTERVALS],
+            "weekdays": WEEKDAYS,
+        },
+        status=400 if form.is_bound else 200,
+    )
+
+
+@login_required
+@require_GET
+def reminder_schedule(request):
+    """The caller's own agenda, read by reminders.js on every app page."""
+    tenant = _tenant(request)
+    setting = _reminder_setting(tenant.membership)
+    response = JsonResponse(
+        {
+            "active": setting.active,
+            "interval": setting.interval_minutes,
+            "start": setting.workday_start.strftime("%H:%M"),
+            "end": setting.workday_end.strftime("%H:%M"),
+            "days": [int(day) for day in setting.weekdays],
+        }
+    )
+    response["Cache-Control"] = "no-store, private"
+    return response

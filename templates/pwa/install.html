@@ -1,0 +1,34 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Instalar o app{% endblock %}
+{% block page_title %}Instalar o app{% endblock %}
+{% block header_title %}Instalar o app{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
+{% block content %}
+<section class="wb-page" aria-labelledby="install-title">
+    <header class="wb-intro">
+        <p class="ql-eyebrow">TELA INICIAL</p>
+        <h1 id="install-title">Instalar o app</h1>
+        <p>Adicione o Quality Life à tela inicial do celular e abra suas pausas com um toque, como um aplicativo.</p>
+    </header>
+    <p class="card wb-card ql-pwa-state" data-installed role="status" hidden>O app já está na sua tela inicial.</p>
+    <div class="wb-grid">
+        <section class="card wb-card" data-install-guide aria-labelledby="android-title">
+            <h2 id="android-title">Android (Chrome)</h2>
+            <p class="wb-card__meta">Quando o Chrome permitir, o botão abaixo instala o app.</p>
+            <button type="button" class="button" data-install-button hidden>Adicionar à tela inicial</button>
+            <p class="wb-note">Sem o botão? Toque no menu ⋮ do Chrome e escolha "Adicionar à tela inicial" ou "Instalar app".</p>
+        </section>
+        <section class="card wb-card" data-install-guide aria-labelledby="iphone-title">
+            <h2 id="iphone-title">iPhone (Safari)</h2>
+            <ol class="wb-steps">
+                <li>Abra o Quality Life no Safari.</li>
+                <li>Toque em <strong>Compartilhar</strong> (o quadrado com a seta para cima).</li>
+                <li>Toque em <strong>Adicionar à Tela de Início</strong> e depois em <strong>Adicionar</strong>.</li>
+            </ol>
+        </section>
+    </div>
+    <p class="wb-note wb-footnote">Apps na App Store e no Google Play: em breve.</p>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/install.js' %}" defer></script>{% endblock %}

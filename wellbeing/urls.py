@@ -1,4 +1,4 @@
-"""Wellbeing pages under /app/ (docs/specs/11-bem-estar.md)."""
+"""Wellbeing pages under /app/ (docs/specs/11-bem-estar.md, 13-pwa-lembretes.md)."""
 
 from django.urls import path
 
@@ -10,4 +10,10 @@ urlpatterns = [
     path("relaxamento/", views.relax, name="wellbeing_relax"),
     path("progresso/", views.progress, name="wellbeing_progress"),
     path("pratica/registrar/", views.record, name="wellbeing_record"),
+    path("lembretes/", views.reminders, name="wellbeing_reminders"),
+    path(
+        "lembretes/agenda/",
+        views.reminder_schedule,
+        name="wellbeing_reminder_schedule",
+    ),
 ]

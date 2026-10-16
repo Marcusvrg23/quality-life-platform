@@ -1,0 +1,4 @@
+{% load static %}<link rel="manifest" href="{% url 'manifest' %}">
+    <meta name="theme-color" content="#84267d">
+    <link rel="apple-touch-icon" href="{% static 'quality_life/images/brand/quality-life-logo-ring-192.png' %}">
+    <script src="{% static 'quality_life/pwa.js' %}" data-sw="{% url 'service_worker' %}" defer></script>

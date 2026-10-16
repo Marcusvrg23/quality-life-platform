@@ -1,10 +1,13 @@
-"""Practice records for the wellbeing pages (docs/specs/11-bem-estar.md)."""
+"""Practice records (docs/specs/11-bem-estar.md) and break reminders
+(docs/specs/13-pwa-lembretes.md) for the wellbeing pages."""
+
+from datetime import time
 
 from django.conf import settings
 from django.db import models
-from django.db.models import Q
+from django.db.models import F, Q
 
-from identity.models import Organization
+from identity.models import Membership, Organization
 
 MIN_RECORD_SECONDS = 60
 MAX_RECORD_SECONDS = 60 * 60
@@ -64,3 +67,48 @@ class ActivitySession(models.Model):
 
     def __str__(self):
         return f"{self.kind}/{self.slug} ({self.duration_seconds}s)"
+
+
+REMINDER_INTERVALS = (60, 90, 120)
+# ISO weekdays (1 = Monday), stored as ordered unique digits: "12345".
+WEEKDAYS_PATTERN = r"^1?2?3?4?5?6?7?$"
+
+
+class ReminderSetting(models.Model):
+    """Break reminders of one person in one organization (spec 13).
+
+    Read and written only by its owner through ``wellbeing.views.reminders``;
+    no screen or endpoint lists the reminders of other people.
+    """
+
+    membership = models.OneToOneField(
+        Membership, on_delete=models.CASCADE, related_name="reminder_setting"
+    )
+    active = models.BooleanField(default=False)
+    interval_minutes = models.PositiveSmallIntegerField(
+        choices=[(minutes, f"{minutes} min") for minutes in REMINDER_INTERVALS],
+        default=60,
+    )
+    workday_start = models.TimeField(default=time(8, 0))
+    workday_end = models.TimeField(default=time(18, 0))
+    weekdays = models.CharField(max_length=7, default="12345")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [  # noqa: RUF012 - Django model metadata convention.
+            models.CheckConstraint(
+                condition=Q(interval_minutes__in=REMINDER_INTERVALS),
+                name="wellbeing_reminder_valid_interval",
+            ),
+            models.CheckConstraint(
+                condition=Q(weekdays__regex=WEEKDAYS_PATTERN) & ~Q(weekdays=""),
+                name="wellbeing_reminder_valid_weekdays",
+            ),
+            models.CheckConstraint(
+                condition=Q(workday_start__lt=F("workday_end")),
+                name="wellbeing_reminder_workday_order",
+            ),
+        ]
+
+    def __str__(self):
+        return f"lembrete {self.membership_id} ({self.interval_minutes} min)"

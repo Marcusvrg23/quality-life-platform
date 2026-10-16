@@ -21,6 +21,7 @@ from .auth_views import (
 from .exercise_views import exercises
 from .legal_views import privacy, privacy_revoke, privacy_settings, terms
 from .lesson_views import lessons
+from .pwa_views import install_app, manifest, offline, service_worker
 from .views import health, home
 
 urlpatterns = [
@@ -30,6 +31,7 @@ urlpatterns = [
     path("app/", app_home, name="app"),
     path("app/exercises/", exercises, name="exercises"),
     path("app/aulas/", lessons, name="lessons"),
+    path("app/instalar/", install_app, name="install_app"),
     path("app/assessment/", include("assessments.urls")),
     path("app/report/", include("reports.urls")),
     path("app/", include("wellbeing.urls")),
@@ -99,4 +101,7 @@ urlpatterns = [
     path("app/organizations/<slug:slug>/", organization_home, name="organization_home"),
     path("", home, name="home"),
     path("health/", health, name="health"),
+    path("manifest.webmanifest", manifest, name="manifest"),
+    path("sw.js", service_worker, name="service_worker"),
+    path("offline/", offline, name="offline"),
 ]
