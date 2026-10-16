@@ -112,11 +112,13 @@ Os lembretes de pausa chegam como notificação no celular mesmo com o app fecha
 
 Como funciona por dentro, para quem for dar manutenção:
 
-- O envio roda **dentro do próprio app**, numa thread de cada worker do gunicorn, uma vez por minuto (`wellbeing/scheduler.py`, iniciada em `config/wsgi.py`). A Square Cloud não tem agendador de tarefas e reinicia só o processo principal; um worker que morre renasce com a thread, por isso não há processo separado no `START`.
+- O envio roda **dentro do próprio app**, numa thread de cada worker do gunicorn (`wellbeing/scheduler.py`, iniciada em `config/wsgi.py`). Para o banco do Neon poder dormir, a thread **não consulta o banco a cada minuto**: ela lê os lembretes ao ligar e a cada 3 horas (`WEB_PUSH_SCHEDULER_REFRESH_MINUTES`, padrão `180`) e, fora isso, só acorda o banco no horário de algum lembrete. Quando alguém muda os lembretes, o worker que recebeu a mudança recalcula na hora. A Square Cloud não tem agendador de tarefas e reinicia só o processo principal; um worker que morre renasce com a thread, por isso não há processo separado no `START`.
 - O relógio da Square Cloud é UTC; os horários são calculados em `America/Sao_Paulo`, com as mesmas regras da tela (inclusive turno da noite). Um lembrete com mais de 5 minutos de atraso não é enviado.
 - Dois workers não mandam a mesma notificação: o banco tem um registro único por (lembrete, horário).
 - O texto é sempre genérico ("Hora da pausa. Que tal alguns minutos de Ginástica Laboral?"); nunca nome, nota ou dado de saúde. Os logs registram só ids e contagens.
 - Para desligar o envio sem apagar as chaves: `WEB_PUSH_SCHEDULER=false` e reinicie.
+
+> **Acompanhe o consumo do Neon depois de ligar as chaves VAPID.** O plano grátis do Neon tem **100 CU-hours de computação por mês**; quando acaba, o banco para até o mês seguinte e o site cai. Nos primeiros dias depois de configurar as três variáveis VAPID, abra o painel do Neon (projeto → **Monitoring** / uso de computação) uma vez por dia e confira que o banco aparece **suspenso** (Idle/Suspended) nos intervalos sem lembretes e que o consumo do mês não vai passar de 100 CU-hours. Se estiver subindo rápido demais, desligue o envio com `WEB_PUSH_SCHEDULER=false` e reinicie, ou aumente `WEB_PUSH_SCHEDULER_REFRESH_MINUTES` (por exemplo `360`).
 - Aparelhos cuja assinatura expirou (o serviço de push responde 404/410) são esquecidos sozinhos.
 
 ### Se o navegador mostrar "redirecionamento em excesso"

@@ -2,24 +2,36 @@
 
 Started only by ``config/wsgi.py`` (``start_in_background``), so it lives in
 the gunicorn workers and never in ``manage.py`` commands, migrations or
-tests. Every minute each worker computes, in ``settings.TIME_ZONE``, the slots
-of every active reminder with the same rules as ``reminders.js`` (start +
-k × interval strictly between start and end; a shift that crosses midnight
-belongs to the day it starts) and hands the due ones to ``notify()``.
+tests. Slots are computed in ``settings.TIME_ZONE`` with the same rules as
+``reminders.js`` (start + k × interval strictly between start and end; a
+shift that crosses midnight belongs to the day it starts).
 
-Two workers wake up in the same minute: ``ReminderDispatch`` is unique per
-(setting, slot), so the second insert fails and that worker skips the slot.
-A slot more than five minutes old is never sent.
+The production database (Neon Free) suspends after 5 idle minutes and has a
+monthly compute quota, so the scheduler only touches it when there is work:
+on start and every ``REFRESH`` it loads the active reminders once and keeps
+their upcoming slots in memory (``Plan``); it sleeps until the earliest of
+the next slot and the next refresh; at a slot it reloads only that slot's
+reminders, checks them again with ``due_slot`` and sends. Between those
+moments it runs no query at all.
+
+Saving or deactivating reminders and adding or removing a device call
+``wake()``: that worker reloads its plan at once. The other worker keeps its
+old plan until its next refresh; that is safe because every send is checked
+against the database first, and the worker that took the change covers the
+new slots.
+
+Two workers reach the same slot: ``ReminderDispatch`` is unique per
+(setting, slot), so the second insert fails and that worker skips it. A slot
+more than five minutes old is never sent.
 """
 
 import logging
 import threading
-import time as time_module
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
-from django.db import IntegrityError, close_old_connections, transaction
+from django.db import IntegrityError, close_old_connections, connection, transaction
 from django.urls import reverse
 from django.utils import timezone
 
@@ -33,11 +45,17 @@ BODY = "Que tal alguns minutos de Ginástica Laboral?"
 # Same tolerance as reminders.js: later than this the reminder is noise.
 LATE = timedelta(minutes=5)
 KEEP_DISPATCHES = timedelta(days=2)
-TICK_SECONDS = 60
+# After a failed step (database unreachable, quota exhausted) try again soon
+# enough that a slot still fits in LATE.
+RETRY_SECONDS = 120
+# Wake a second after the slot so it is already in the past.
+SLACK_SECONDS = 1
 
 _lock = threading.Lock()
 _thread = None
 _stop = threading.Event()
+# Set by wake() (and by stop) to cut the current sleep short.
+_wake = threading.Event()
 
 
 def _local_zone():
@@ -77,6 +95,31 @@ def due_slot(setting, now):
     return None
 
 
+def refresh_interval():
+    return timedelta(minutes=settings.WEB_PUSH_SCHEDULER_REFRESH_MINUTES)
+
+
+def upcoming_slots(setting, after, until):
+    """Slots of ``setting`` in ``[after, until]``, oldest first."""
+    first = after.astimezone(_local_zone()).date() - timedelta(days=1)
+    last = until.astimezone(_local_zone()).date()
+    slots = []
+    day = first
+    while day <= last:
+        slots.extend(slot for slot in slots_on(setting, day) if after <= slot <= until)
+        day += timedelta(days=1)
+    return slots
+
+
+def _candidates():
+    return ReminderSetting.objects.filter(
+        active=True,
+        membership__is_active=True,
+        membership__organization__is_active=True,
+        membership__push_subscriptions__isnull=False,
+    ).distinct()
+
+
 def _claim(setting, slot):
     try:
         with transaction.atomic():
@@ -86,54 +129,110 @@ def _claim(setting, slot):
     return True
 
 
-def run_once(now=None):
-    """One tick: send every due reminder once. Returns how many were sent."""
-    now = now or timezone.now()
-    candidates = (
-        ReminderSetting.objects.filter(
-            active=True,
-            membership__is_active=True,
-            membership__organization__is_active=True,
-            membership__push_subscriptions__isnull=False,
-        )
-        .select_related("membership__organization", "membership__user")
-        .distinct()
-    )
+class Plan:
+    """The upcoming slots of one worker, kept in memory between refreshes."""
+
+    def __init__(self, refresh=None):
+        self.refresh = refresh or refresh_interval()
+        self.refresh_at = None  # None: load on the next step
+        self.slots = {}  # slot -> ids of the settings due at it
+        self.handled = None  # latest slot already handled by this plan
+
+    def invalidate(self):
+        self.refresh_at = None
+
+    def wake_at(self, now):
+        """When the next step has something to do."""
+        if self.refresh_at is None:
+            return now
+        return min([self.refresh_at, *self.slots])
+
+    def step(self, now):
+        """Do what is due at ``now``; returns how many reminders were sent."""
+        if self.refresh_at is None or now >= self.refresh_at:
+            self._load(now)
+        dispatched = 0
+        for slot in sorted(slot for slot in self.slots if slot <= now):
+            ids = self.slots.pop(slot)
+            # Too late to send: skip without touching the database.
+            if now - slot <= LATE:
+                dispatched += _dispatch(slot, ids, now)
+            self.handled = slot if self.handled is None else max(self.handled, slot)
+        return dispatched
+
+    def _load(self, now):
+        after = now - LATE
+        until = now + self.refresh
+        slots = {}
+        for setting in _candidates().only(
+            "id", "interval_minutes", "workday_start", "workday_end", "weekdays"
+        ):
+            for slot in upcoming_slots(setting, after, until):
+                if self.handled is None or slot > self.handled:
+                    slots.setdefault(slot, set()).add(setting.pk)
+        ReminderDispatch.objects.filter(slot_at__lt=now - KEEP_DISPATCHES).delete()
+        self.slots = slots
+        self.refresh_at = until
+
+
+def _dispatch(slot, ids, now):
+    """Send ``slot`` to the settings in ``ids`` that still have it due."""
+    candidates = _candidates().filter(pk__in=ids)
     dispatched = devices = 0
     url = reverse("wellbeing_gym")
-    for setting in candidates:
-        slot = due_slot(setting, now)
-        if slot is None or not _claim(setting, slot):
+    for setting in candidates.select_related(
+        "membership__organization", "membership__user"
+    ):
+        # Changed or deactivated since the plan was loaded: not sent.
+        if due_slot(setting, now) != slot or not _claim(setting, slot):
             continue
         dispatched += 1
         devices += notify(
             setting.membership, NotificationCategory.BREAKS, TITLE, BODY, url, now=now
         )
-    ReminderDispatch.objects.filter(slot_at__lt=now - KEEP_DISPATCHES).delete()
     if dispatched:
-        logger.info("reminder tick dispatched=%s devices=%s", dispatched, devices)
+        logger.info("reminder slot dispatched=%s devices=%s", dispatched, devices)
     return dispatched
 
 
-def _seconds_to_next_tick(tick_seconds):
-    if tick_seconds < TICK_SECONDS:
-        return tick_seconds
-    # Wake a few seconds into the minute so the slot is already in the past.
-    return tick_seconds - (time_module.time() % tick_seconds) + 2
+def run_once(now=None):
+    """Send every reminder due at ``now`` once. Returns how many were sent."""
+    return Plan().step(now or timezone.now())
 
 
-def _loop(tick_seconds):
-    while not _stop.wait(_seconds_to_next_tick(tick_seconds)):
+def wake():
+    """Make this process's scheduler reload its plan now (spec 13)."""
+    _wake.set()
+
+
+def tick(plan, now):
+    """One iteration of the loop; returns the seconds to sleep afterwards."""
+    if _wake.is_set():
+        _wake.clear()
+        plan.invalidate()
+    try:
+        plan.step(now)
+    except Exception:
+        logger.exception("reminder scheduler step failed")
+        plan.invalidate()
+        return RETRY_SECONDS
+    seconds = (plan.wake_at(now) - now).total_seconds()
+    return max(seconds, 0) + SLACK_SECONDS
+
+
+def _loop(plan):
+    while not _stop.is_set():
         try:
             close_old_connections()
-            run_once()
-        except Exception:
-            logger.exception("reminder tick failed")
+            seconds = tick(plan, timezone.now())
         finally:
-            close_old_connections()
+            # Never keep a connection open while sleeping: Neon only
+            # suspends an idle compute.
+            connection.close()
+        _wake.wait(seconds)
 
 
-def start_in_background(tick_seconds=TICK_SECONDS):
+def start_in_background(refresh=None):
     """Start the daemon thread once per process; None when push is off."""
     global _thread
     if not (push_configured() and settings.WEB_PUSH_SCHEDULER):
@@ -142,9 +241,10 @@ def start_in_background(tick_seconds=TICK_SECONDS):
         if _thread is not None and _thread.is_alive():
             return _thread
         _stop.clear()
+        _wake.clear()
         _thread = threading.Thread(
             target=_loop,
-            args=(tick_seconds,),
+            args=(Plan(refresh),),
             name="ql-reminder-scheduler",
             daemon=True,
         )
@@ -156,6 +256,7 @@ def start_in_background(tick_seconds=TICK_SECONDS):
 def stop_in_background():
     global _thread
     _stop.set()
+    _wake.set()
     with _lock:
         thread, _thread = _thread, None
     if thread is not None:
