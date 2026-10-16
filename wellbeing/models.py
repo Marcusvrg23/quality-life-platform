@@ -74,6 +74,13 @@ REMINDER_INTERVALS = (60, 90, 120)
 WEEKDAYS_PATTERN = r"^1?2?3?4?5?6?7?$"
 
 
+def shift_minutes(start, end):
+    """Length of the shift in minutes; an end at or before the start is on the
+    next day (night shift), so the result is between 1 and 1440."""
+    span = (end.hour * 60 + end.minute) - (start.hour * 60 + start.minute)
+    return span if span > 0 else span + 24 * 60
+
+
 class ReminderSetting(models.Model):
     """Break reminders of one person in one organization (spec 13).
 
@@ -104,11 +111,16 @@ class ReminderSetting(models.Model):
                 condition=Q(weekdays__regex=WEEKDAYS_PATTERN) & ~Q(weekdays=""),
                 name="wellbeing_reminder_valid_weekdays",
             ),
+            # end <= start is a night shift ending on the next day.
             models.CheckConstraint(
-                condition=Q(workday_start__lt=F("workday_end")),
-                name="wellbeing_reminder_workday_order",
+                condition=~Q(workday_start=F("workday_end")),
+                name="wellbeing_reminder_workday_distinct",
             ),
         ]
+
+    @property
+    def overnight(self):
+        return self.workday_end <= self.workday_start
 
     def __str__(self):
         return f"lembrete {self.membership_id} ({self.interval_minutes} min)"

@@ -67,7 +67,12 @@ body.ql-app { margin: 0; min-width: 0; font-family: "Segoe UI", Arial, sans-seri
 .ql-pwa-group { display: grid; gap: .6rem; min-width: 0; margin: 0; padding: 0; border: 0; }
 .ql-pwa-group legend { margin-bottom: .6rem; padding: 0; color: var(--app-text, #f2f7f8); font-weight: 700; }
 .ql-pwa-times { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: 1rem; }
-.ql-pwa-times input { width: 100%; min-width: 0; min-height: 2.75rem; padding: .4rem .75rem; box-sizing: border-box; font: inherit; }
+.ql-pwa-times label { min-width: 0; }
+/* iOS Safari gives <input type="time"> an intrinsic width wider than the card
+   at 390 px; without the native appearance it follows width: 100%. Colors and
+   border come from app-dark.css. */
+.ql-pwa-times input { display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 2.75rem; padding: .4rem .75rem; box-sizing: border-box; font: inherit; -webkit-appearance: none; appearance: none; }
+.ql-pwa-times input::-webkit-date-and-time-value { min-height: 1.5em; text-align: left; }
 .ql-pwa-actions { display: flex; flex-wrap: wrap; gap: .75rem; }
 .ql-pwa-error { margin: 0; padding: .75rem 1rem; color: var(--app-danger-fg, #ff9d8f); background: var(--app-danger-bg, #401813); border-radius: .7rem; }
 .ql-reminder { position: fixed; z-index: 60; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); left: 16px; display: grid; gap: .75rem; max-width: 26rem; margin-left: auto; padding: 1rem 1.1rem; box-sizing: border-box; color: #f2f7f8; background: #0b2129; border: 1px solid #4fd8ca; border-radius: 1rem; box-shadow: 0 18px 40px -16px rgb(0 0 0 / 80%); }

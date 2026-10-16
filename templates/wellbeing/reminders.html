@@ -11,17 +11,18 @@
         <h1 id="reminders-title">Lembretes de pausa</h1>
         <p>Escolha de quanto em quanto tempo quer lembrar de fazer uma pausa para a Ginástica Laboral durante o expediente.</p>
     </header>
-    {% if setting.active %}<p class="card wb-card ql-pwa-state" role="status">Lembretes ativos: a cada {{ setting.interval_minutes }} min, das {{ setting.workday_start|time:"H:i" }} às {{ setting.workday_end|time:"H:i" }}.</p>{% endif %}
+    {% for message in messages %}<p class="card wb-card ql-pwa-state" role="status">{{ message }}</p>{% endfor %}
+    {% if setting.active %}<p class="card wb-card ql-pwa-state" role="status">Lembretes ativos: a cada {{ setting.interval_minutes }} min, das {{ setting.workday_start|time:"H:i" }} às {{ setting.workday_end|time:"H:i" }}{% if setting.overnight %} (dia seguinte){% endif %}.</p>{% endif %}
     <form method="post" class="card wb-card ql-pwa-form" novalidate>
         {% csrf_token %}
-        {% if form.errors %}<p class="ql-pwa-error" role="alert">{% if form.non_field_errors %}{{ form.non_field_errors.0 }}{% else %}Confira o intervalo, os horários e os dias escolhidos.{% endif %}</p>{% endif %}
+        {% if error %}<p class="ql-pwa-error" role="alert">{{ error }}</p>{% endif %}
         <fieldset class="ql-pwa-group">
             <legend>Intervalo</legend>
             <div class="wb-durations">{% for minutes in intervals %}<label class="wb-chip"><input type="radio" name="interval_minutes" value="{{ minutes }}"{% if minutes == current.interval %} checked{% endif %}>{{ minutes }} min</label>{% endfor %}</div>
         </fieldset>
         <div class="ql-pwa-times">
-            <label class="wb-field">Início do expediente <input type="time" name="workday_start" value="{{ current.start }}" required></label>
-            <label class="wb-field">Fim do expediente <input type="time" name="workday_end" value="{{ current.end }}" required></label>
+            <label class="wb-field">Início do expediente <input type="time" name="workday_start" value="{{ current.start }}" step="60" required></label>
+            <label class="wb-field">Fim do expediente <input type="time" name="workday_end" value="{{ current.end }}" step="60" required></label>
         </div>
         <fieldset class="ql-pwa-group">
             <legend>Dias</legend>
@@ -30,13 +31,14 @@
         <div class="ql-pwa-actions">
             {% if setting.active %}
             <button type="submit" class="button" name="action" value="save">Salvar alterações</button>
-            <button type="submit" class="button button-secondary" name="action" value="deactivate">Desativar lembretes</button>
+            <button type="submit" class="button button-secondary" form="reminder-deactivate">Desativar lembretes</button>
             {% else %}
             <button type="submit" class="button" name="action" value="activate" data-reminder-activate>Ativar lembretes</button>
             {% endif %}
         </div>
         <p class="wb-note" data-reminder-status data-active="{{ setting.active|yesno:'1,0' }}" aria-live="polite"></p>
     </form>
+    {% if setting.active %}<form method="post" id="reminder-deactivate" hidden>{% csrf_token %}<input type="hidden" name="action" value="deactivate"></form>{% endif %}
     <p class="wb-note wb-footnote">Os lembretes aparecem enquanto o Quality Life estiver aberto no navegador ou no app da tela inicial. No iPhone, as notificações exigem o app adicionado à tela inicial e iOS 16.4 ou mais novo.</p>
     <p class="wb-note wb-footnote"><a href="{% url 'install_app' %}">Como adicionar o app à tela inicial</a></p>
 </section>

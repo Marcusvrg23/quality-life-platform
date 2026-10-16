@@ -8,7 +8,7 @@ shows up at the configured time. Screenshots go to QA_ARTIFACT_DIR/pwa/.
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, time, timedelta
 from pathlib import Path
 from unittest import skipIf
 from zoneinfo import ZoneInfo
@@ -21,6 +21,7 @@ from tests.test_wellbeing_browser import GSAP_IDLE
 from wellbeing.models import ReminderSetting
 
 try:
+    from playwright.sync_api import Error as PlaywrightError
     from playwright.sync_api import expect, sync_playwright
 except ImportError:
     sync_playwright = None
@@ -82,8 +83,9 @@ class PwaBrowserTests(StaticLiveServerTestCase):
 
     # Helpers -----------------------------------------------------------------
 
-    def open(self, browser, width=390, height=844, clock=None, init=()):
+    def open(self, browser, width=390, height=844, clock=None, init=(), device=None):
         context = browser.new_context(
+            **(device or {}),
             viewport={"width": width, "height": height},
             timezone_id=TIMEZONE,
             locale="pt-BR",
@@ -106,6 +108,8 @@ class PwaBrowserTests(StaticLiveServerTestCase):
         page.locator("#id_username").fill(self.user.email)
         page.locator("#id_password").fill(PASSWORD)
         page.get_by_role("button", name="Entrar").click()
+        # The login POST must finish before the next goto, or WebKit cancels it.
+        page.wait_for_url(lambda url: "/login/" not in url)
         page.wait_for_load_state("load")
         return page
 
@@ -113,9 +117,15 @@ class PwaBrowserTests(StaticLiveServerTestCase):
         page.goto(f"{self.live_server_url}{path}")
         page.wait_for_load_state("load")
         # The reminder scheduler finished reading the owner's agenda.
-        page.wait_for_function(
-            "document.querySelector('script[data-schedule]')?.dataset.state === 'loaded'"
-        )
+        try:
+            page.wait_for_function(
+                "document.querySelector('script[data-schedule]')?.dataset.state"
+                " === 'loaded'"
+            )
+        except PlaywrightError as error:
+            raise AssertionError(
+                f"Agenda not loaded on {page.url}: {page.errors}"
+            ) from error
         # Cards rise in with GSAP; screenshots and contrast need the final state.
         page.wait_for_function(GSAP_IDLE)
 
@@ -234,6 +244,143 @@ class PwaBrowserTests(StaticLiveServerTestCase):
                 notice.get_by_role("button", name="Agora não").click()
                 expect(notice).to_be_hidden()
                 page.context.close()
+            browser.close()
+
+    def iphone(self, playwright):
+        device = dict(playwright.devices["iPhone 13"])
+        for key in ("viewport", "screen", "default_browser_type"):
+            device.pop(key, None)
+        return device
+
+    def change_times_and_save(self, page, start, end, button, message):
+        page.locator("input[name=workday_start]").fill(start)
+        page.locator("input[name=workday_end]").fill(end)
+        page.get_by_role("button", name=button).click()
+        expect(page.get_by_role("status").filter(has_text=message)).to_be_visible()
+        expect(page.locator("input[name=workday_start]")).to_have_value(start)
+        expect(page.locator("input[name=workday_end]")).to_have_value(end)
+        expect(page.locator("[role=alert]")).to_have_count(0)
+
+    def assert_times_inside_card(self, page, label):
+        card = page.locator("form.ql-pwa-form").bounding_box()
+        for name in ("workday_start", "workday_end"):
+            box = page.locator(f"input[name={name}]").bounding_box()
+            assert box["x"] >= card["x"], (label, name, box, card)
+            assert box["x"] + box["width"] <= card["x"] + card["width"], (
+                label,
+                name,
+                box,
+                card,
+            )
+        self.assert_fits(page, label)
+
+    def run_iphone_flow(self, playwright, browser, engine):
+        page = self.open(browser, device=self.iphone(playwright))
+        self.visit(page, "/app/lembretes/")
+        self.assert_times_inside_card(page, f"{engine}-lembretes")
+        self.change_times_and_save(
+            page, "07:15", "16:45", "Ativar lembretes", "Lembretes ativados."
+        )
+        self.change_times_and_save(
+            page, "09:00", "17:30", "Salvar alterações", "Alterações salvas."
+        )
+        self.change_times_and_save(
+            page, "22:00", "06:00", "Salvar alterações", "Alterações salvas."
+        )
+        expect(page.get_by_role("status").first).to_be_visible()
+        expect(page.locator(".ql-pwa-state").last).to_contain_text(
+            "das 22:00 às 06:00 (dia seguinte)."
+        )
+        self.assert_times_inside_card(page, f"{engine}-lembretes-ativos")
+        self.screenshot(page, f"{engine}-iphone-lembretes")
+        # Whatever is left in the fields, deactivating always works.
+        page.locator("input[name=workday_start]").evaluate("input => input.value = ''")
+        page.locator("input[name=weekdays]").evaluate_all(
+            "days => days.forEach(day => { day.checked = false; })"
+        )
+        page.get_by_role("button", name="Desativar lembretes").click()
+        expect(
+            page.get_by_role("status").filter(has_text="Lembretes desativados.")
+        ).to_be_visible()
+        expect(page.get_by_role("button", name="Ativar lembretes")).to_be_visible()
+        expect(page.locator("input[name=workday_start]")).to_have_value("22:00")
+        self.assert_fits(page, f"{engine}-lembretes-desativados")
+        page.context.close()
+
+    def assert_saved_night_shift(self):
+        setting = ReminderSetting.objects.get(membership=self.membership)
+        assert not setting.active
+        assert (setting.workday_start, setting.workday_end) == (time(22), time(6))
+
+    def test_iphone_changes_times_saves_and_deactivates_chromium(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            self.run_iphone_flow(playwright, browser, "chromium")
+            browser.close()
+        self.assert_saved_night_shift()
+
+    def test_iphone_changes_times_saves_and_deactivates_webkit(self):
+        with sync_playwright() as playwright:
+            try:
+                browser = playwright.webkit.launch()
+            except PlaywrightError:
+                if os.environ.get("QA_WEBKIT") == "1":
+                    raise
+                self.skipTest(
+                    "WebKit is not installed (python -m playwright install webkit)"
+                )
+            self.run_iphone_flow(playwright, browser, "webkit")
+            browser.close()
+        self.assert_saved_night_shift()
+
+    def test_night_shift_reminders_belong_to_the_start_day(self):
+        # 22:00-06:00 every 60 min, Mondays only: Monday 19/10/2026 at 23:00
+        # and Tuesday 00:00 ... 05:00; never Monday early morning (Sunday's
+        # shift) nor Tuesday night.
+        ReminderSetting.objects.create(
+            membership=self.membership,
+            active=True,
+            workday_start=time(22),
+            workday_end=time(6),
+            weekdays="1",
+        )
+        zone = ZoneInfo(TIMEZONE)
+        monday = datetime(2026, 10, 19, tzinfo=zone)
+        expected = [monday + timedelta(hours=hour) for hour in range(23, 30)]
+        missing = [monday + timedelta(hours=1), monday + timedelta(hours=30)]
+
+        def check(page, slot, shown):
+            notice = page.locator("[data-reminder-notice]")
+            page.clock.pause_at(slot - timedelta(seconds=30))
+            expect(notice).to_be_hidden()
+            page.clock.fast_forward("01:00")
+            if shown:
+                expect(notice).to_be_visible()
+                notice.get_by_role("button", name="Agora não").click()
+            else:
+                page.wait_for_timeout(200)
+                expect(notice).to_be_hidden()
+
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            # Sunday's night shift was not chosen: nothing on Monday at 01:00.
+            page = self.open(browser, clock=monday + timedelta(minutes=50))
+            self.visit(page, "/app/")
+            check(page, missing[0], shown=False)
+            page.context.close()
+            page = self.open(browser, clock=monday + timedelta(hours=22, minutes=50))
+            self.visit(page, "/app/")
+            for slot in expected:
+                check(page, slot, shown=True)
+            check(page, monday + timedelta(hours=30), shown=False)  # 06:00 = end
+            check(page, monday + timedelta(hours=47), shown=False)  # Tuesday 23:00
+            page.context.close()
+            # Opened after midnight, Monday's shift is still running.
+            page = self.open(browser, clock=monday + timedelta(hours=26, minutes=50))
+            self.visit(page, "/app/")
+            check(page, monday + timedelta(hours=27), shown=True)
+            assert page.evaluate(PERMISSION_REQUESTS) == 0
+            page.context.close()
             browser.close()
 
     def test_service_worker_stores_no_app_page_and_serves_offline_page(self):
