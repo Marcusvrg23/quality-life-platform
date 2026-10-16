@@ -116,6 +116,13 @@ class ReminderTests(TestCase):
         self.assertFalse(setting.active)
         self.assertEqual(setting.interval_minutes, 90)
 
+    def test_database_accepts_night_shift(self):
+        ReminderSetting.objects.create(
+            membership=self.membership(self.owner),
+            workday_start=time(22),
+            workday_end=time(6),
+        )
+
     def test_save_keeps_active_state(self):
         self.login(self.owner)
         self.client.post(reverse("wellbeing_reminders"), VALID)
@@ -225,7 +232,7 @@ class ReminderTests(TestCase):
             {"weekdays": []},
             {"workday_start": "25:00"},
             {"workday_end": "manhã"},
-            {"workday_start": "18:00", "workday_end": "08:00"},
+            {"workday_start": "08:00", "workday_end": "08:00"},
             {
                 "workday_start": "09:00",
                 "workday_end": "10:00",
@@ -247,7 +254,7 @@ class ReminderTests(TestCase):
             {"weekdays": ""},
             {"weekdays": "8"},
             {"weekdays": "531"},
-            {"workday_start": time(18), "workday_end": time(8)},
+            {"workday_start": time(8), "workday_end": time(8)},
         ):
             with (
                 self.subTest(invalid=invalid),
@@ -255,6 +262,184 @@ class ReminderTests(TestCase):
                 transaction.atomic(),
             ):
                 ReminderSetting.objects.create(membership=membership, **invalid)
+
+    # Production report (iPhone): only 08:00-18:00 could be saved -----------
+
+    def test_time_with_seconds_or_fraction_is_saved_as_hour_minute(self):
+        self.login(self.owner)
+        for start, end in (
+            ("09:30:00", "17:45:00"),
+            ("09:30:00.000", "17:45:00.000"),
+            ("09:30:59", "17:45:01.5"),
+            ("9:30", "17:45"),
+        ):
+            with self.subTest(start=start, end=end):
+                response = self.client.post(
+                    reverse("wellbeing_reminders"),
+                    {**VALID, "workday_start": start, "workday_end": end},
+                )
+                self.assertRedirects(response, reverse("wellbeing_reminders"))
+                setting = ReminderSetting.objects.get()
+                self.assertEqual(setting.workday_start, time(9, 30))
+                self.assertEqual(setting.workday_end, time(17, 45))
+                self.assertEqual(self.schedule()["start"], "09:30")
+
+    def test_any_times_save_and_show_after_redirect(self):
+        self.login(self.owner)
+        for action, start, end in (
+            ("activate", "07:15", "16:45"),
+            ("save", "09:00", "17:30"),
+        ):
+            with self.subTest(start=start, end=end):
+                response = self.client.post(
+                    reverse("wellbeing_reminders"),
+                    {
+                        **VALID,
+                        "action": action,
+                        "workday_start": start,
+                        "workday_end": end,
+                    },
+                    follow=True,
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, f'value="{start}"')
+                self.assertContains(response, f'value="{end}"')
+                self.assertContains(response, f"das {start} às {end}.")
+
+    def test_time_inputs_use_minute_step(self):
+        self.login(self.owner)
+        page = self.client.get(reverse("wellbeing_reminders"))
+        self.assertContains(page, 'type="time" name="workday_start"', count=1)
+        self.assertContains(page, 'step="60"', count=2)
+
+    def test_refused_post_names_the_field_problem(self):
+        self.login(self.owner)
+        for invalid, message in (
+            ({"workday_start": "manhã"}, "Horário de início inválido."),
+            ({"workday_end": "25:00"}, "Horário de fim inválido."),
+            ({"workday_start": ""}, "Informe o início do expediente."),
+            ({"weekdays": []}, "Escolha pelo menos um dia."),
+            ({"interval_minutes": "45"}, "Escolha um intervalo de 60, 90 ou 120 min."),
+            (
+                {"workday_start": "08:00", "workday_end": "08:00"},
+                "O início e o fim do expediente precisam ser diferentes.",
+            ),
+            (
+                {
+                    "workday_start": "09:00",
+                    "workday_end": "10:00",
+                    "interval_minutes": "120",
+                },
+                "O expediente precisa ser maior que o intervalo.",
+            ),
+        ):
+            with self.subTest(invalid=invalid):
+                response = self.client.post(
+                    reverse("wellbeing_reminders"), {**VALID, **invalid}
+                )
+                self.assertContains(response, message, status_code=400)
+                self.assertContains(response, 'role="alert"', status_code=400)
+        self.assertFalse(ReminderSetting.objects.exists())
+
+    # "Não consigo alterar nem desativar" ---------------------------------------
+
+    def test_deactivate_works_with_invalid_fields_on_screen(self):
+        self.login(self.owner)
+        self.client.post(reverse("wellbeing_reminders"), VALID)
+        response = self.client.post(
+            reverse("wellbeing_reminders"),
+            {
+                "action": "deactivate",
+                "interval_minutes": "45",
+                "workday_start": "manhã",
+                "workday_end": "",
+                "weekdays": [],
+            },
+        )
+        self.assertRedirects(response, reverse("wellbeing_reminders"))
+        setting = ReminderSetting.objects.get()
+        self.assertFalse(setting.active)
+        # The choices are kept untouched for the next activation.
+        self.assertEqual(setting.interval_minutes, 90)
+        self.assertEqual(setting.workday_start, time(9, 0))
+        self.assertEqual(setting.weekdays, "135")
+
+    def test_deactivate_has_its_own_form(self):
+        self.login(self.owner)
+        self.client.post(reverse("wellbeing_reminders"), VALID)
+        page = self.client.get(reverse("wellbeing_reminders")).content.decode()
+        start = page.index('value="deactivate"')
+        form = page[page.rindex("<form", 0, start) : page.index("</form>", start)]
+        self.assertNotIn('name="workday_start"', form)
+        self.assertNotIn('name="weekdays"', form)
+        self.assertIn("csrfmiddlewaretoken", form)
+
+    def test_deactivate_without_saved_reminders_changes_nothing(self):
+        self.login(self.owner)
+        response = self.client.post(
+            reverse("wellbeing_reminders"), {"action": "deactivate"}, follow=True
+        )
+        self.assertContains(response, "Lembretes desativados.")
+        self.assertFalse(ReminderSetting.objects.exists())
+
+    def test_success_messages(self):
+        self.login(self.owner)
+        for data, message in (
+            (VALID, "Lembretes ativados."),
+            ({**VALID, "action": "save"}, "Alterações salvas."),
+            ({"action": "deactivate"}, "Lembretes desativados."),
+        ):
+            with self.subTest(message=message):
+                response = self.client.post(
+                    reverse("wellbeing_reminders"), data, follow=True
+                )
+                self.assertContains(response, message)
+                self.assertContains(response, 'role="status"')
+        page = self.client.get(reverse("wellbeing_reminders"))
+        self.assertNotContains(page, "Lembretes desativados.")
+
+    # Night shift -----------------------------------------------------------------
+
+    def test_night_shift_is_saved_and_described(self):
+        self.login(self.owner)
+        response = self.client.post(
+            reverse("wellbeing_reminders"),
+            {
+                **VALID,
+                "interval_minutes": "60",
+                "workday_start": "22:00",
+                "workday_end": "06:00",
+            },
+            follow=True,
+        )
+        self.assertContains(response, "das 22:00 às 06:00 (dia seguinte).")
+        setting = ReminderSetting.objects.get()
+        self.assertEqual(setting.workday_start, time(22, 0))
+        self.assertEqual(setting.workday_end, time(6, 0))
+        self.assertEqual(self.schedule()["end"], "06:00")
+
+    def test_night_shift_limits(self):
+        self.login(self.owner)
+        for start, end, interval, ok in (
+            ("23:52", "06:00", "60", True),
+            ("23:00", "00:30", "60", True),
+            ("23:00", "00:00", "60", False),  # 60 min shift = interval
+            ("23:30", "00:30", "90", False),
+            ("06:00", "06:00", "60", False),  # start = end
+        ):
+            with self.subTest(start=start, end=end, interval=interval):
+                ReminderSetting.objects.all().delete()
+                response = self.client.post(
+                    reverse("wellbeing_reminders"),
+                    {
+                        **VALID,
+                        "workday_start": start,
+                        "workday_end": end,
+                        "interval_minutes": interval,
+                    },
+                )
+                self.assertEqual(response.status_code, 302 if ok else 400)
+                self.assertEqual(ReminderSetting.objects.exists(), ok)
 
     def test_get_only_schedule(self):
         self.login(self.owner)
