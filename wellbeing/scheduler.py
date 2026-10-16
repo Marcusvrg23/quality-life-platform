@@ -226,8 +226,8 @@ def _loop(plan):
             close_old_connections()
             seconds = tick(plan, timezone.now())
         finally:
-            # Never keep a connection open while sleeping: Neon only
-            # suspends an idle compute.
+            # Never keep a connection open while sleeping, so nothing here
+            # keeps the Neon compute awake.
             connection.close()
         _wake.wait(seconds)
 
