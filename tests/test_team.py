@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from assessments.models import Assessment, AssessmentResult, QuestionnaireVersion
 from config.tenant import SESSION_ORGANIZATION_KEY
-from identity.models import Membership, Organization
+from identity.models import AllowedEmail, Membership, Organization
 
 Role = Membership.Role
 PASSWORD = "team-test-password-81"
@@ -229,3 +229,112 @@ class TeamMenuTests(TeamTestCase):
                     self.client.get(reverse("app")),
                     f'href="{reverse("password_change")}"',
                 )
+
+
+class TeamAllowedEmailsTests(TeamTestCase):
+    def add(self, text, client=None):
+        return (client or self.client).post(
+            reverse("team_emails_add"), {"emails": text}
+        )
+
+    def test_manager_clears_collaborators_only_whatever_the_form_says(self):
+        self.login(self.manager)
+        response = self.client.post(
+            reverse("team_emails_add"),
+            {
+                "emails": "nova@a.test, Outra@A.test\nnova@a.test\ninvalido",
+                "papel": Role.CORPORATE_MANAGER,
+                "role": Role.ADMIN,
+            },
+            follow=True,
+        )
+        self.assertRedirects(response, reverse("team"))
+        self.assertEqual(
+            dict(AllowedEmail.objects.values_list("email", "role")),
+            {"nova@a.test": Role.COLLABORATOR, "outra@a.test": Role.COLLABORATOR},
+        )
+        self.assertEqual(
+            AllowedEmail.objects.get(email="nova@a.test").added_by, self.manager
+        )
+        self.assertContains(response, "2 e-mails liberados.")
+        self.assertContains(response, "Ignorados por serem inválidos: invalido.")
+        self.assertContains(response, "Ignorados por estarem repetidos: nova@a.test.")
+        self.assertContains(response, "E-mails liberados (2)")
+        self.assertContains(response, "Continuar com o Google")
+
+    def test_team_page_has_no_invitation_ui(self):
+        self.login(self.manager)
+        html = main_content(self.client.get(reverse("team")))
+        for text in (
+            "Convidar colaboradores",
+            "Convites pendentes",
+            "Gerar convites",
+            "convites/",
+        ):
+            self.assertNotIn(text, html)
+        self.assertIn("Liberar e-mails", html)
+        self.assertIn("Membros (2)", html)
+
+    def test_remove_collaborator_entry_deactivates_access(self):
+        entry = AllowedEmail.objects.create(organization=self.org, email="colab@a.test")
+        self.login(self.manager)
+        response = self.client.post(reverse("team_email_remove", args=[entry.pk]))
+        self.assertRedirects(response, reverse("team"))
+        self.assertFalse(AllowedEmail.objects.filter(pk=entry.pk).exists())
+        self.assertFalse(self.membership(self.collaborator).is_active)
+
+    def test_manager_cannot_remove_a_manager_entry(self):
+        entry = AllowedEmail.objects.create(
+            organization=self.org, email="gestor2@a.test", role=Role.CORPORATE_MANAGER
+        )
+        self.login(self.manager)
+        page = main_content(self.client.get(reverse("team")))
+        self.assertIn("gestor2@a.test", page)
+        self.assertNotIn(reverse("team_email_remove", args=[entry.pk]), page)
+        response = self.client.post(reverse("team_email_remove", args=[entry.pk]))
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(AllowedEmail.objects.filter(pk=entry.pk).exists())
+
+    def test_other_company_entry_is_404_and_lists_are_isolated(self):
+        b_entry = AllowedEmail.objects.create(
+            organization=self.other_org, email="so-b@b.test"
+        )
+        self.login(self.manager)
+        self.assertNotIn("so-b@b.test", main_content(self.client.get(reverse("team"))))
+        response = self.client.post(reverse("team_email_remove", args=[b_entry.pk]))
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(AllowedEmail.objects.filter(pk=b_entry.pk).exists())
+
+    def test_collaborator_and_anonymous_cannot_use_the_actions(self):
+        entry = AllowedEmail.objects.create(organization=self.org, email="x@a.test")
+        self.assertEqual(self.add("y@a.test").status_code, 302)
+        self.assertIn(reverse("login"), self.add("y@a.test")["Location"])
+        self.login(self.collaborator)
+        self.assertEqual(self.add("y@a.test").status_code, 403)
+        self.assertEqual(
+            self.client.post(reverse("team_email_remove", args=[entry.pk])).status_code,
+            403,
+        )
+        self.assertEqual(AllowedEmail.objects.count(), 1)
+
+    def test_actions_are_post_only_and_need_csrf(self):
+        entry = AllowedEmail.objects.create(organization=self.org, email="x@a.test")
+        self.login(self.manager)
+        for url in (
+            reverse("team_emails_add"),
+            reverse("team_email_remove", args=[entry.pk]),
+        ):
+            with self.subTest(url=url):
+                self.assertEqual(self.client.get(url).status_code, 405)
+        client = self.login(self.manager, client=Client(enforce_csrf_checks=True))
+        self.assertEqual(self.add("z@a.test", client=client).status_code, 403)
+        self.assertEqual(
+            client.post(reverse("team_email_remove", args=[entry.pk])).status_code, 403
+        )
+        self.assertEqual(AllowedEmail.objects.count(), 1)
+
+    def test_empty_box_is_refused_without_error_page(self):
+        self.login(self.manager)
+        response = self.add("   ")
+        self.assertRedirects(response, reverse("team"))
+        self.assertEqual(AllowedEmail.objects.count(), 0)

@@ -9,7 +9,7 @@
   <header class="team-intro">
     <p class="eyebrow">Equipe Quality Life</p>
     <h1>Painel da Quality Life</h1>
-    <p>Cadastre empresas, convide o gestor de cada uma e entre como administrador quando precisar dar suporte.</p>
+    <p>Cadastre empresas com a lista de e-mails liberados, marque quem é gestor e entre como administrador quando precisar dar suporte.</p>
   </header>
 
   {% if messages %}<ul class="team-messages" role="status">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
@@ -33,14 +33,23 @@
 
   <section class="card team-section" aria-labelledby="new-company-title">
     <h2 id="new-company-title">Nova empresa</h2>
-    <form method="post" action="{% url 'operator_organization_create' %}" class="team-form operator-form">
+    <p>Uma tela só: o nome, a lista de e-mails e quem é o gestor. Quem está na lista entra com "Continuar com o Google".</p>
+    <form method="post" action="{% url 'operator_organization_create' %}" class="team-form team-form--stack operator-form">
       {% csrf_token %}
       <div class="team-field">
         <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
         {{ form.name }}
         {% if form.name.errors %}<ul class="team-errors" role="alert">{% for error in form.name.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
       </div>
-      <button type="submit" class="button">Criar empresa</button>
+      <div class="team-field">
+        <label for="{{ form.collaborators.id_for_label }}">{{ form.collaborators.label }}</label>
+        {{ form.collaborators }}
+      </div>
+      <div class="team-field">
+        <label for="{{ form.managers.id_for_label }}">{{ form.managers.label }}</label>
+        {{ form.managers }}
+      </div>
+      <button type="submit" class="button">Concluir</button>
     </form>
   </section>
 
@@ -55,11 +64,8 @@
           <span><b class="team-status" data-active="{{ company.is_active|yesno:'1,0' }}">{{ company.is_active|yesno:"Ativa,Inativa" }}</b> · {{ company.collaborators }} colaborador{{ company.collaborators|pluralize:"es" }} ativo{{ company.collaborators|pluralize }} · {{ company.managers }} gestor{{ company.managers|pluralize:"es" }}</span>
         </div>
         <div class="operator-actions">
+          <a class="button" href="{% url 'operator_organization_emails' company.pk %}">E-mails liberados ({{ company.allowed }})</a>
           {% if company.is_active %}
-          <form method="post" action="{% url 'operator_manager_invitation' company.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="button">Gerar convite de gestor</button>
-          </form>
           <details class="operator-enter">
             <summary class="button button-secondary">Entrar como administrador</summary>
             <div class="operator-enter__body">

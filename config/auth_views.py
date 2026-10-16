@@ -11,6 +11,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
+from identity import google
+from identity.eligibility import memberships_for_email
 from identity.models import Membership
 from wellbeing.services import first_name, greeting
 
@@ -50,6 +52,16 @@ def _render_home(request: HttpRequest, tenant) -> HttpResponse:
 class EmailLoginView(LoginView):
     authentication_form = EmailAuthenticationForm
     template_name = "identity/login.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["google_enabled"] = google.enabled()
+        return context
+
+    def form_valid(self, form):
+        # The allowed e-mail list applies to password sign-in too (spec 14).
+        memberships_for_email(form.get_user().email)
+        return super().form_valid(form)
 
 
 class SessionLogoutView(LogoutView):

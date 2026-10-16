@@ -8,4 +8,8 @@
 .operator-enter__body { display: grid; gap: .5rem; margin-top: .6rem; }
 .operator-enter__body p { margin: 0; }
 .operator-form .team-field { flex: 1 1 16rem; }
+/* Stacked (column) forms: a 16rem flex basis would become a height. */
+.operator-form.team-form--stack .team-field { flex: 0 0 auto; }
 .operator-form input { max-width: none; }
+.operator-message { margin-bottom: .6rem; }
+.team-row > .operator-actions .button { white-space: nowrap; }

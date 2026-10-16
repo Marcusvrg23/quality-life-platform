@@ -1,0 +1,15 @@
+{% extends 'identity/auth_base.html' %}
+{% block title %}Continuar com o Google{% endblock %}
+{% block eyebrow %}ENTRAR{% endblock %}
+{% block heading %}Continuar com o Google{% endblock %}
+{% block body %}
+<p class="login-description">Você vai escolher sua conta Google e voltar para a Quality Life. Use o e-mail que você passou ao RH da sua empresa.</p>
+<form method="post" class="login-google">
+    {% csrf_token %}
+    <input type="hidden" name="process" value="login">
+    <input type="hidden" name="next" value="{{ request.GET.next }}">
+    {% include 'identity/_google_button.html' %}
+</form>
+<p class="login-consent">Ao continuar, você concorda com os <a href="{% url 'terms' %}">Termos de uso</a> e a <a href="{% url 'privacy' %}">Política de privacidade</a>.</p>
+<p class="login-help"><a href="{% url 'login' %}">Voltar ao login</a></p>
+{% endblock %}

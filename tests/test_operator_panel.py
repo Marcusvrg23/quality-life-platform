@@ -12,7 +12,13 @@ from django.utils import timezone
 
 from config.tenant import SESSION_ORGANIZATION_KEY
 from identity.invitations import INVITATION_TTL, hash_token, issue_invitations
-from identity.models import Invitation, Membership, Organization, User
+from identity.models import (
+    AllowedEmail,
+    Invitation,
+    Membership,
+    Organization,
+    User,
+)
 
 Role = Membership.Role
 PASSWORD = "operator-test-password-63"
@@ -36,6 +42,9 @@ class OperatorTestCase(TestCase):
         )
         self.other_collaborator = self.member(
             self.other_org, "colab@b.test", Role.COLLABORATOR
+        )
+        self.entry = AllowedEmail.objects.create(
+            organization=self.org, email="liberado@a.test"
         )
 
     def member(self, organization, email, role):
@@ -61,6 +70,13 @@ class OperatorTestCase(TestCase):
                 "operator_manager_invitation", args=[pk]
             ),
             "operator_enter": reverse("operator_enter", args=[pk]),
+            "operator_email_add": reverse("operator_email_add", args=[pk]),
+            "operator_email_remove": reverse(
+                "operator_email_remove", args=[pk, self.entry.pk]
+            ),
+            "operator_email_role": reverse(
+                "operator_email_role", args=[pk, self.entry.pk]
+            ),
         }
 
     def manager_link(self, organization=None):
@@ -154,13 +170,29 @@ class OperatorAccessTests(OperatorTestCase):
                 self.assertEqual(
                     self.client.get(reverse("operator_panel")).status_code, 404
                 )
+                self.assertEqual(
+                    self.client.get(
+                        reverse("operator_organization_emails", args=[self.org.pk])
+                    ).status_code,
+                    404,
+                )
                 for name, url in self.action_urls().items():
-                    data = {"name": "Invasora", "ativo": "0", "confirmar": "1"}
+                    data = {
+                        "name": "Invasora",
+                        "ativo": "0",
+                        "confirmar": "1",
+                        "emails": "invasor@x.test",
+                        "papel": "CORPORATE_MANAGER",
+                    }
                     with self.subTest(action=name):
                         self.assertEqual(self.client.post(url, data).status_code, 404)
         self.assertEqual(Organization.objects.count(), organizations)
         self.assertTrue(Organization.objects.get(pk=self.org.pk).is_active)
         self.assertFalse(Invitation.objects.exists())
+        self.assertEqual(
+            list(AllowedEmail.objects.values_list("email", "role")),
+            [("liberado@a.test", Role.COLLABORATOR)],
+        )
         self.assertEqual(
             list(Membership.objects.values_list("pk", "role", "is_active")),
             memberships,
@@ -186,11 +218,20 @@ class OperatorAccessTests(OperatorTestCase):
         for name, url in self.action_urls().items():
             with self.subTest(action=name):
                 response = client.post(
-                    url, {"name": "X", "ativo": "0", "confirmar": "1"}
+                    url,
+                    {
+                        "name": "X",
+                        "ativo": "0",
+                        "confirmar": "1",
+                        "emails": "csrf@x.test",
+                        "papel": "CORPORATE_MANAGER",
+                    },
                 )
                 self.assertEqual(response.status_code, 403)
         self.assertFalse(Organization.objects.filter(name="X").exists())
         self.assertTrue(Organization.objects.get(pk=self.org.pk).is_active)
+        self.assertEqual(AllowedEmail.objects.count(), 1)
+        self.assertEqual(AllowedEmail.objects.get().role, Role.COLLABORATOR)
 
 
 class OperatorPanelListTests(OperatorTestCase):
@@ -224,8 +265,10 @@ class OrganizationCreateTests(OperatorTestCase):
     def test_creates_company_with_unique_slug_for_repeated_names(self):
         self.login(self.root)
         for _ in range(3):
+            response = self.create("Padaria São João")
+            newest = Organization.objects.latest("pk")
             self.assertRedirects(
-                self.create("Padaria São João"), reverse("operator_panel")
+                response, reverse("operator_organization_emails", args=[newest.pk])
             )
         self.assertEqual(
             sorted(
@@ -566,3 +609,184 @@ class ManagerIsolationTests(OperatorTestCase):
         self.assertTrue(b_member.is_active)
         self.assertIsNone(b_invitation.revoked_at)
         self.assertEqual(self.client.get(reverse("operator_panel")).status_code, 404)
+
+
+class CompanyWizardTests(OperatorTestCase):
+    def test_wizard_adds_lists_and_reports_ignored(self):
+        self.login(self.root)
+        response = self.client.post(
+            reverse("operator_organization_create"),
+            {
+                "name": "Clínica Viva",
+                "collaborators": (
+                    "Ana@viva.test, bruno@viva.test;carla@viva.test\n"
+                    "dado@viva.test \t ana@viva.test\nsem-arroba\nchefe@viva.test\n"
+                ),
+                "managers": "Chefe@viva.test\nchefe@viva.test, @quebrado",
+            },
+            follow=True,
+        )
+        organization = Organization.objects.get(name="Clínica Viva")
+        self.assertRedirects(
+            response, reverse("operator_organization_emails", args=[organization.pk])
+        )
+        rows = dict(
+            AllowedEmail.objects.filter(organization=organization).values_list(
+                "email", "role"
+            )
+        )
+        self.assertEqual(
+            rows,
+            {
+                "ana@viva.test": Role.COLLABORATOR,
+                "bruno@viva.test": Role.COLLABORATOR,
+                "carla@viva.test": Role.COLLABORATOR,
+                "dado@viva.test": Role.COLLABORATOR,
+                "chefe@viva.test": Role.CORPORATE_MANAGER,
+            },
+        )
+        self.assertTrue(
+            all(
+                entry.added_by == self.root
+                for entry in AllowedEmail.objects.filter(organization=organization)
+            )
+        )
+        self.assertContains(
+            response, "Clínica Viva criada com 4 colaboradores e 1 gestor."
+        )
+        self.assertContains(response, "5 e-mails liberados.")
+        self.assertContains(
+            response, "Ignorados por serem inválidos: sem-arroba, @quebrado."
+        )
+        self.assertContains(
+            response, "Ignorados por estarem repetidos: ana@viva.test, chefe@viva.test."
+        )
+        self.assertContains(
+            response,
+            "Acesse http://testserver/ e clique em Continuar com o Google usando o "
+            "e-mail que você passou ao RH.",
+        )
+        self.assertContains(response, 'data-copy="whatsapp-message"')
+        self.assertContains(
+            response, "https://wa.me/?text=Acesse%20http%3A%2F%2Ftestserver%2F"
+        )
+        self.assertContains(response, "Tornar gestor")
+        self.assertContains(response, "Voltar a colaborador")
+        self.assertNotContains(response, "Gerar convite de gestor")
+        self.assertFalse(Invitation.objects.exists())
+
+    def test_wizard_without_emails_still_creates_the_company(self):
+        self.login(self.root)
+        self.client.post(reverse("operator_organization_create"), {"name": "Só nome"})
+        organization = Organization.objects.get(name="Só nome")
+        self.assertFalse(organization.allowed_emails.exists())
+
+    def test_panel_shows_allowed_count_and_link_not_emails(self):
+        self.login(self.root)
+        response = self.client.get(reverse("operator_panel"))
+        self.assertContains(response, "E-mails liberados (1)")
+        self.assertContains(
+            response, reverse("operator_organization_emails", args=[self.org.pk])
+        )
+        self.assertNotContains(response, "liberado@a.test")
+        self.assertNotContains(response, "Gerar convite de gestor")
+        self.assertContains(response, ">Concluir<")
+        self.assertContains(response, "Cole os e-mails dos colaboradores")
+        self.assertContains(response, "E-mail(s) do chefe/gestor")
+        rows = {company.pk: company for company in response.context["companies"]}
+        self.assertEqual(rows[self.org.pk].collaborators, 1)
+        self.assertEqual(rows[self.org.pk].managers, 1)
+        self.assertEqual(rows[self.org.pk].allowed, 1)
+
+
+class CompanyEmailsPageTests(OperatorTestCase):
+    def emails_url(self, organization=None):
+        return reverse(
+            "operator_organization_emails", args=[(organization or self.org).pk]
+        )
+
+    def test_add_with_role_and_list(self):
+        self.login(self.root)
+        response = self.client.post(
+            reverse("operator_email_add", args=[self.org.pk]),
+            {"emails": "nova@a.test; liberado@a.test", "papel": Role.CORPORATE_MANAGER},
+            follow=True,
+        )
+        self.assertRedirects(response, self.emails_url())
+        self.assertEqual(
+            AllowedEmail.objects.get(email="nova@a.test").role, Role.CORPORATE_MANAGER
+        )
+        self.assertContains(response, "1 e-mail liberado.")
+        self.assertContains(
+            response, "Ignorados por estarem repetidos: liberado@a.test."
+        )
+        self.assertContains(response, "Lista (2)")
+
+    def test_invalid_role_or_empty_box_is_refused(self):
+        self.login(self.root)
+        count = AllowedEmail.objects.count()
+        response = self.client.post(
+            reverse("operator_email_add", args=[self.org.pk]),
+            {"emails": "x@a.test", "papel": Role.ADMIN},
+        )
+        self.assertEqual(response.status_code, 400)
+        response = self.client.post(
+            reverse("operator_email_add", args=[self.org.pk]), {"emails": "   "}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(AllowedEmail.objects.count(), count)
+        response = self.client.post(
+            reverse("operator_email_role", args=[self.org.pk, self.entry.pk]),
+            {"papel": Role.ADMIN},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.entry.refresh_from_db()
+        self.assertEqual(self.entry.role, Role.COLLABORATOR)
+
+    def test_role_toggle_changes_list_and_membership(self):
+        person = self.member(self.org, "liberado@a.test", Role.COLLABORATOR)
+        self.login(self.root)
+        self.client.post(
+            reverse("operator_email_role", args=[self.org.pk, self.entry.pk]),
+            {"papel": Role.CORPORATE_MANAGER},
+        )
+        self.assertEqual(
+            Membership.objects.get(user=person).role, Role.CORPORATE_MANAGER
+        )
+        self.client.post(
+            reverse("operator_email_role", args=[self.org.pk, self.entry.pk]),
+            {"papel": Role.COLLABORATOR},
+        )
+        self.assertEqual(Membership.objects.get(user=person).role, Role.COLLABORATOR)
+
+    def test_remove_deactivates_membership_now(self):
+        person = self.member(self.org, "liberado@a.test", Role.COLLABORATOR)
+        self.login(self.root)
+        response = self.client.post(
+            reverse("operator_email_remove", args=[self.org.pk, self.entry.pk])
+        )
+        self.assertRedirects(response, self.emails_url())
+        self.assertFalse(AllowedEmail.objects.filter(pk=self.entry.pk).exists())
+        self.assertFalse(Membership.objects.get(user=person).is_active)
+
+    def test_entry_of_another_company_is_404_even_for_the_operator(self):
+        self.login(self.root)
+        for name in ("operator_email_remove", "operator_email_role"):
+            with self.subTest(action=name):
+                response = self.client.post(
+                    reverse(name, args=[self.other_org.pk, self.entry.pk]),
+                    {"papel": Role.CORPORATE_MANAGER},
+                )
+                self.assertEqual(response.status_code, 404)
+        self.assertTrue(AllowedEmail.objects.filter(pk=self.entry.pk).exists())
+        self.assertEqual(
+            self.client.get(self.emails_url(Organization(pk=10**6))).status_code, 404
+        )
+
+    def test_emails_page_lists_only_this_company(self):
+        AllowedEmail.objects.create(organization=self.other_org, email="segredo@b.test")
+        self.login(self.root)
+        response = self.client.get(self.emails_url())
+        self.assertContains(response, "liberado@a.test")
+        self.assertNotContains(response, "segredo@b.test")
+        self.assertContains(response, "Empresa A")

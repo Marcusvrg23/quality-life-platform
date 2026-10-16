@@ -36,3 +36,15 @@ body { margin: 0; }
 .login-hint { margin: -.85rem 0 1.25rem; color: #728682; font-size: .75rem; line-height: 1.5; }
 .login-hint ul { margin: 0; padding-left: 1.1rem; }
 @media (max-width: 760px) { .login-layout { display: block; } .login-story { display: none; } .login-form-panel { min-height: 100dvh; padding: 2rem 1.5rem; background: radial-gradient(ellipse at 0 0, #eaf5ef 0, transparent 48%); } .login-logo { width: 95px; height: 95px; margin-bottom: 1.6rem; } }
+/* "Continuar com o Google" (spec 14): Google brand button, consent line and the collapsed password form. */
+.login-google { margin: 0; }
+.google-button { display: flex; width: 100%; align-items: center; justify-content: center; gap: .75rem; min-height: 3.3rem; padding: .8rem 1rem; border: 1px solid #747775; border-radius: .65rem; background: #fff; color: #1f1f1f; font: inherit; font-size: .95rem; font-weight: 600; cursor: pointer; }
+.google-button:hover { background: #f3f4f6; }
+.google-button__logo { display: inline-flex; width: 1.25rem; height: 1.25rem; flex: none; }
+.google-button__logo svg { width: 100%; height: 100%; }
+.login-consent { margin: .9rem 0 0; font-size: .78rem; line-height: 1.6; color: #557a74; text-align: center; overflow-wrap: anywhere; }
+.login-consent a { color: #1d665b; font-weight: 650; }
+.login-password { margin-top: 1.4rem; }
+.login-password summary { list-style: none; cursor: pointer; text-align: center; font-size: .85rem; font-weight: 650; color: #1d665b; padding: .4rem 0; }
+.login-password summary::-webkit-details-marker { display: none; }
+.login-password[open] summary { margin-bottom: 1rem; }

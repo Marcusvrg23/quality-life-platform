@@ -364,15 +364,14 @@ class AppDarkBrowserTests(StaticLiveServerTestCase):
                 assert page.url.endswith("/app/painel/"), page.url
                 page.wait_for_function(GSAP_IDLE)
                 self.check_page(page, f"{name}-painel")
-                page.get_by_role("button", name="Gerar convite de gestor").first.click()
-                page.wait_for_load_state("load")
-                page.locator("#manager-invite").wait_for()
-                page.wait_for_function(GSAP_IDLE)
                 page.locator(
                     "summary", has_text="Entrar como administrador"
                 ).first.click()
                 page.get_by_role("button", name="Confirmar e entrar").first.wait_for()
-                self.check_page(page, f"{name}-painel-convite")
+                self.check_page(page, f"{name}-painel-entrar")
+                # Spec 14: the per-company allowed e-mail list.
+                self.visit(page, f"/app/painel/empresas/{self.org.pk}/emails/")
+                self.check_page(page, f"{name}-painel-emails")
                 page.context.close()
 
                 page = self.open(browser, width, height)

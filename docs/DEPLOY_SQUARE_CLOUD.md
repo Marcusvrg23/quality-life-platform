@@ -67,7 +67,11 @@ DJANGO_SUPERUSER_PASSWORD=<senha forte do primeiro administrador>
 LEGAL_COMPANY_NAME=<razão social fornecida pelo cliente>
 LEGAL_CNPJ=<CNPJ fornecido pelo cliente>
 LEGAL_DPO_EMAIL=<e-mail do encarregado de dados fornecido pelo cliente>
+GOOGLE_CLIENT_ID=<ID do cliente OAuth, veja docs/GOOGLE_CLOUD_LOGIN.md>
+GOOGLE_CLIENT_SECRET=<chave secreta do cliente OAuth>
 ```
+
+As duas variáveis do Google são opcionais, mas andam juntas: sem nenhuma, o botão "Continuar com o Google" não aparece e o login por senha continua; com só uma delas o app não sobe. O passo a passo para obtê-las está em `docs/GOOGLE_CLOUD_LOGIN.md`; a URI de redirecionamento é `https://quality-life-mvrg23.squareweb.app/accounts/google/login/callback/`.
 
 Como gerar a `DJANGO_SECRET_KEY` (no seu computador, com Python instalado):
 
@@ -111,9 +115,9 @@ Marque cada item:
 
 - [ ] Login em `https://quality-life-mvrg23.squareweb.app/admin/` com o administrador criado.
 - [ ] Apagar `DJANGO_SUPERUSER_PASSWORD` e reiniciar o app.
-- [ ] No admin, criar a **Organization** do cliente e a **Membership** do gestor (papel gestor).
-- [ ] Gerar o link de definição de senha do gestor e entregar a ele.
-- [ ] Gestor envia um **convite** para um colaborador de teste.
+- [ ] Em `/app/painel/`, **Nova empresa**: nome, a lista de e-mails dos colaboradores e o e-mail do gestor → **Concluir**. Copiar a mensagem pronta e mandar no WhatsApp.
+- [ ] Gestor entra com **Continuar com o Google** usando o e-mail da lista e cai na empresa como gestor.
+- [ ] Em `/app/equipe/`, o gestor libera o e-mail de um colaborador de teste; o colaborador entra com o Google.
 - [ ] Colaborador de teste aceita o **consentimento** e conclui **uma avaliação completa**.
 - [ ] Colaborador revoga o consentimento em `/app/privacidade/`.
 - [ ] Gestor abre o **relatório**.

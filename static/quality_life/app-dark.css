@@ -456,6 +456,8 @@ a {
 .ql-main textarea,
 .ql-main select,
 .team input:not([type="hidden"]),
+.team textarea,
+.team select,
 .text-answer input,
 .text-answer textarea,
 .other-text input,
@@ -469,6 +471,8 @@ a {
 .ql-main input:not([type="hidden"], [type="checkbox"], [type="radio"]):focus,
 .ql-main textarea:focus,
 .team input:not([type="hidden"]):focus,
+.team textarea:focus,
+.team select:focus,
 .text-answer input:focus,
 .text-answer textarea:focus,
 .other-text input:focus,
@@ -897,6 +901,7 @@ progress::-moz-progress-bar {
 .legal-doc a,
 .legal-footer a,
 .legal-settings a,
+.team-intro a,
 .login-help a {
     color: var(--app-accent);
 }
@@ -1090,6 +1095,26 @@ progress::-moz-progress-bar {
         padding: 1.5rem 1rem;
         background: transparent;
     }
+}
+
+/* "Continuar com o Google" (spec 14): Google's dark button variant. */
+.google-button {
+    background: #131314;
+    color: #e3e3e3;
+    border-color: #8e918f;
+}
+
+.google-button:hover {
+    background: #1f1f20;
+}
+
+.login-consent {
+    color: var(--app-text-soft);
+}
+
+.login-consent a,
+.login-password summary {
+    color: var(--app-accent);
 }
 
 /* Sem acesso, Escolher empresa (identity.css is overridden, not edited). */

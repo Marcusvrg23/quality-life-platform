@@ -32,8 +32,20 @@
                 <img class="login-logo" src="{% static 'quality_life/images/brand/quality-life-logo-ring-512.png' %}" alt="Quality Life" width="100" height="100">
                 <p class="login-eyebrow">QUALITY LIFE</p>
                 <h2 id="login-title">Bem-vindo de volta</h2>
-                <p class="login-description">Acesse sua rotina personalizada de ginástica laboral e bem-estar.</p>
+                <p class="login-description">{% if google_enabled %}Entre com a conta Google do e-mail que você passou ao RH da sua empresa.{% else %}Acesse sua rotina personalizada de ginástica laboral e bem-estar.{% endif %}</p>
+                {% if google_message %}<p class="login-error" role="alert">{{ google_message }}</p>{% endif %}
                 {% if form.errors %}<p class="login-error" role="alert">Email ou senha inválidos.</p>{% endif %}
+                {% if google_enabled %}
+                <form method="post" action="{% url 'google_login' %}" class="login-google">
+                    {% csrf_token %}
+                    <input type="hidden" name="process" value="login">
+                    <input type="hidden" name="next" value="{{ next }}">
+                    {% include 'identity/_google_button.html' %}
+                </form>
+                <p class="login-consent">Ao continuar, você concorda com os <a href="{% url 'terms' %}">Termos de uso</a> e a <a href="{% url 'privacy' %}">Política de privacidade</a>.</p>
+                <details class="login-password"{% if form.errors %} open{% endif %}>
+                    <summary>Entrar com e-mail e senha</summary>
+                {% endif %}
                 <form method="post" action="{% url 'login' %}" class="login-form">
                     {% csrf_token %}
                     <label for="id_username">E-mail</label>
@@ -44,7 +56,11 @@
                     <button type="submit">Entrar <span aria-hidden="true">→</span></button>
                 </form>
                 <p class="login-help">Esqueceu a senha? Fale com o RH da sua empresa ou com o suporte Quality Life.</p>
+                {% if google_enabled %}
+                </details>
+                {% else %}
                 <p class="login-help"><a href="{% url 'privacy' %}">Política de privacidade</a> · <a href="{% url 'terms' %}">Termos de uso</a></p>
+                {% endif %}
                 <p class="login-footer">Seu espaço de cuidado no trabalho.</p>
             </div>
         </section>

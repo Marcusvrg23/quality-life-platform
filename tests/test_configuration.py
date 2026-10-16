@@ -104,3 +104,28 @@ class EnvironmentConfigurationTests(SimpleTestCase):
         )
 
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_google_credentials_must_be_set_together(self):
+        for present, missing in (
+            ("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"),
+            ("GOOGLE_CLIENT_SECRET", "GOOGLE_CLIENT_ID"),
+        ):
+            with self.subTest(present=present):
+                result = self.import_settings(
+                    overrides={present: "value-for-the-test"}, missing=(missing,)
+                )
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("must be set together", result.stderr)
+
+    def test_google_credentials_are_optional(self):
+        result = self.import_settings(
+            missing=("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET")
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        result = self.import_settings(
+            overrides={
+                "GOOGLE_CLIENT_ID": "id-for-the-test",
+                "GOOGLE_CLIENT_SECRET": "secret-for-the-test",
+            }
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)

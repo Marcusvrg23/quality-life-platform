@@ -7,6 +7,7 @@ from django.contrib.auth.views import (
 )
 from django.urls import include, path, reverse_lazy
 
+from identity import google as google_views
 from identity import operator_views
 from identity import views as identity_views
 
@@ -28,6 +29,13 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("login/", EmailLoginView.as_view(), name="login"),
     path("logout/", SessionLogoutView.as_view(), name="logout"),
+    # Google sign-in: only these two allauth routes exist (spec 14).
+    path("accounts/google/login/", google_views.google_login, name="google_login"),
+    path(
+        "accounts/google/login/callback/",
+        google_views.google_callback,
+        name="google_callback",
+    ),
     path("app/", app_home, name="app"),
     path("app/exercises/", exercises, name="exercises"),
     path("app/aulas/", lessons, name="lessons"),
@@ -40,6 +48,12 @@ urlpatterns = [
         "app/equipe/membros/<int:membership_id>/status/",
         identity_views.team_member_status,
         name="team_member_status",
+    ),
+    path("app/equipe/emails/", identity_views.team_emails_add, name="team_emails_add"),
+    path(
+        "app/equipe/emails/<int:entry_id>/remover/",
+        identity_views.team_email_remove,
+        name="team_email_remove",
     ),
     path(
         "app/equipe/convites/",
@@ -61,6 +75,26 @@ urlpatterns = [
         "app/painel/empresas/<int:organization_id>/status/",
         operator_views.operator_organization_status,
         name="operator_organization_status",
+    ),
+    path(
+        "app/painel/empresas/<int:organization_id>/emails/",
+        operator_views.operator_organization_emails,
+        name="operator_organization_emails",
+    ),
+    path(
+        "app/painel/empresas/<int:organization_id>/emails/liberar/",
+        operator_views.operator_email_add,
+        name="operator_email_add",
+    ),
+    path(
+        "app/painel/empresas/<int:organization_id>/emails/<int:entry_id>/remover/",
+        operator_views.operator_email_remove,
+        name="operator_email_remove",
+    ),
+    path(
+        "app/painel/empresas/<int:organization_id>/emails/<int:entry_id>/papel/",
+        operator_views.operator_email_role,
+        name="operator_email_role",
     ),
     path(
         "app/painel/empresas/<int:organization_id>/convite-gestor/",
