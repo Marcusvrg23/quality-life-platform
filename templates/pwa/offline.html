@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#84267d">
+    <title>Sem conexão · Quality Life</title>
+    {# Self-contained: served by the service worker when the network is gone. #}
+    <style>
+        html { color-scheme: dark; }
+        body { display: grid; min-height: 100vh; margin: 0; padding: 16px; box-sizing: border-box; place-items: center; color: #f2f7f8; background: #0b2129; font: 1rem/1.5 "Figtree", "Segoe UI", Arial, sans-serif; text-align: center; }
+        main { display: grid; gap: 1rem; justify-items: center; max-width: 22rem; }
+        img { width: 96px; height: 96px; }
+        h1 { margin: 0; font-size: 1.35rem; }
+        a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 1.25rem; color: #0b2129; background: #4fd8ca; border-radius: 999px; font-weight: 700; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <main>
+        <img src="{{ icon }}" width="96" height="96" alt="Quality Life">
+        <h1>Sem conexão. Tente de novo.</h1>
+        <a href="/app/">Tentar de novo</a>
+    </main>
+</body>
+</html>

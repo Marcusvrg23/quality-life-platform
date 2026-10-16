@@ -92,6 +92,10 @@ class FoundationSurfaceTests(SimpleTestCase):
                 "accept_invitation",
                 "password_reset_confirm",
                 "password_reset_complete",
+                "install_app",
+                "manifest",
+                "service_worker",
+                "offline",
             },
         )
 
