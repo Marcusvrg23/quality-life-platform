@@ -5,7 +5,7 @@
 {% block header_title %}Meditação{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
 {% block content %}
-<section class="wb-page" aria-labelledby="meditation-title" data-wellbeing data-record-url="{% url 'wellbeing_record' %}">
+<section class="wb-page" aria-labelledby="meditation-title" data-wellbeing data-record-root data-record-url="{% url 'wellbeing_record' %}">
     {% csrf_token %}
     <header class="wb-intro">
         <p class="ql-eyebrow">RESPIRAR</p>
@@ -22,8 +22,9 @@
         </article>
         {% endfor %}
     </div>
-    <p class="wb-note wb-footnote">Ritmo da respiração: inspire {{ catalog.BREATH_IN_SECONDS }} s, expire {{ catalog.BREATH_OUT_SECONDS }} s. {{ catalog.PROPOSAL_NOTE }} Vídeos ilustrativos gerados por IA.</p>
-    {% include 'wellbeing/_player.html' with breathing=True note="Vídeo ilustrativo gerado por IA." %}
+    <p class="wb-note wb-footnote">Ritmo da respiração: inspire {{ catalog.BREATH_IN_SECONDS }} s, expire {{ catalog.BREATH_OUT_SECONDS }} s.</p>
+    {% include 'wellbeing/_player.html' with breathing=True %}
+    {% include 'wellbeing/_practice_notice.html' %}
 </section>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/practice.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}

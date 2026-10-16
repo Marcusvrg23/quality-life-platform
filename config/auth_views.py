@@ -14,7 +14,7 @@ from django.views.decorators.http import require_GET, require_POST
 from identity import google
 from identity.eligibility import memberships_for_email
 from identity.models import Membership
-from wellbeing.services import first_name, greeting
+from wellbeing.services import first_name, greeting, personal_progress
 
 from . import wellbeing_catalog
 from .calendar_highlights import active_highlight
@@ -45,6 +45,7 @@ def _render_home(request: HttpRequest, tenant) -> HttpResponse:
             "greeting": greeting(),
             "first_name": first_name(request.user, tenant.organization),
             "tip": wellbeing_catalog.tip_of_the_day(timezone.localdate()),
+            "progress": personal_progress(request.user, tenant.organization),
         },
     )
 

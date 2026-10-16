@@ -4,7 +4,8 @@
 {% block page_title %}Exercícios{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/exercises.css' %}">{% endblock %}
 {% block content %}
-<div class="exercise-page">
+<div class="exercise-page" data-record-root data-record-url="{% url 'wellbeing_record' %}" data-progress-url="{% url 'wellbeing_progress' %}">
+    {% csrf_token %}
     <header class="exercise-heading">
         <div><p class="eyebrow">GINÁSTICA LABORAL</p><h1>Exercícios</h1><p>Movimentos guiados para pequenas pausas durante o seu dia.</p></div>
         <div class="exercise-guide"><img src="{% static 'quality_life/images/exercise-guide.webp' %}" alt="Mascote oficial Quality Life, seu guia de mobilidade"><span>Vamos alongar?</span></div>
@@ -19,7 +20,7 @@
         <div class="exercise-grid">
             {% for exercise in exercises %}
             <article class="exercise-card" data-exercise="{{ exercise.slug }}" data-category="{{ exercise.category }}">
-                <div class="exercise-card-visual">{% if exercise.has_image %}<img src="{% static exercise.visual %}" alt="{{ exercise.title }}: demonstração extraída do material Quality Life" loading="lazy" width="710" height="525">{% else %}<img src="{% static exercise.visual %}" alt="{{ exercise.title }}: quadro do vídeo ilustrativo" loading="lazy" width="832" height="480">{% endif %}<span class="exercise-index">{{ forloop.counter|stringformat:'02d' }}</span></div>
+                <div class="exercise-card-visual">{% if exercise.has_image %}<img src="{% static exercise.visual %}" alt="{{ exercise.title }}: demonstração extraída do material Quality Life" loading="lazy" width="710" height="525">{% else %}<img src="{% static exercise.visual %}" alt="{{ exercise.title }}" loading="lazy" width="832" height="480">{% endif %}<span class="exercise-index">{{ forloop.counter|stringformat:'02d' }}</span></div>
                 <div class="exercise-card-body"><p class="eyebrow">{{ exercise.category }}</p><h3>{{ exercise.title }}</h3><p>{{ exercise.summary }}</p>
                 <details class="exercise-instructions"><summary>Ver exercício</summary>
                     {% if exercise.position %}<p><strong>Posição inicial</strong><br>{{ exercise.position }}</p>{% endif %}
@@ -35,9 +36,11 @@
         <div class="exercise-dialog-bar"><button type="button" data-close-exercise>← Voltar aos exercícios</button><span data-sequence-position aria-live="polite" aria-atomic="true"></span></div>
         <progress class="exercise-progress" max="{{ exercises|length }}" value="1" aria-label="Posição na sequência"></progress>
         <div class="exercise-detail"><div class="exercise-detail-image"><img data-detail-image alt=""></div><div class="exercise-detail-content"><p class="eyebrow" data-detail-category></p><h2 id="exercise-title" tabindex="-1"></h2><div data-detail-instruction></div><p class="exercise-detail-note">Movimentos suaves, respiração lenta. Respeite seu corpo.</p></div></div>
+        <div class="exercise-done" data-sequence-done role="status"></div>
         <nav class="exercise-sequence" aria-label="Sequência de exercícios"><button type="button" class="button button-secondary" data-previous>← Anterior</button><button type="button" class="button" data-next>Próximo →</button></nav>
     </dialog>
-    <p class="exercise-source">Seleção do material {{ source }}. A sequência indica apenas sua navegação nesta sessão.</p>
+    <p class="exercise-source">Seleção do material {{ source }}. Com 1 minuto ou mais na sequência, a prática entra no seu progresso.</p>
+    {% include 'wellbeing/_practice_notice.html' %}
 </div>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'quality_life/exercises.js' %}" defer></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/practice.js' %}" defer></script><script src="{% static 'quality_life/exercises.js' %}" defer></script>{% endblock %}

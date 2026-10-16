@@ -18,6 +18,20 @@
         <a class="dashboard-link" href="{% url 'wellbeing_relax' %}"><span class="dashboard-link__icon" aria-hidden="true">≈</span><span><strong>Relaxamento</strong><small>Sons com timer para desligar.</small></span></a>
         <a class="dashboard-link" href="{% url 'wellbeing_progress' %}"><span class="dashboard-link__icon dashboard-link__icon--purple" aria-hidden="true">★</span><span><strong>Meu Progresso</strong><small>Dias seguidos, minutos e troféus.</small></span></a>
     </nav>
+    <section class="card wb-today" aria-labelledby="today-card-title">
+        <h2 id="today-card-title">Hoje</h2>
+        {% if progress.today_sessions %}
+        <dl class="wb-today__stats">
+            <div data-today-sessions="{{ progress.today_sessions }}"><dt>{% if progress.today_sessions == 1 %}prática{% else %}práticas{% endif %}</dt><dd>{{ progress.today_sessions }}</dd></div>
+            <div data-today-minutes="{{ progress.today_minutes }}"><dt>{% if progress.today_minutes == 1 %}minuto{% else %}minutos{% endif %}</dt><dd>{{ progress.today_minutes }}</dd></div>
+            <div data-today-streak="{{ progress.streak }}"><dt>{% if progress.streak == 1 %}dia seguido{% else %}dias seguidos{% endif %}</dt><dd>{{ progress.streak }}</dd></div>
+        </dl>
+        <a class="recommendation-link" href="{% url 'wellbeing_progress' %}">Ver meu progresso <span aria-hidden="true">→</span></a>
+        {% else %}
+        <p>Você ainda não praticou hoje.{% if progress.streak %} Sequência atual: {{ progress.streak }} {% if progress.streak == 1 %}dia{% else %}dias{% endif %}.{% endif %}</p>
+        <a class="recommendation-link" href="{% url 'wellbeing_gym' %}">Começar a Ginástica Laboral <span aria-hidden="true">→</span></a>
+        {% endif %}
+    </section>
     {% if tip %}
     <aside class="card wb-tip" aria-labelledby="tip-title">
         <p class="ql-eyebrow" id="tip-title">Dica do dia</p>
@@ -27,7 +41,6 @@
     {% if highlight %}
     <aside class="dashboard-notice" aria-labelledby="highlight-title">
         <h2 id="highlight-title">{{ highlight.title }}</h2>
-        <p>Conteúdo em definição pela Quality Life</p>
         {% if highlight.support_text %}<p class="dashboard-notice__support">{{ highlight.support_text }}</p>{% endif %}
     </aside>
     {% endif %}
@@ -36,7 +49,6 @@
     <aside class="dashboard-recommendation" aria-labelledby="recommendation-title">
         <p class="ql-eyebrow">PARA VOCÊ</p>
         <h2 id="recommendation-title">Sua prioridade agora: {{ recommendation.pillar_name }}</h2>
-        {% if not recommendation.to_exercises %}<p>Conteúdo em definição pela Quality Life</p>{% endif %}
         <a class="recommendation-link" href="{{ recommendation.url }}">{% if recommendation.to_exercises %}Ver exercícios{% else %}Ver minha avaliação{% endif %} <span aria-hidden="true">→</span></a>
     </aside>
     {% else %}

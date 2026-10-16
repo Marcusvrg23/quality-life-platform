@@ -5,7 +5,7 @@
 {% block header_title %}Relaxamento{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
 {% block content %}
-<section class="wb-page" aria-labelledby="relax-title" data-wellbeing data-record-url="{% url 'wellbeing_record' %}" data-relax>
+<section class="wb-page" aria-labelledby="relax-title" data-wellbeing data-record-root data-record-url="{% url 'wellbeing_record' %}" data-relax>
     {% csrf_token %}
     <header class="wb-intro">
         <p class="ql-eyebrow">SONS PARA PAUSAR</p>
@@ -13,9 +13,10 @@
         <p>Escolha um som, ajuste o volume e o tempo. O som diminui sozinho até parar.</p>
     </header>
     <div class="card wb-mixer" data-relax-panel>
-        <div class="wb-mixer__backdrop" data-backdrop hidden><video data-backdrop-video data-src="{% static background %}" poster="{% static background_poster %}" muted playsinline loop preload="none" aria-label="Fundo visual ilustrativo gerado por IA"></video></div>
+        <div class="wb-mixer__backdrop" data-backdrop hidden><video data-backdrop-video data-src="{% static background %}" poster="{% static background_poster %}" muted playsinline loop preload="none" aria-label="Fundo visual"></video></div>
         <div class="wb-mixer__controls">
             <p class="wb-mixer__status" data-relax-status role="status">Nenhum som tocando.</p>
+            <a class="wb-mixer__progress" href="{% url 'wellbeing_progress' %}" data-relax-progress hidden>Ver meu progresso <span aria-hidden="true">→</span></a>
             <label class="wb-field">Volume <input type="range" min="0" max="100" value="40" data-relax-volume></label>
             <fieldset class="wb-timers">
                 <legend>Desligar em</legend>
@@ -38,7 +39,7 @@
         </article>
         {% endfor %}
     </div>
-    <p class="wb-note wb-footnote">Todos os sons são gerados no próprio navegador. Fundo visual: vídeo ilustrativo gerado por IA.</p>
+    {% include 'wellbeing/_practice_notice.html' %}
 </section>
 {% endblock %}
-{% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/wellbeing-noise.js' %}" defer></script><script src="{% static 'quality_life/practice.js' %}" defer></script><script src="{% static 'quality_life/wellbeing.js' %}" defer></script>{% endblock %}

@@ -96,7 +96,7 @@ class AppDarkTemplateTests(SimpleTestCase):
             with self.subTest(url_name=url_name):
                 html = self.client.get(reverse(url_name)).content.decode()
                 self.assert_dark_assets(html)
-                self.assertIn("MINUTA — pendente de revisão jurídica", html)
+                self.assertNotIn("MINUTA — pendente de revisão jurídica", html)
                 self.assertNotIn(AMBIENT, html)
 
     def test_auth_pages_are_dark_and_keep_their_forms(self):

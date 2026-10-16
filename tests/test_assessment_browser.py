@@ -207,7 +207,10 @@ class AssessmentBrowserTests(StaticLiveServerTestCase):
                     page.locator("[data-sequence-position]").inner_text()
                     == f"Exercício {index + 1} de 9"
                 )
-            assert page.get_by_role("button", name="Próximo").is_disabled()
+            # Spec 15: the last step offers "Concluir sequência" instead of a
+            # disabled "Próximo".
+            assert page.get_by_role("button", name="Próximo").count() == 0
+            assert page.get_by_role("button", name="Concluir sequência").is_enabled()
             page.keyboard.press("Escape")
             assert not page.locator("dialog").is_visible()
             page.get_by_role("button", name="Alongamentos sentados", exact=True).click()

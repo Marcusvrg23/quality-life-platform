@@ -5,18 +5,18 @@ LESSONS = (
         "slug": "inicio-trabalho",
         "title": "Início do trabalho",
         "category": "PREPARAÇÃO",
-        "description": "Exemplo de atividade curta para ativar o corpo antes de iniciar a jornada de trabalho.",
+        "description": "Atividade curta para ativar o corpo antes de começar a jornada de trabalho.",
     },
     {
         "slug": "durante-trabalho",
         "title": "Durante o trabalho",
         "category": "PAUSA ATIVA",
-        "description": "Demonstração de uma pausa guiada para recuperar mobilidade e reduzir a tensão acumulada durante o expediente.",
+        "description": "Pausa guiada para recuperar a mobilidade e aliviar a tensão do expediente.",
     },
     {
         "slug": "final-trabalho",
         "title": "Final do trabalho",
         "category": "RECUPERAÇÃO",
-        "description": "Exemplo de sequência leve para desacelerar o corpo e encerrar a jornada com uma rotina de recuperação.",
+        "description": "Sequência leve para desacelerar e encerrar a jornada com uma rotina de recuperação.",
     },
 )

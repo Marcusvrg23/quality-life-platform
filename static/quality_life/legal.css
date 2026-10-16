@@ -1,5 +1,4 @@
 .legal-page { margin: 0; font-family: Arial, sans-serif; color: #193c3a; background: #f4f7f6; line-height: 1.55; }
-.legal-draft { margin: 0; padding: .7rem 1rem; background: #fde7c8; color: #6b3500; font-weight: 800; text-align: center; letter-spacing: .03em; }
 .legal-header { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; justify-content: space-between; max-width: 52rem; margin: 0 auto; padding: 1rem; }
 .legal-brand { display: inline-flex; gap: .6rem; align-items: center; color: #193c3a; text-decoration: none; }
 .legal-nav { display: flex; gap: 1rem; }

@@ -4,7 +4,6 @@ from dataclasses import dataclass
 
 from django.utils import timezone
 
-PLACEHOLDER_TEXT = "Conteúdo em definição pela Quality Life"
 CVV_TEXT = "Precisa conversar? CVV — ligue 188, 24 horas, gratuito."
 
 

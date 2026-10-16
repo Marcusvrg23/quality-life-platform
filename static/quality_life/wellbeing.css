@@ -64,9 +64,14 @@
 .wb-timer small { color: var(--app-text-soft); font-size: 0.82rem; font-variant-numeric: tabular-nums; }
 .wb-sound-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); gap: 0.75rem; }
 .ql-main .wb-sound-options select { min-height: 2.75rem; }
-.wb-player__done { padding: 0.8rem 1rem; color: var(--app-ok-fg); background: var(--app-ok-bg); border-radius: var(--app-radius-sm); }
+/* Completion screen: covers the player (fixed dialog = containing block), fits 390x844. */
+.wb-player__done { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom)); overflow-y: auto; background: #0b2129; }
 .wb-player__done[hidden] { display: none; }
-.wb-player__done a { color: var(--app-text); }
+.wb-player__done-card { display: grid; justify-items: center; gap: 0.9rem; width: min(100%, 26rem); text-align: center; }
+.wb-player__done-icon { display: grid; place-items: center; width: 4rem; height: 4rem; color: var(--app-ok-fg); background: var(--app-ok-bg); border-radius: 50%; font-size: 2rem; font-weight: 700; }
+.wb-player__done-card p { margin: 0; color: var(--app-text-soft); font-size: 0.95rem; line-height: 1.6; }
+.wb-player__done-actions { display: grid; gap: 0.6rem; width: 100%; }
+.ql-main .wb-player__done-actions .button { justify-content: center; width: 100%; }
 .wb-player__controls { display: flex; flex-shrink: 0; gap: 0.5rem; padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); background: #0b2129; border-top: 1px solid var(--app-line); }
 .ql-main .wb-player__controls .button { flex: 1; min-width: 0; padding-inline: 0.6rem; white-space: nowrap; }
 .ql-main .wb-player__controls [hidden] { display: none; }
@@ -91,6 +96,8 @@
 .wb-mixer__backdrop video { display: block; width: 100%; height: 100%; object-fit: cover; }
 .wb-mixer__controls { display: grid; gap: 0.9rem; align-content: start; }
 .wb-mixer__status { margin: 0; color: var(--app-text); font-size: 1rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.wb-mixer__progress { color: var(--app-accent); font-weight: 650; }
+.wb-mixer__progress[hidden] { display: none; }
 .wb-timers { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0; padding: 0; border: 0; }
 .wb-timers legend { width: 100%; margin-bottom: 0.4rem; padding: 0; color: var(--app-text-soft); font-size: 0.82rem; }
 .wb-timers .wb-chip { position: relative; }
@@ -122,6 +129,14 @@
 .wb-shortcuts .dashboard-link { flex-direction: column; align-items: flex-start; gap: 0.7rem; min-width: 0; padding: 1.1rem; }
 .wb-shortcuts .dashboard-link strong { font-size: 0.95rem; }
 .wb-shortcuts .dashboard-link small { overflow-wrap: anywhere; }
+/* "Hoje" card: today's own practices, minutes and streak (spec 15). */
+.wb-today { margin: 0 0 1rem; padding: 1.1rem 1.3rem; }
+.ql-main .wb-today h2 { margin: 0 0 0.7rem; font-size: 1.05rem; }
+.wb-today p { margin: 0; color: var(--app-text-soft); font-size: 0.9rem; line-height: 1.6; }
+.wb-today__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; margin: 0; }
+.wb-today__stats div { display: flex; flex-direction: column-reverse; gap: 0.25rem; min-width: 0; }
+.wb-today__stats dd { margin: 0; color: var(--app-text); font-family: var(--ql-font-serif); font-size: 2rem; line-height: 1; }
+.wb-today__stats dt { color: var(--app-text-soft); font-size: 0.8rem; overflow-wrap: anywhere; }
 .wb-tip { margin: 0 0 1rem; padding: 1.1rem 1.3rem; }
 .wb-tip p { margin: 0.3rem 0 0; color: var(--app-text-soft); font-size: 0.9rem; line-height: 1.6; }
 @media (min-width: 900px) {

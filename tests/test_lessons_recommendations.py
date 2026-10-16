@@ -16,13 +16,15 @@ from assessments.models import (
     PillarResult,
     QuestionnaireVersion,
 )
-from config.calendar_highlights import PLACEHOLDER_TEXT, active_highlight
+from config.calendar_highlights import active_highlight
 from config.tenant import SESSION_ORGANIZATION_KEY
 from identity.models import Membership, Organization
 
 PASSWORD = "lessons-test-password-81"
 CVV = "Precisa conversar? CVV — ligue 188, 24 horas, gratuito."
 TODAY = "config.calendar_highlights.timezone.localdate"
+# Removed from the screen in spec 15; it must never come back.
+PLACEHOLDER_TEXT = "Conteúdo em definição pela Quality Life"
 QUIET_DAY = datetime.date(2026, 10, 12)
 EXERCISE_CODES = ("physical_activity", "ergonomics_workplace", "physical_health")
 
@@ -118,7 +120,7 @@ class LessonsPageTests(HomeTestCase):
         Membership.objects.update(is_active=False)
         self.assertEqual(self.client.get(reverse("lessons")).status_code, 403)
 
-    def test_lists_three_videos_with_static_sources_and_prototype_texts(self):
+    def test_lists_three_videos_with_static_sources_and_final_texts(self):
         self.login(self.user)
         response = self.client.get(reverse("lessons"))
         self.assertEqual(response.status_code, 200)
@@ -135,13 +137,13 @@ class LessonsPageTests(HomeTestCase):
         for text in (
             "Início do trabalho",
             "PREPARAÇÃO",
-            "Exemplo de atividade curta para ativar o corpo antes de iniciar a jornada de trabalho.",
+            "Atividade curta para ativar o corpo antes de começar a jornada de trabalho.",
             "Durante o trabalho",
             "PAUSA ATIVA",
-            "Demonstração de uma pausa guiada para recuperar mobilidade e reduzir a tensão acumulada durante o expediente.",
+            "Pausa guiada para recuperar a mobilidade e aliviar a tensão do expediente.",
             "Final do trabalho",
             "RECUPERAÇÃO",
-            "Exemplo de sequência leve para desacelerar o corpo e encerrar a jornada com uma rotina de recuperação.",
+            "Sequência leve para desacelerar e encerrar a jornada com uma rotina de recuperação.",
         ):
             self.assertIn(text, html)
 
@@ -190,13 +192,13 @@ class RecommendationTests(HomeTestCase):
         )
         self.assertNotIn(PLACEHOLDER_TEXT, html)
 
-    def test_other_pillar_links_assessment_with_placeholder(self):
+    def test_other_pillar_links_assessment_without_placeholder(self):
         other = next(p for p in self.pillars if p.code not in EXERCISE_CODES)
         self.complete(self.user, self.org, {other.code: 10})
         self.login(self.user)
         html = main_content(self.home())
         self.assertIn(f"Sua prioridade agora: {other.name}", html)
-        self.assertIn(PLACEHOLDER_TEXT, html)
+        self.assertNotIn(PLACEHOLDER_TEXT, html)
         self.assertIn(
             f'class="recommendation-link" href="{reverse("assessment_hub")}"', html
         )
@@ -258,7 +260,7 @@ class CommemorativeNoticeTests(HomeTestCase):
             with self.subTest(day=day):
                 html = main_content(self.home(day))
                 self.assertIn(title, html)
-                self.assertIn(PLACEHOLDER_TEXT, html)
+                self.assertNotIn(PLACEHOLDER_TEXT, html)
 
     def test_no_notice_on_ordinary_day(self):
         self.login(self.user)

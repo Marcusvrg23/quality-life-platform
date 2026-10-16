@@ -242,7 +242,8 @@ def record(request):
             duration_seconds=seconds,
             completed=request.POST.get("completed") == "1",
         )
-    return JsonResponse({"ok": True}, status=201)
+    # Minutes as counted in "Meu Progresso", for the "Prática registrada" notice.
+    return JsonResponse({"ok": True, "minutes": seconds // 60}, status=201)
 
 
 def _reminder_setting(membership):

@@ -5,7 +5,8 @@
 {% block header_title %}Aulas{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/lessons.css' %}">{% endblock %}
 {% block content %}
-<section class="lessons" aria-labelledby="lessons-title">
+<section class="lessons" aria-labelledby="lessons-title" data-record-root data-record-url="{% url 'wellbeing_record' %}">
+    {% csrf_token %}
     <header class="lessons-intro">
         <p class="ql-eyebrow">AULAS EM VÍDEO</p>
         <h1 id="lessons-title">Aulas</h1>
@@ -13,15 +14,18 @@
     </header>
     <div class="lessons-grid">
         {% for lesson in lessons %}
-        <article class="lesson-card">
+        <article class="lesson-card" data-lesson="aula-{{ lesson.slug }}">
             <video controls playsinline preload="none" poster="{% static 'quality_life/images/posters/' %}{{ lesson.slug }}.jpg" src="{% static 'quality_life/videos/' %}{{ lesson.slug }}.mp4"></video>
             <div class="lesson-card__body">
                 <span class="lesson-card__category">{{ lesson.category }}</span>
                 <h2>{{ lesson.title }}</h2>
                 <p>{{ lesson.description }}</p>
+                <p class="lesson-card__done" data-lesson-done role="status"></p>
             </div>
         </article>
         {% endfor %}
     </div>
+    {% include 'wellbeing/_practice_notice.html' %}
 </section>
 {% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/practice.js' %}" defer></script><script src="{% static 'quality_life/lessons.js' %}" defer></script>{% endblock %}

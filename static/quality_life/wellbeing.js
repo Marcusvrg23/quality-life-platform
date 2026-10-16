@@ -7,30 +7,18 @@
    - With prefers-reduced-motion: reduce the video stays on its poster, the
      breathing circle does not scale and no GSAP loop runs; timers still work.
    - The only endless GSAP animation (breathing circle) is tagged data: 'loop'.
-   - A practice is recorded once: when it completes, or when it stops after 60 s
-     or more (button, closing the player or leaving the page). */
+   - A practice is recorded once (practice.js): when it completes, or when it
+     stops after 60 s or more (button, closing the player or leaving the page).
+     Completing shows the completion screen; stopping with "← Voltar", Esc or
+     "Parar" tells on the page what entered the progress (spec 15). */
 (() => {
     'use strict';
     const root = document.querySelector('[data-wellbeing]');
     if (!root) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const MIN_RECORD_SECONDS = 60;
     const FADE_SECONDS = 4;
     const gsap = () => (!reduce.matches && window.gsap) || null;
-
-    function record(kind, slug, seconds, completed) {
-        const whole = Math.floor(seconds);
-        if (whole < MIN_RECORD_SECONDS) return;
-        const body = new FormData();
-        body.append('csrfmiddlewaretoken', root.querySelector('input[name="csrfmiddlewaretoken"]').value);
-        body.append('kind', kind);
-        body.append('slug', slug);
-        body.append('duration_seconds', String(whole));
-        body.append('completed', completed ? '1' : '0');
-        window.fetch(root.dataset.recordUrl, {
-            method: 'POST', body, credentials: 'same-origin', keepalive: true,
-        }).catch(() => {});
-    }
+    const practice = window.QLPractice;
 
     function clock(time) {
         const value = Math.max(0, Math.ceil(time));
@@ -116,6 +104,9 @@
         const totalTime = $('[data-player-total-time]');
         const progress = $('progress');
         const done = $('[data-player-done]');
+        const doneTitle = $('[data-player-done-title]');
+        const doneSummary = $('[data-player-done-summary]');
+        const underDone = [$('.wb-player__bar'), progress, $('.wb-player__body'), $('.wb-player__controls')];
         const circle = $('[data-breath-circle]');
         const breathLabel = $('[data-breath-label]');
         const noiseSelect = $('[data-player-noise]');
@@ -156,7 +147,7 @@
                 return;
             }
             video.poster = current.poster;
-            video.setAttribute('aria-label', `${current.title}: vídeo ilustrativo gerado por IA`);
+            video.setAttribute('aria-label', `${current.title}: ${session.breathing ? 'vídeo da meditação' : 'vídeo do exercício'}`);
             if (!started || reduce.matches) {
                 if (video.hasAttribute('src')) stopVideo(video);
             } else if (watch.running) {
@@ -267,10 +258,30 @@
             if (window.QLNoise) window.QLNoise.stop();
         }
 
+        function showDone(seconds) {
+            doneSummary.textContent = seconds < practice.MIN_RECORD_SECONDS
+                ? practice.SHORT
+                : `Você praticou ${practice.minutes(seconds)} min. A prática entrou no seu progresso.`;
+            underDone.forEach(element => { element.inert = true; });
+            done.hidden = false;
+            doneTitle.focus({ preventScroll: true });
+            const motion = gsap();
+            if (motion) motion.fromTo(done, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: 'power2.out', clearProps: 'opacity' });
+        }
+
         function complete() {
             finished = true; // before pause(): its last tick must not re-enter
             watch.pause();
-            if (!recorded) { recorded = true; record(session.kind, session.slug, watch.elapsed, true); }
+            if (!recorded) {
+                recorded = true;
+                const seconds = watch.elapsed;
+                practice.record(session.kind, session.slug, seconds, true).then(stored => {
+                    if (stored === null && seconds >= practice.MIN_RECORD_SECONDS) {
+                        doneSummary.textContent = 'Não foi possível registrar a prática. Tente de novo mais tarde.';
+                    }
+                });
+                showDone(seconds);
+            }
             progress.value = 1000;
             stepTime.textContent = clock(0);
             totalTime.textContent = clock(0);
@@ -282,13 +293,17 @@
             toggle.disabled = true;
             previous.disabled = true;
             next.disabled = true;
-            done.hidden = false;
         }
 
-        function stopSession() {
+        // notify: the person left on purpose ("← Voltar" or Esc), not the page.
+        function stopSession(notify) {
             if (!session) return;
             watch.pause();
-            if (started && !recorded) { recorded = true; record(session.kind, session.slug, watch.elapsed, false); }
+            if (started && !recorded) {
+                recorded = true;
+                if (notify) practice.recordAndNotify(session.kind, session.slug, watch.elapsed, false);
+                else practice.record(session.kind, session.slug, watch.elapsed, false);
+            }
             silence();
         }
 
@@ -306,6 +321,7 @@
             toggle.textContent = 'Começar';
             toggle.disabled = false;
             done.hidden = true;
+            underDone.forEach(element => { element.inert = false; });
             progress.value = 0;
             if (breathLabel) breathLabel.textContent = `Inspire ${session.breathing.inhale} s, expire ${session.breathing.exhale} s`;
             dialog.showModal();
@@ -340,14 +356,15 @@
             noiseVolume.addEventListener('input', () => { if (window.QLNoise) window.QLNoise.setVolume(volume()); });
         }
         // The dialog "close" event is async; stop media right on the click.
-        $('[data-player-close]').addEventListener('click', () => { stopSession(); dialog.close(); });
+        $('[data-player-close]').addEventListener('click', () => { stopSession(true); dialog.close(); });
+        $('[data-player-again]').addEventListener('click', () => dialog.close());
         dialog.addEventListener('close', () => {
-            stopSession();
+            stopSession(true);
             session = null;
             document.body.classList.remove('wb-modal-open');
             if (opener) opener.focus();
         });
-        window.addEventListener('pagehide', stopSession);
+        window.addEventListener('pagehide', () => stopSession(false));
         reduce.addEventListener('change', () => { if (reduce.matches && session) { video.pause(); if (breathing) { breathing.kill(); breathing = null; } } });
     }
 
@@ -360,6 +377,7 @@
         const backdrop = relax.querySelector('[data-backdrop]');
         const backdropVideo = relax.querySelector('[data-backdrop-video]');
         const backdropToggle = relax.querySelector('[data-backdrop-toggle]');
+        const progressLink = relax.querySelector('[data-relax-progress]');
         const buttons = [...relax.querySelectorAll('[data-sound-play]')];
         const volume = () => (Number(volumeInput.value) / 100) * 0.8;
         const limit = () => Number(relax.querySelector('input[name="wb-timer"]:checked').value) * 60;
@@ -376,17 +394,21 @@
             if (remaining <= 0) {
                 finish(true);
                 status.textContent = 'Tempo concluído. O som foi desligado.';
+                progressLink.hidden = false;
                 return;
             }
             status.textContent = `Tocando: ${current.title} · ${clock(remaining)} restantes`;
         });
 
-        function finish(completed) {
+        // notify: stopped by the person ("Parar" or another sound), not the timer or the page.
+        function finish(completed, notify) {
             if (!current) return;
             const ending = current;
             current = null; // before pause(): its last tick must not re-enter
             watch.pause();
-            record('relaxamento', ending.slug, completed ? limit() : watch.elapsed, completed);
+            const seconds = completed ? limit() : watch.elapsed;
+            if (notify) practice.recordAndNotify('relaxamento', ending.slug, seconds, completed);
+            else practice.record('relaxamento', ending.slug, seconds, completed);
             if (!completed) window.QLNoise.stop();
             ending.button.setAttribute('aria-pressed', 'false');
             fading = false;
@@ -397,7 +419,8 @@
 
         buttons.forEach(button => button.addEventListener('click', () => {
             const same = current && current.button === button;
-            finish(false);
+            finish(false, true);
+            progressLink.hidden = true;
             if (same) return;
             const title = button.closest('[data-sound-card]').querySelector('h2').textContent;
             current = { slug: button.dataset.slug, title, button };
@@ -407,7 +430,7 @@
             watch.start();
             status.textContent = `Tocando: ${title} · ${clock(limit())} restantes`;
         }));
-        stopButton.addEventListener('click', () => finish(false));
+        stopButton.addEventListener('click', () => finish(false, true));
         volumeInput.addEventListener('input', () => window.QLNoise.setVolume(volume()));
         backdropToggle.addEventListener('change', () => {
             backdrop.hidden = !backdropToggle.checked;
