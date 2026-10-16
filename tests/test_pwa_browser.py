@@ -17,6 +17,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
 from identity.models import Membership, Organization, User
 from tests.test_app_dark_browser import CONTRAST
+from tests.test_wellbeing_browser import GSAP_IDLE
 from wellbeing.models import ReminderSetting
 
 try:
@@ -115,6 +116,8 @@ class PwaBrowserTests(StaticLiveServerTestCase):
         page.wait_for_function(
             "document.querySelector('script[data-schedule]')?.dataset.state === 'loaded'"
         )
+        # Cards rise in with GSAP; screenshots and contrast need the final state.
+        page.wait_for_function(GSAP_IDLE)
 
     def screenshot(self, page, name):
         artifact_dir = os.environ.get("QA_ARTIFACT_DIR")
