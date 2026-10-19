@@ -7,12 +7,14 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.validators import URLValidator
 from django.db import transaction
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
@@ -33,7 +35,7 @@ from .models import (
     PushSubscription,
     ReminderSetting,
 )
-from .notifications import preference_for
+from .notifications import notify, preference_for, push_configured
 from .services import personal_progress
 
 # Two records of the same person may not overlap in time (a resent or
@@ -464,3 +466,55 @@ def push_unsubscribe(request):
         raise Http404("No such subscription for this account.")
     transaction.on_commit(scheduler.wake)
     return _json({"status": "unsubscribed"})
+
+
+PUSH_TEST_TITLE = "Teste da Quality Life"
+PUSH_TEST_BODY = "Se você está vendo isto, as notificações estão funcionando."
+# One test per person per minute (per worker): enough to try again, not to spam.
+PUSH_TEST_COOLDOWN_SECONDS = 60
+
+
+@login_required
+@require_POST
+def push_test(request):
+    """Send one test notification now to the caller's own devices (spec 13)."""
+    tenant = _tenant(request)
+    membership = tenant.membership
+    if not push_configured():
+        messages.info(
+            request,
+            "Este servidor ainda não envia notificações com o app fechado. "
+            "O aviso aparece só com o app aberto.",
+        )
+        return redirect("wellbeing_reminders")
+    if not PushSubscription.objects.filter(membership=membership).exists():
+        messages.info(
+            request,
+            "Nenhum aparelho ativado. Toque em Ativar lembretes neste aparelho "
+            "e aceite as notificações; depois envie o teste.",
+        )
+        return redirect("wellbeing_reminders")
+    if not cache.add(f"ql:push-test:{membership.pk}", True, PUSH_TEST_COOLDOWN_SECONDS):
+        messages.info(request, "Teste enviado há pouco. Aguarde um minuto.")
+        return redirect("wellbeing_reminders")
+    sent = notify(
+        membership,
+        NotificationCategory.BREAKS,
+        PUSH_TEST_TITLE,
+        PUSH_TEST_BODY,
+        reverse("wellbeing_reminders"),
+    )
+    if sent:
+        aparelhos = "aparelho" if sent == 1 else "aparelhos"
+        messages.success(
+            request,
+            f"Notificação de teste enviada para {sent} {aparelhos}. "
+            "Pode levar alguns segundos para chegar.",
+        )
+    else:
+        messages.info(
+            request,
+            "A notificação não foi entregue. Confira se Lembretes de pausa está "
+            "marcado e ative os lembretes de novo neste aparelho.",
+        )
+    return redirect("wellbeing_reminders")

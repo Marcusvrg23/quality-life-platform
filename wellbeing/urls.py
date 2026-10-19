@@ -27,6 +27,11 @@ urlpatterns = [
         name="wellbeing_push_unsubscribe",
     ),
     path(
+        "lembretes/push/teste/",
+        views.push_test,
+        name="wellbeing_push_test",
+    ),
+    path(
         "lembretes/notificacoes/",
         views.notification_preferences,
         name="wellbeing_notification_preferences",
