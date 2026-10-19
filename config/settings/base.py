@@ -225,3 +225,8 @@ if VAPID_SUBJECT and not VAPID_SUBJECT.startswith(("mailto:", "https://")):
 # server and only with the VAPID keys; this switch turns it off without
 # removing the keys.
 WEB_PUSH_SCHEDULER = _boolean("WEB_PUSH_SCHEDULER", default=True)
+# How often it reloads the active reminders from the database; between
+# reloads it only queries at a due slot (Neon Free suspends an idle database).
+WEB_PUSH_SCHEDULER_REFRESH_MINUTES = _integer(
+    "WEB_PUSH_SCHEDULER_REFRESH_MINUTES", default=180, minimum=5
+)
