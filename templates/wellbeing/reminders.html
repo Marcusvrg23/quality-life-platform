@@ -37,6 +37,7 @@
             {% endif %}
         </div>
         <p class="wb-note" data-reminder-status data-active="{{ setting.active|yesno:'1,0' }}" aria-live="polite"></p>
+        {% if setting.active %}<button type="button" class="button button-secondary" data-push-permission hidden>Permitir notificações neste aparelho</button>{% endif %}
     </form>
     {% if setting.active %}<form method="post" id="reminder-deactivate" hidden>{% csrf_token %}<input type="hidden" name="action" value="deactivate"></form>{% endif %}
     <form method="post" action="{% url 'wellbeing_notification_preferences' %}" class="card wb-card ql-pwa-prefs" aria-labelledby="notification-preferences-title">

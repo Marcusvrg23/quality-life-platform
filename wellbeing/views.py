@@ -490,8 +490,10 @@ def push_test(request):
     if not PushSubscription.objects.filter(membership=membership).exists():
         messages.info(
             request,
-            "Nenhum aparelho ativado. Toque em Ativar lembretes neste aparelho "
-            "e aceite as notificações; depois envie o teste.",
+            "Nenhum aparelho recebendo notificações nesta conta. Toque em "
+            "Ativar lembretes (ou em Permitir notificações neste aparelho) e "
+            "aceite as notificações; depois envie o teste. Cada aparelho recebe "
+            "as notificações de uma conta só: a última que ativou nele.",
         )
         return redirect("wellbeing_reminders")
     if not cache.add(f"ql:push-test:{membership.pk}", True, PUSH_TEST_COOLDOWN_SECONDS):

@@ -103,7 +103,21 @@ FAKE_PUSH = """(() => {
     });
     if (!('PushManager' in window)) window.PushManager = function PushManager() {};
 })();""".replace("ENDPOINT_PLACEHOLDER", FAKE_ENDPOINT)
+# Permission starts at "default" and becomes "granted" on the first request
+# (counted like COUNT_PERMISSION), as when the person taps the allow button.
+GRANT_ON_REQUEST = """(() => {
+    if (!('Notification' in window)) return;
+    const key = '__qlPermissionRequests';
+    const state = () => (Number(sessionStorage.getItem(key) || 0) > 0 ? 'granted' : 'default');
+    Object.defineProperty(Notification, 'permission', { configurable: true, get: state });
+    Notification.requestPermission = () => {
+        sessionStorage.setItem(key, String(Number(sessionStorage.getItem(key) || 0) + 1));
+        return Promise.resolve('granted');
+    };
+})();"""
 PUSH_ACTIVE = "Notificações ativas neste aparelho, mesmo com o app fechado."
+NO_PERMISSION = "Sem permissão de notificação: o aviso aparece dentro da página."
+ALLOW = "Permitir notificações neste aparelho"
 PUSH_INACTIVE = (
     "Notificações permitidas neste aparelho. Ative os lembretes para recebê-las "
     "mesmo com o app fechado."
@@ -336,6 +350,38 @@ class PwaBrowserTests(StaticLiveServerTestCase):
         VAPID_PRIVATE_KEY="private-key-for-the-test",
         VAPID_SUBJECT="mailto:contato@example.test",
     )
+    def test_active_reminders_without_permission_offer_the_allow_button(self):
+        # Reminders already active (another device, an old visit) but this
+        # device never granted: one tap asks and subscribes, without saving.
+        ReminderSetting.objects.create(membership=self.membership, active=True)
+        key = vapid_public_key()
+        with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = self.open(browser, init=(FAKE_PUSH, GRANT_ON_REQUEST))
+            self.visit(page, "/app/lembretes/")
+            status = page.locator("[data-reminder-status]")
+            allow = page.get_by_role("button", name=ALLOW)
+            expect(status).to_have_text(NO_PERMISSION)
+            expect(allow).to_be_visible()
+            assert page.evaluate(PERMISSION_REQUESTS) == 0
+            assert self.subscriptions() == []
+            allow.click()
+            expect(status).to_have_text(PUSH_ACTIVE)
+            expect(allow).to_be_hidden()
+            assert page.evaluate(PERMISSION_REQUESTS) == 1
+            assert self.subscriptions() == [FAKE_ENDPOINT]
+            self.assert_fits(page, "lembretes-permitir")
+            browser.close()
+
+    def test_allow_button_stays_hidden_while_reminders_are_off(self):
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = self.open(browser)
+            self.visit(page, "/app/lembretes/")
+            expect(page.get_by_role("button", name=ALLOW)).to_be_hidden()
+            assert page.evaluate(PERMISSION_REQUESTS) == 0
+            browser.close()
+
     def test_activating_subscribes_the_device_and_deactivating_cancels(self):
         key = vapid_public_key()
         with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:

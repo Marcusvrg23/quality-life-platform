@@ -265,10 +265,30 @@
     }
   }
 
+  // Reminders already active but this device never allowed notifications
+  // (activated elsewhere or before): one tap asks and subscribes, no save.
+  const allow = document.querySelector('[data-push-permission]');
+
   function showStatus(state) {
     if (!status) return;
     status.textContent = describe(state);
     status.dataset.push = state;
+    if (allow) allow.hidden = !(state === 'default' && status.dataset.active === '1');
+  }
+
+  if (allow) {
+    allow.addEventListener('click', () => {
+      if (!supported) return;
+      allow.disabled = true;
+      Promise.resolve(Notification.requestPermission())
+        .catch(() => null)
+        .then(() => syncPush())
+        .then(state => {
+          pushState = state || 'failed';
+          showStatus(pushState);
+        })
+        .finally(() => { allow.disabled = false; });
+    });
   }
 
   if (status) {

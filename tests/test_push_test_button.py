@@ -80,7 +80,9 @@ class PushTestButtonTests(TestCase):
     @override_settings(**VAPID)
     def test_without_a_device_asks_to_activate_first(self):
         response = self.post()
-        self.assertContains(response, "Nenhum aparelho ativado")
+        self.assertContains(
+            response, "Nenhum aparelho recebendo notificações nesta conta."
+        )
         self.webpush.assert_not_called()
 
     @override_settings(**VAPID)
