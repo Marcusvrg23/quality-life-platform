@@ -790,3 +790,28 @@ class CompanyEmailsPageTests(OperatorTestCase):
         self.assertContains(response, "liberado@a.test")
         self.assertNotContains(response, "segredo@b.test")
         self.assertContains(response, "Empresa A")
+
+
+class CompanyCodeTests(OperatorTestCase):
+    """The Painel shows each company's code (slug) and whether the assistant
+    is on, so ASSISTANT_ORGANIZATIONS can be filled without guessing."""
+
+    def codes(self):
+        self.login(self.root)
+        html = self.client.get(reverse("operator_panel")).content.decode()
+        return re.findall(
+            r"data-company-code>Código: <code>([^<]+)</code> · Assistente (\w+)</span>",
+            html,
+        )
+
+    def test_shows_code_and_assistant_off_by_default(self):
+        with override_settings(GROQ_API_KEY="", ASSISTANT_ORGANIZATIONS=["empresa-a"]):
+            self.assertEqual(
+                self.codes(), [("empresa-a", "desligado"), ("empresa-b", "desligado")]
+            )
+
+    def test_shows_assistant_on_only_for_listed_companies(self):
+        with override_settings(GROQ_API_KEY="k", ASSISTANT_ORGANIZATIONS=["empresa-b"]):
+            self.assertEqual(
+                self.codes(), [("empresa-a", "desligado"), ("empresa-b", "ligado")]
+            )

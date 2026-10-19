@@ -10,3 +10,9 @@ register = template.Library()
 @register.filter
 def assistant_on(tenant):
     return bool(tenant) and assistant.enabled_for(tenant.organization)
+
+
+@register.filter
+def assistant_company(organization):
+    """For the operator panel: is the assistant on for this company?"""
+    return assistant.enabled_for(organization)
