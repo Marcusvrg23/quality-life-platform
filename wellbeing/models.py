@@ -231,3 +231,29 @@ class ReminderDispatch(models.Model):
 
     def __str__(self):
         return f"lembrete {self.setting_id} às {self.slot_at:%Y-%m-%d %H:%M}"
+
+
+class TipDispatch(models.Model):
+    """One day's tip handed to a person by the scheduler (spec 17).
+
+    Unique per (membership, day), so two gunicorn workers that wake up at the
+    same send time never deliver the same tip twice. Only ids and the date are
+    kept, never the text.
+    """
+
+    membership = models.ForeignKey(
+        Membership, on_delete=models.CASCADE, related_name="tip_dispatches"
+    )
+    day = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [  # noqa: RUF012 - Django model metadata convention.
+            models.UniqueConstraint(
+                fields=["membership", "day"],
+                name="wellbeing_tip_dispatch_once_a_day",
+            ),
+        ]
+
+    def __str__(self):
+        return f"dica de {self.day:%Y-%m-%d} para membership {self.membership_id}"

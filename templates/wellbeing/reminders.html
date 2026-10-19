@@ -47,7 +47,7 @@
                 {% for value, label in categories %}<label class="wb-chip"><input type="checkbox" name="{{ value }}"{% if value == 'pausas' and preference.pausas or value == 'dicas' and preference.dicas %} checked{% endif %}>{{ label }}</label>{% endfor %}
             </div>
         </fieldset>
-        <p class="wb-note">Só você altera estas escolhas. As dicas e datas especiais ainda não são enviadas; a preferência já fica guardada.</p>
+        <p class="wb-note">Só você altera estas escolhas.{% if tips_published %} As dicas chegam às segundas, às 10h, e nas datas especiais.{% else %} As dicas e datas especiais ainda não são enviadas; a preferência já fica guardada.{% endif %}</p>
         <div class="ql-pwa-actions"><button type="submit" class="button button-secondary">Salvar preferências</button></div>
     </form>
     <p class="wb-note wb-footnote">Com as notificações ativas, o lembrete chega como notificação mesmo com o app fechado, a tela bloqueada ou outro app em uso. Sem elas, o aviso aparece enquanto o Quality Life estiver aberto no navegador ou no app da tela inicial. No iPhone, as notificações exigem o app adicionado à tela inicial e iOS 16.4 ou mais novo.</p>

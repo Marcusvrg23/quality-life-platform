@@ -16,6 +16,7 @@ from django.templatetags.static import static
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
+from config import tips_calendar
 from config import wellbeing_catalog as catalog
 from config.exercises import EXERCISES, SOURCE, image_path, poster_path
 from config.tenant import resolve_tenant_context
@@ -330,6 +331,7 @@ def reminders(request):
             "weekdays": WEEKDAYS,
             "preference": preference_for(tenant.membership),
             "categories": NotificationCategory.choices,
+            "tips_published": tips_calendar.PUBLISHED,
         },
         status=400 if form.is_bound else 200,
     )

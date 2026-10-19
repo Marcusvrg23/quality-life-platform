@@ -139,6 +139,8 @@
 .wb-today__stats dt { color: var(--app-text-soft); font-size: 0.8rem; overflow-wrap: anywhere; }
 .wb-tip { margin: 0 0 1rem; padding: 1.1rem 1.3rem; }
 .wb-tip p { margin: 0.3rem 0 0; color: var(--app-text-soft); font-size: 0.9rem; line-height: 1.6; }
+.wb-tip .wb-tip__title { color: var(--app-text); font-weight: 650; font-size: 1rem; }
+.wb-tip .recommendation-link { display: inline-flex; margin-top: 0.6rem; }
 @media (min-width: 900px) {
     .wb-shortcuts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }

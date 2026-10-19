@@ -34,8 +34,10 @@
     </section>
     {% if tip %}
     <aside class="card wb-tip" aria-labelledby="tip-title">
-        <p class="ql-eyebrow" id="tip-title">Dica do dia</p>
+        <p class="ql-eyebrow" id="tip-title">{{ tip.label|default:"Dica do dia" }}</p>
+        {% if tip.title %}<p class="wb-tip__title">{{ tip.title }}</p>{% endif %}
         <p>{{ tip.text }}</p>
+        {% if tip.route and tip.route != 'app' %}<a class="recommendation-link" href="{% url tip.route %}">Abrir <span aria-hidden="true">→</span></a>{% endif %}
     </aside>
     {% endif %}
     {% if highlight %}
