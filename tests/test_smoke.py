@@ -101,6 +101,7 @@ class FoundationSurfaceTests(SimpleTestCase):
                 "password_reset_confirm",
                 "password_reset_complete",
                 "install_app",
+                "about_quality",
                 "manifest",
                 "service_worker",
                 "offline",
