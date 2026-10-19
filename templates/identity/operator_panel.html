@@ -1,5 +1,5 @@
 {% extends 'app_shell.html' %}
-{% load static %}
+{% load static assistant_tags %}
 {% block title %}Painel da Quality Life{% endblock %}
 {% block page_title %}Painel{% endblock %}
 {% block header_title %}Painel da Quality Life{% endblock %}
@@ -61,6 +61,7 @@
       <li class="team-row">
         <div>
           <strong>{{ company.name }}</strong>
+          <span class="team-hint" data-company-code>Código: <code>{{ company.slug }}</code> · Assistente {% if company|assistant_company %}ligado{% else %}desligado{% endif %}</span>
           <span><b class="team-status" data-active="{{ company.is_active|yesno:'1,0' }}">{{ company.is_active|yesno:"Ativa,Inativa" }}</b> · {{ company.collaborators }} colaborador{{ company.collaborators|pluralize:"es" }} ativo{{ company.collaborators|pluralize }} · {{ company.managers }} gestor{{ company.managers|pluralize:"es" }}</span>
         </div>
         <div class="operator-actions">
