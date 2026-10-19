@@ -1,0 +1,809 @@
+/* "Conheça a Quality" (docs/specs/16-conheca-a-quality.md): the company
+   presentation inside the app shell. Dark stage with the ring logo in 3D
+   (three.js), an animated gradient behind the hero and GSAP ScrollTrigger
+   parallax. Every selector starts with ".ql-main .qlc" so it beats the shared
+   ".ql-main h1/h2" rules of app-dark.css, which loads after this sheet. Without
+   WebGL, GSAP or with reduced motion the page is complete and static. */
+
+.ql-main.qlc-main {
+    max-width: 1280px;
+}
+
+.ql-main .qlc {
+    --qlc-bg0: #061419;
+    --qlc-bg1: #0a222b;
+    --qlc-text: #f2f7f8;
+    --qlc-soft: #b8c9ce;
+    --qlc-muted: #9fb4ba;
+    --qlc-accent: #4fd8ca;
+    --qlc-orange: #f98c16;
+    --qlc-magenta: #e0359f;
+    --qlc-line: rgb(255 255 255 / 12%);
+    --qlc-line2: rgb(255 255 255 / 24%);
+    --qlc-glass: rgb(17 46 56 / 62%);
+    --qlc-sunken: rgb(3 14 18 / 45%);
+    --qlc-primary: linear-gradient(100deg, #0e7369 0%, #6b4a9a 100%);
+    --qlc-brandgrad: linear-gradient(100deg, #4fd8ca 0%, #38d6f5 45%, #b89cf0 100%);
+    --qlc-ringgrad: linear-gradient(100deg, #f98c16 0%, #e0359f 55%, #8a5ab0 100%);
+    --qlc-warmgrad: linear-gradient(100deg, #f9a03a 0%, #ee5a9a 50%, #b089e0 100%);
+    --qlc-display: var(--ql-font-display, "Quicksand", "Trebuchet MS", sans-serif);
+    --qlc-body: var(--ql-font-body, "Figtree", "Segoe UI", Arial, sans-serif);
+    position: relative;
+    display: grid;
+    gap: clamp(64px, 9vw, 120px);
+    color: var(--qlc-text);
+    font-family: var(--qlc-body);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.ql-main .qlc h1,
+.ql-main .qlc h2,
+.ql-main .qlc h3 {
+    margin: 0;
+    color: var(--qlc-text);
+    font-family: var(--qlc-display);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+}
+
+/* :where keeps the reset at class weight so component margins win. */
+.ql-main .qlc :where(p) {
+    margin: 0;
+}
+
+.ql-main .qlc-eyebrow {
+    color: var(--qlc-accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.ql-main .qlc-grad,
+.ql-main .qlc-warm,
+.ql-main .qlc-shimmer {
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.ql-main .qlc-grad { background-image: var(--qlc-brandgrad); }
+.ql-main .qlc-warm { background-image: var(--qlc-warmgrad); }
+
+.ql-main .qlc-shimmer {
+    background-image: linear-gradient(100deg, #f9a03a 0%, #ee5a9a 25%, #b089e0 50%, #ee5a9a 75%, #f9a03a 100%);
+    background-size: 200% auto;
+    animation: qlc-shim 6s linear infinite;
+}
+
+@keyframes qlc-shim { to { background-position: -200% center; } }
+
+.ql-main .qlc-w {
+    display: inline-block;
+    overflow: hidden;
+    padding-bottom: 0.1em;
+    margin-bottom: -0.1em;
+    vertical-align: top;
+}
+
+.ql-main .qlc-wi { display: inline-block; }
+
+/* Buttons --------------------------------------------------------------------- */
+
+.ql-main .qlc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 12px 22px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--qlc-primary);
+    box-shadow: 0 10px 28px -12px rgb(79 216 202 / 60%), inset 0 1px 0 rgb(255 255 255 / 18%);
+    color: #fff;
+    font: 600 0.95rem var(--qlc-body);
+    text-decoration: none;
+    cursor: pointer;
+    transition: box-shadow 0.25s;
+}
+
+.ql-main .qlc-btn:hover {
+    box-shadow: 0 0 0 1px rgb(79 216 202 / 40%), 0 12px 34px -10px rgb(79 216 202 / 75%), 0 0 26px -6px rgb(184 156 240 / 60%);
+}
+
+.ql-main .qlc-btn--ghost {
+    background: rgb(6 20 25 / 55%);
+    box-shadow: inset 0 0 0 1px var(--qlc-line2);
+}
+
+/* Hero ------------------------------------------------------------------------ */
+
+.ql-main .qlc-hero {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 32px;
+    align-items: center;
+    min-height: min(760px, calc(100vh - 180px));
+    padding: clamp(28px, 5vw, 64px);
+    border-radius: 28px;
+    background: var(--qlc-bg0);
+    box-shadow: inset 0 0 0 1px var(--qlc-line);
+    isolation: isolate;
+}
+
+.ql-main .qlc-hero__bg {
+    position: absolute;
+    inset: -10% 0 0;
+    z-index: -2;
+    display: block;
+    width: 100%;
+    height: 110%;
+    background:
+        radial-gradient(50% 50% at 75% 35%, rgb(224 53 159 / 22%), transparent 70%),
+        radial-gradient(45% 45% at 30% 30%, rgb(79 216 202 / 18%), transparent 70%),
+        radial-gradient(35% 35% at 70% 80%, rgb(249 140 22 / 14%), transparent 70%),
+        var(--qlc-bg0);
+}
+
+.ql-main .qlc-hero__grid {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+        linear-gradient(rgb(255 255 255 / 6%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(255 255 255 / 6%) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(70% 60% at 50% 35%, #000 15%, transparent 75%);
+    mask-image: radial-gradient(70% 60% at 50% 35%, #000 15%, transparent 75%);
+    pointer-events: none;
+}
+
+.ql-main .qlc-hero__copy {
+    min-width: 0;
+    text-shadow: 0 2px 24px rgb(6 20 25 / 60%);
+}
+
+.ql-main .qlc-pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 100%;
+    padding: 7px 14px 7px 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgb(6 20 25 / 55%);
+    box-shadow: inset 0 0 0 1px var(--qlc-line2);
+    color: var(--qlc-soft);
+    font-size: 0.85rem;
+    text-shadow: none;
+}
+
+.ql-main .qlc-pill b {
+    flex: none;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--qlc-ringgrad);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.ql-main .qlc-pill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 14%) 50%, transparent 70%);
+    transform: translateX(-100%);
+    animation: qlc-beam 4.5s ease-in-out infinite;
+}
+
+@keyframes qlc-beam { 60%, 100% { transform: translateX(100%); } }
+
+.ql-main .qlc-hero h1 {
+    margin-top: 22px;
+    font-size: clamp(2.3rem, 5vw, 4.2rem);
+    letter-spacing: -0.015em;
+}
+
+.ql-main .qlc-lead {
+    max-width: 54ch;
+    margin-top: 20px;
+    color: var(--qlc-soft);
+    font-size: 1.12rem;
+}
+
+.ql-main .qlc-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+/* 3D logo stage */
+.ql-main .qlc-logo3d {
+    position: relative;
+    justify-self: center;
+    width: min(100%, 480px);
+    max-width: 100%;
+    aspect-ratio: 1;
+    touch-action: pan-y;
+}
+
+.ql-main .qlc-logo3d canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 0.6s;
+}
+
+.ql-main .qlc-logo3d[data-state="3d"] canvas { opacity: 1; }
+
+.ql-main .qlc-logo3d__fallback {
+    position: absolute;
+    inset: 22%;
+    width: 56%;
+    height: auto;
+    border-radius: 50%;
+    box-shadow: 0 20px 60px -12px rgb(224 53 159 / 60%);
+}
+
+.ql-main .qlc-halo {
+    position: absolute;
+    inset: 14%;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, rgb(249 140 22 / 55%), rgb(224 53 159 / 55%), rgb(138 90 176 / 50%), rgb(79 216 202 / 45%), rgb(249 140 22 / 55%));
+    filter: blur(48px);
+    opacity: 0.55;
+    animation: qlc-spin 18s linear infinite;
+}
+
+@keyframes qlc-spin { to { transform: rotate(360deg); } }
+
+.ql-main .qlc-tagp {
+    position: absolute;
+    z-index: 2;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.ql-main .qlc-tagp__ctr {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+}
+
+.ql-main .qlc-bob { animation: qlc-bob 5s ease-in-out infinite; }
+.ql-main .qlc-tagp:nth-child(odd) .qlc-bob { animation-duration: 6.2s; animation-delay: -2s; }
+
+@keyframes qlc-bob { 50% { transform: translateY(-10px); } }
+
+.ql-main .qlc-tag {
+    display: inline-flex;
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: rgb(10 34 43 / 82%);
+    box-shadow: inset 0 0 0 1px var(--qlc-line2), 0 10px 24px -14px #000;
+    color: var(--qlc-text);
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ql-main .qlc-tag i { margin-right: 6px; color: var(--qlc-orange); font-style: normal; }
+.ql-main .qlc-tagp:nth-child(even) .qlc-tag i { color: var(--qlc-magenta); }
+
+.ql-main .qlc-hint {
+    position: absolute;
+    bottom: 3%;
+    left: 4%;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    color: var(--qlc-muted);
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+
+.ql-main .qlc-hint::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--qlc-orange);
+    box-shadow: 0 0 10px var(--qlc-orange);
+}
+
+/* Services ribbon -------------------------------------------------------------- */
+
+.ql-main .qlc-marquee {
+    overflow: hidden;
+    margin-top: calc(clamp(64px, 9vw, 120px) * -0.6);
+    padding-block: 16px;
+    border-block: 1px solid var(--qlc-line);
+    background: var(--qlc-sunken);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.ql-main .qlc-marquee__track {
+    display: flex;
+    gap: 40px;
+    width: max-content;
+    animation: qlc-mq 38s linear infinite;
+}
+
+.ql-main .qlc-marquee span {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    color: var(--qlc-soft);
+    font-family: var(--qlc-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.ql-main .qlc-marquee span::after { content: "✦"; color: var(--qlc-orange); font-size: 0.8rem; }
+.ql-main .qlc-marquee span:nth-child(even)::after { color: var(--qlc-magenta); }
+
+@keyframes qlc-mq { to { transform: translateX(-50%); } }
+
+/* Sections -------------------------------------------------------------------- */
+
+.ql-main .qlc-section {
+    position: relative;
+    min-width: 0;
+}
+
+/* Decorative lights drift slower than the content; clipped to the page band. */
+.ql-main .qlc-lights {
+    position: absolute;
+    inset: -80px 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.ql-main .qlc-orb {
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.45;
+}
+
+.ql-main .qlc-orb--orange { background: radial-gradient(circle, rgb(249 140 22 / 70%), transparent 65%); }
+.ql-main .qlc-orb--magenta { background: radial-gradient(circle, rgb(224 53 159 / 65%), transparent 65%); }
+.ql-main .qlc-orb--teal { background: radial-gradient(circle, rgb(79 216 202 / 55%), transparent 65%); }
+.ql-main .qlc-orb--plum { background: radial-gradient(circle, rgb(138 90 176 / 65%), transparent 65%); }
+
+.ql-main .qlc-head {
+    display: grid;
+    gap: 14px;
+    max-width: 720px;
+    margin-bottom: 44px;
+}
+
+.ql-main .qlc-head h2 { font-size: clamp(1.9rem, 3.8vw, 2.9rem); }
+.ql-main .qlc-head p { color: var(--qlc-soft); font-size: 1.06rem; }
+
+/* Investing */
+.ql-main .qlc-invest {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 28px;
+    align-items: stretch;
+}
+
+.ql-main .qlc-quote {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 28px;
+    padding: clamp(26px, 4vw, 44px);
+    border-radius: 20px;
+    background: linear-gradient(160deg, rgb(14 115 105 / 40%), rgb(107 74 154 / 30%) 60%, rgb(224 53 159 / 22%)), var(--qlc-bg1);
+    box-shadow: inset 0 0 0 1px var(--qlc-line2);
+}
+
+.ql-main .qlc-quote p {
+    font-family: var(--qlc-display);
+    font-size: clamp(1.4rem, 2.6vw, 1.95rem);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.ql-main .qlc-quote small { color: var(--qlc-soft); font-size: 0.9rem; }
+
+.ql-main .qlc-checks { display: grid; gap: 14px; }
+
+.ql-main .qlc-check {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 20px 22px;
+    border-radius: 14px;
+    background: var(--qlc-glass);
+    box-shadow: inset 0 0 0 1px var(--qlc-line);
+}
+
+.ql-main .qlc-check > div { min-width: 0; }
+
+.ql-main .qlc-check__n {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgb(249 140 22 / 14%);
+    color: var(--qlc-orange);
+    font-weight: 700;
+}
+
+.ql-main .qlc-check:nth-child(2) .qlc-check__n { background: rgb(224 53 159 / 14%); color: #f07bc0; }
+.ql-main .qlc-check:nth-child(3) .qlc-check__n { background: rgb(79 216 202 / 14%); color: var(--qlc-accent); }
+.ql-main .qlc-check strong { display: block; font-weight: 600; }
+.ql-main .qlc-check span { color: var(--qlc-soft); font-size: 0.95rem; }
+
+/* Giant parallax type */
+.ql-main .qlc-bigtype {
+    overflow: hidden;
+    margin-block: calc(clamp(64px, 9vw, 120px) * -0.5);
+    pointer-events: none;
+    user-select: none;
+}
+
+.ql-main .qlc-bigtype__row {
+    width: max-content;
+    font-family: var(--qlc-display);
+    font-size: clamp(3rem, 9vw, 7.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+}
+
+.ql-main .qlc-bigtype__row--outline {
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgb(255 255 255 / 16%);
+}
+
+.ql-main .qlc-bigtype__row--warm {
+    background-image: var(--qlc-warmgrad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: 0.85;
+}
+
+/* Solutions */
+.ql-main .qlc-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.ql-main .qlc-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    padding: 28px 26px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: rgb(10 34 43 / 82%);
+    box-shadow: inset 0 0 0 1px var(--qlc-line);
+    isolation: isolate;
+}
+
+.ql-main .qlc-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgb(224 53 159 / 16%), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.ql-main .qlc-card:hover::before { opacity: 1; }
+
+.ql-main .qlc-card__num {
+    width: max-content;
+    background-image: var(--qlc-warmgrad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-family: var(--qlc-display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+}
+
+.ql-main .qlc-card h3 { font-size: 1.32rem; }
+.ql-main .qlc-card p { color: var(--qlc-soft); }
+
+.ql-main .qlc-list {
+    display: grid;
+    gap: 10px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ql-main .qlc-list li { display: flex; gap: 10px; font-size: 0.95rem; }
+.ql-main .qlc-list li::before { content: "✓"; flex: none; color: var(--qlc-accent); font-weight: 700; }
+
+.ql-main .qlc-card--wide {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.ql-main .qlc-card--wide > div { display: grid; gap: 14px; }
+.ql-main .qlc-card--wide .qlc-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* Services */
+.ql-main .qlc-services { padding-block: clamp(48px, 7vw, 90px); }
+
+.ql-main .qlc-services::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 28px;
+    background: var(--qlc-sunken);
+    box-shadow: inset 0 0 0 1px var(--qlc-line);
+}
+
+.ql-main .qlc-services > * { margin-inline: clamp(0px, 3vw, 40px); }
+
+.ql-main .qlc-svc-groups {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.ql-main .qlc-svc-group {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+    min-width: 0;
+    padding: 24px;
+    border-radius: 20px;
+    background: rgb(3 14 18 / 55%);
+    box-shadow: inset 0 0 0 1px var(--qlc-line);
+}
+
+.ql-main .qlc-svc-group h3 {
+    color: var(--qlc-muted);
+    font-family: var(--qlc-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.ql-main .qlc-svc {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ql-main .qlc-tile {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+    padding: 18px 16px;
+    border-radius: 14px;
+    background: var(--qlc-glass);
+    box-shadow: inset 0 0 0 1px var(--qlc-line);
+    transition: box-shadow 0.25s, background 0.25s;
+}
+
+.ql-main .qlc-tile:hover {
+    background: rgb(23 58 70 / 80%);
+    box-shadow: inset 0 0 0 1px rgb(249 140 22 / 50%), 0 14px 30px -18px rgb(224 53 159 / 70%);
+}
+
+.ql-main .qlc-tile span { font-size: 1.45rem; line-height: 1; }
+.ql-main .qlc-tile strong { font-size: 1rem; font-weight: 600; line-height: 1.3; }
+
+/* Steps */
+.ql-main .qlc-steps-wrap { position: relative; }
+
+.ql-main .qlc-rail {
+    position: absolute;
+    top: 21px;
+    right: calc((100% - 56px) / 5 - 21px);
+    left: 21px;
+    height: 2px;
+    background: var(--qlc-line);
+}
+
+.ql-main .qlc-rail i {
+    position: absolute;
+    inset: 0;
+    background: var(--qlc-ringgrad);
+    box-shadow: 0 0 14px rgb(224 53 159 / 60%);
+    transform-origin: 0 50%;
+}
+
+.ql-main .qlc-steps {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ql-main .qlc-step { display: grid; gap: 14px; align-content: start; min-width: 0; }
+
+.ql-main .qlc-step__n {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--qlc-bg1);
+    box-shadow: inset 0 0 0 2px rgb(249 140 22 / 70%), 0 0 0 6px var(--qlc-bg0);
+    font-family: var(--qlc-display);
+    font-weight: 700;
+}
+
+.ql-main .qlc-step:nth-child(2) .qlc-step__n { box-shadow: inset 0 0 0 2px rgb(240 98 79 / 80%), 0 0 0 6px var(--qlc-bg0); }
+.ql-main .qlc-step:nth-child(3) .qlc-step__n { box-shadow: inset 0 0 0 2px rgb(224 53 159 / 80%), 0 0 0 6px var(--qlc-bg0); }
+.ql-main .qlc-step:nth-child(4) .qlc-step__n { box-shadow: inset 0 0 0 2px rgb(184 120 220 / 80%), 0 0 0 6px var(--qlc-bg0); }
+.ql-main .qlc-step:nth-child(5) .qlc-step__n { box-shadow: inset 0 0 0 2px rgb(138 90 176 / 90%), 0 0 0 6px var(--qlc-bg0); }
+.ql-main .qlc-step strong { padding-right: 8px; font-size: 1.08rem; font-weight: 600; line-height: 1.3; }
+
+/* Investment */
+.ql-main .qlc-inv {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 28px;
+    align-items: center;
+}
+
+.ql-main .qlc-inv .qlc-head { margin: 0; }
+
+.ql-main .qlc-benefits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ql-main .qlc-benefits li {
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: var(--qlc-glass);
+    box-shadow: inset 0 0 0 1px rgb(79 216 202 / 45%);
+    font-size: 0.98rem;
+    font-weight: 600;
+}
+
+.ql-main .qlc-benefits li:nth-child(3n + 1) { box-shadow: inset 0 0 0 1px rgb(249 140 22 / 50%); }
+.ql-main .qlc-benefits li:nth-child(3n + 2) { box-shadow: inset 0 0 0 1px rgb(224 53 159 / 50%); }
+
+/* Contact */
+.ql-main .qlc-contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 30px;
+    align-items: center;
+    padding: clamp(30px, 5vw, 60px);
+    border-radius: 28px;
+    background:
+        radial-gradient(60% 90% at 0% 0%, rgb(79 216 202 / 28%), transparent 60%),
+        radial-gradient(60% 90% at 100% 100%, rgb(224 53 159 / 28%), transparent 60%),
+        radial-gradient(40% 60% at 100% 0%, rgb(249 140 22 / 16%), transparent 60%),
+        var(--qlc-bg1);
+    box-shadow: inset 0 0 0 1px var(--qlc-line2);
+}
+
+.ql-main .qlc-contact h2 { margin-top: 12px; font-size: clamp(1.8rem, 3.6vw, 2.6rem); }
+.ql-main .qlc-contact p { margin-top: 14px; color: var(--qlc-soft); }
+.ql-main .qlc-cbox { display: grid; gap: 12px; min-width: 0; }
+
+.ql-main .qlc-cline {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgb(3 14 18 / 70%);
+    box-shadow: inset 0 0 0 1px var(--qlc-line);
+}
+
+.ql-main .qlc-cline > div { flex: 1; min-width: 0; }
+
+.ql-main .qlc-cline small {
+    display: block;
+    color: var(--qlc-muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.ql-main .qlc-cline strong { display: block; font-weight: 600; overflow-wrap: anywhere; user-select: all; }
+
+.ql-main .qlc-copy {
+    flex: none;
+    padding: 9px 12px;
+    border: 0;
+    border-radius: 10px;
+    background: rgb(255 255 255 / 8%);
+    box-shadow: inset 0 0 0 1px var(--qlc-line2);
+    color: var(--qlc-text);
+    font: 600 0.85rem var(--qlc-body);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ql-main .qlc-copy:hover { background: rgb(224 53 159 / 18%); }
+.ql-main .qlc-copy[data-copied] { background: rgb(79 216 202 / 25%); color: var(--qlc-accent); }
+
+/* Responsive ------------------------------------------------------------------ */
+
+@media (max-width: 1100px) {
+    .ql-main .qlc-hero,
+    .ql-main .qlc-invest,
+    .ql-main .qlc-inv,
+    .ql-main .qlc-contact,
+    .ql-main .qlc-card--wide { grid-template-columns: minmax(0, 1fr); }
+    .ql-main .qlc-hero { min-height: 0; }
+    .ql-main .qlc-logo3d { order: -1; width: min(86%, 380px); margin-bottom: -8px; }
+    .ql-main .qlc-cards { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 860px) {
+    .ql-main .qlc-svc-groups { grid-template-columns: minmax(0, 1fr); }
+    .ql-main .qlc-steps { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+    .ql-main .qlc-rail { top: 21px; right: auto; bottom: 21px; left: 20px; width: 2px; height: auto; }
+    .ql-main .qlc-rail i { transform-origin: 50% 0; }
+    .ql-main .qlc-step { grid-template-columns: 42px minmax(0, 1fr); gap: 16px; align-items: center; }
+}
+
+@media (max-width: 520px) {
+    .ql-main .qlc-hero { padding: 22px 18px 32px; border-radius: 22px; }
+    .ql-main .qlc-card--wide .qlc-list { grid-template-columns: minmax(0, 1fr); }
+    .ql-main .qlc-svc { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ql-main .qlc-tag { padding: 5px 10px; font-size: 0.72rem; }
+    .ql-main .qlc-svc-group { padding: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ql-main .qlc *,
+    .ql-main .qlc *::before,
+    .ql-main .qlc *::after { animation: none !important; transition: none !important; }
+}

@@ -1,0 +1,204 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Conheça a Quality{% endblock %}
+{% block page_title %}Conheça a Quality{% endblock %}
+{% block header_title %}Conheça a Quality Life{% endblock %}
+{% block shell_content_class %}qlc-main{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/conheca.css' %}">{% endblock %}
+{% block ambient %}{% endblock %}
+{% block content %}
+<div class="qlc" id="qlc">
+    <section class="qlc-hero" id="qlc-hero" aria-labelledby="qlc-title">
+        <canvas class="qlc-hero__bg" id="qlc-bg" aria-hidden="true"></canvas>
+        <div class="qlc-hero__grid" aria-hidden="true"></div>
+        <div class="qlc-hero__copy">
+            <span class="qlc-pill"><b>Quality Life</b>Assessoria e consultoria em qualidade de vida</span>
+            <h1 id="qlc-title">Qualidade de vida &amp; <span class="qlc-shimmer">saúde</span> para os colaboradores</h1>
+            <p class="qlc-lead">Investindo na saúde e no bem-estar no trabalho, com profissionais de Educação Física como agentes promotores de um estilo de vida saudável.</p>
+            <div class="qlc-cta">
+                <a class="qlc-btn" data-magnetic href="#qlc-contato">Falar com a Quality Life <span aria-hidden="true">→</span></a>
+                <a class="qlc-btn qlc-btn--ghost" data-magnetic href="#qlc-servicos">Ver serviços</a>
+            </div>
+        </div>
+        <div class="qlc-logo3d" id="qlc-logo3d" data-state="image" data-logo="{% static 'quality_life/images/brand/quality-life-logo-ring-512.png' %}">
+            <div class="qlc-halo" aria-hidden="true"></div>
+            <img class="qlc-logo3d__fallback" id="qlc-fallback" src="{% static 'quality_life/images/brand/quality-life-logo-ring-512.png' %}" width="512" height="512" alt="Logo Quality Life">
+            <canvas id="qlc-coin" aria-hidden="true"></canvas>
+            <div aria-hidden="true">
+                <div class="qlc-tagp" data-depth="1.2" style="left:24%;top:14%"><div class="qlc-tagp__ctr"><div class="qlc-bob"><span class="qlc-tag"><i>✦</i>Ginástica laboral</span></div></div></div>
+                <div class="qlc-tagp" data-depth="0.8" style="left:74%;top:15%"><div class="qlc-tagp__ctr"><div class="qlc-bob"><span class="qlc-tag"><i>✦</i>Ergonomia</span></div></div></div>
+                <div class="qlc-tagp" data-depth="1.5" style="left:15%;top:60%"><div class="qlc-tagp__ctr"><div class="qlc-bob"><span class="qlc-tag"><i>✦</i>Meditação</span></div></div></div>
+                <div class="qlc-tagp" data-depth="1" style="left:84%;top:58%"><div class="qlc-tagp__ctr"><div class="qlc-bob"><span class="qlc-tag"><i>✦</i>SIPAT</span></div></div></div>
+                <div class="qlc-tagp" data-depth="0.6" style="left:68%;top:88%"><div class="qlc-tagp__ctr"><div class="qlc-bob"><span class="qlc-tag"><i>✦</i>Massoterapia</span></div></div></div>
+            </div>
+            <span class="qlc-hint" id="qlc-hint" hidden>Arraste ou toque no logo</span>
+        </div>
+    </section>
+
+    <div class="qlc-marquee" aria-hidden="true"><div class="qlc-marquee__track">
+        {% for _ in "ab" %}<span>Ginástica laboral</span><span>Massoterapia</span><span>Palestras lúdicas</span><span>Aulas de dança laboral</span><span>Eventos</span><span>Ergonomia</span><span>SIPAT / Semana da saúde</span><span>Meditação / relaxamento</span><span>Gestão emocional</span><span>Nutrição online</span>{% endfor %}
+    </div></div>
+
+    <section class="qlc-section" aria-labelledby="qlc-sobre-title">
+        <div class="qlc-lights" aria-hidden="true">
+            <span class="qlc-orb qlc-orb--orange" data-speed="0.6" style="left:-140px;top:10%"></span>
+            <span class="qlc-orb qlc-orb--teal" data-speed="0.3" style="right:-120px;bottom:-10%"></span>
+        </div>
+        <div class="qlc-invest">
+            <div class="qlc-quote" data-up data-par="40">
+                <span class="qlc-eyebrow" id="qlc-sobre-title">Investindo na saúde &amp; bem-estar no trabalho</span>
+                <p>Reforçamos a importância dos profissionais de <span class="qlc-warm">Educação Física</span>.</p>
+                <small>A Quality Life leva o movimento para dentro da rotina da empresa.</small>
+            </div>
+            <div class="qlc-checks" data-stagger>
+                <div class="qlc-check"><span class="qlc-check__n" aria-hidden="true">1</span><div><strong>Agentes promotores de um estilo de vida saudável</strong><span>Profissionais que orientam, acompanham e motivam no dia a dia.</span></div></div>
+                <div class="qlc-check"><span class="qlc-check__n" aria-hidden="true">2</span><div><strong>Formação do hábito</strong><span>Estimular o colaborador na formação do hábito da prática de atividade física.</span></div></div>
+                <div class="qlc-check"><span class="qlc-check__n" aria-hidden="true">3</span><div><strong>Foco nos resultados</strong><span>Hábitos que proporcionem mais saúde na rotina dos colaboradores.</span></div></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="qlc-bigtype" aria-hidden="true">
+        <div class="qlc-bigtype__row qlc-bigtype__row--outline">QUALITY LIFE ✦ QUALIDADE DE VIDA ✦ QUALITY LIFE ✦ QUALIDADE DE VIDA ✦</div>
+        <div class="qlc-bigtype__row qlc-bigtype__row--warm">SAÚDE ✦ BEM-ESTAR ✦ MOVIMENTO ✦ SAÚDE ✦ BEM-ESTAR ✦ MOVIMENTO ✦</div>
+    </div>
+
+    <section class="qlc-section" id="qlc-solucoes" aria-labelledby="qlc-solucoes-title">
+        <div class="qlc-lights" aria-hidden="true">
+            <span class="qlc-orb qlc-orb--magenta" data-speed="0.5" style="right:-160px;top:-60px"></span>
+            <span class="qlc-orb qlc-orb--plum" data-speed="0.25" style="left:-120px;bottom:0"></span>
+        </div>
+        <div class="qlc-head">
+            <span class="qlc-eyebrow" data-up>Principais soluções</span>
+            <h2 id="qlc-solucoes-title" data-split>Programas pensados para a <span class="qlc-warm">sua empresa</span></h2>
+            <p data-up>Incentivamos a adoção de um estilo de vida saudável para os colaboradores.</p>
+        </div>
+        <div class="qlc-cards" data-stagger>
+            <article class="qlc-card" data-tilt>
+                <span class="qlc-card__num" aria-hidden="true">01</span>
+                <h3>Programas personalizados para a sua empresa</h3>
+                <p>Incentivamos a adoção de um estilo de vida saudável para os colaboradores.</p>
+                <ul class="qlc-list"><li>Empresas que são inovadoras investem em saúde e bem-estar.</li><li>A qualidade de vida no trabalho contribui para a melhoria da produtividade.</li></ul>
+            </article>
+            <article class="qlc-card" data-tilt>
+                <span class="qlc-card__num" aria-hidden="true">02</span>
+                <h3>Prática de exercícios físicos para a melhoria da qualidade de vida</h3>
+                <p>Nossa missão é tornar a rotina profissional mais agradável, saudável e segura.</p>
+                <ul class="qlc-list"><li>Benefícios individuais.</li><li>Resultados coletivos.</li></ul>
+            </article>
+            <article class="qlc-card" data-tilt>
+                <span class="qlc-card__num" aria-hidden="true">03</span>
+                <h3>Assessoria e consultoria com exclusividade</h3>
+                <p>Oferecemos com exclusividade soluções de assessoria e consultoria para empresas, com foco nos resultados.</p>
+                <ul class="qlc-list"><li>Hábitos que proporcionem mais saúde na rotina dos colaboradores.</li></ul>
+            </article>
+            <article class="qlc-card qlc-card--wide">
+                <div>
+                    <span class="qlc-card__num" aria-hidden="true">04</span>
+                    <h3>Soluções online para os colaboradores</h3>
+                    <p>Programas que funcionam a distância, mesmo em períodos de isolamento.</p>
+                </div>
+                <ul class="qlc-list">
+                    <li>Integração entre equipes</li>
+                    <li>Gerenciamento do estresse</li>
+                    <li>Adaptação e adequação da atuação em home office</li>
+                    <li>Promoção da cultura de saúde aos colaboradores</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
+    <section class="qlc-section qlc-services" id="qlc-servicos" aria-labelledby="qlc-servicos-title">
+        <div class="qlc-lights" aria-hidden="true">
+            <span class="qlc-orb qlc-orb--teal" data-speed="0.5" style="left:30%;top:-120px"></span>
+        </div>
+        <div class="qlc-head">
+            <span class="qlc-eyebrow" data-up>Nossos serviços · Consultoria</span>
+            <h2 id="qlc-servicos-title" data-split>Benefícios de qualidade de vida para os <span class="qlc-grad">colaboradores</span></h2>
+            <p data-up>Dez frentes de atuação que podem ser combinadas conforme a necessidade de cada empresa.</p>
+        </div>
+        <div class="qlc-svc-groups">
+            <div class="qlc-svc-group" data-up>
+                <h3>Movimento e encontros</h3>
+                <ul class="qlc-svc" data-flip>
+                    <li class="qlc-tile"><span aria-hidden="true">🤸</span><strong>Ginástica laboral</strong></li>
+                    <li class="qlc-tile"><span aria-hidden="true">💆</span><strong>Massoterapia</strong></li>
+                    <li class="qlc-tile"><span aria-hidden="true">🎤</span><strong>Palestras lúdicas</strong></li>
+                    <li class="qlc-tile"><span aria-hidden="true">💃</span><strong>Aulas de dança laboral</strong></li>
+                    <li class="qlc-tile"><span aria-hidden="true">🎉</span><strong>Eventos</strong></li>
+                </ul>
+            </div>
+            <div class="qlc-svc-group" data-up>
+                <h3>Saúde e equilíbrio</h3>
+                <ul class="qlc-svc" data-flip>
+                    <li class="qlc-tile"><span aria-hidden="true">🪑</span><strong>Ergonomia</strong></li>
+                    <li class="qlc-tile"><span aria-hidden="true">🩺</span><strong>SIPAT / Semana da saúde</strong></li>
+                    <li class="qlc-tile"><span aria-hidden="true">🧘</span><strong>Meditação / relaxamento</strong></li>
+                    <li class="qlc-tile"><span aria-hidden="true">💬</span><strong>Gestão emocional</strong></li>
+                    <li class="qlc-tile"><span aria-hidden="true">🥗</span><strong>Nutrição online</strong></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="qlc-section" id="qlc-etapas" aria-labelledby="qlc-etapas-title">
+        <div class="qlc-lights" aria-hidden="true">
+            <span class="qlc-orb qlc-orb--orange" data-speed="0.4" style="right:-100px;top:20%"></span>
+        </div>
+        <div class="qlc-head">
+            <span class="qlc-eyebrow" data-up>Assessoria</span>
+            <h2 id="qlc-etapas-title" data-split>Etapas dos programas <span class="qlc-warm">Quality Life</span></h2>
+            <p data-up>Do primeiro contato ao acompanhamento contínuo, cada programa segue o mesmo caminho.</p>
+        </div>
+        <div class="qlc-steps-wrap" id="qlc-steps">
+            <span class="qlc-rail" aria-hidden="true"><i id="qlc-railfill"></i></span>
+            <ol class="qlc-steps">
+                <li class="qlc-step"><span class="qlc-step__n" aria-hidden="true">1</span><strong>Contato</strong></li>
+                <li class="qlc-step"><span class="qlc-step__n" aria-hidden="true">2</span><strong>Visita de diagnóstico</strong></li>
+                <li class="qlc-step"><span class="qlc-step__n" aria-hidden="true">3</span><strong>Entrega da proposta</strong></li>
+                <li class="qlc-step"><span class="qlc-step__n" aria-hidden="true">4</span><strong>Implementação</strong></li>
+                <li class="qlc-step"><span class="qlc-step__n" aria-hidden="true">5</span><strong>Acompanhamento e avaliação</strong></li>
+            </ol>
+        </div>
+    </section>
+
+    <section class="qlc-section" id="qlc-investimento" aria-labelledby="qlc-investimento-title">
+        <div class="qlc-lights" aria-hidden="true">
+            <span class="qlc-orb qlc-orb--magenta" data-speed="0.35" style="left:-140px;top:0"></span>
+        </div>
+        <div class="qlc-inv">
+            <div class="qlc-head">
+                <span class="qlc-eyebrow" data-up>Investimento</span>
+                <h2 id="qlc-investimento-title" data-split>Benefícios individuais e <span class="qlc-warm">coletivos</span></h2>
+                <p data-up>Propostas personalizadas de acordo com a necessidade dos colaboradores da sua empresa.</p>
+            </div>
+            <ul class="qlc-benefits" data-pop>
+                <li>Rotina profissional agradável</li>
+                <li>Atividades saudáveis</li>
+                <li>Colaboradores confiantes</li>
+                <li>Melhor produtividade individual</li>
+                <li>Resultados coletivos</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="qlc-section" id="qlc-contato" aria-labelledby="qlc-contato-title">
+        <div class="qlc-contact" id="qlc-contactbox">
+            <div>
+                <span class="qlc-eyebrow">Fale com a Quality Life</span>
+                <h2 id="qlc-contato-title" data-split>Vamos montar o programa da sua empresa?</h2>
+                <p>Conte para a gente quantos colaboradores são e o que a equipe precisa. O programa é feito sob medida.</p>
+            </div>
+            <div class="qlc-cbox">
+                <div class="qlc-cline"><div><small>E-mail</small><strong id="qlc-mail">{{ sales_email }}</strong></div><button class="qlc-copy" type="button" data-copy="qlc-mail">Copiar</button></div>
+                <div class="qlc-cline"><div><small>Site</small><strong>www.qualitylife.online</strong></div><a class="qlc-copy" href="https://www.qualitylife.online" target="_blank" rel="noopener">Abrir <span aria-hidden="true">↗</span></a></div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'quality_life/vendor/ScrollTrigger-3.13.0.min.js' %}" defer></script>
+<script src="{% static 'quality_life/vendor/three-0.128.0.min.js' %}" defer></script>
+<script src="{% static 'quality_life/conheca.js' %}" defer></script>
+{% endblock %}

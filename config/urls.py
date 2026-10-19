@@ -11,6 +11,7 @@ from identity import google as google_views
 from identity import operator_views
 from identity import views as identity_views
 
+from .about_views import about_quality
 from .auth_views import (
     EmailLoginView,
     SessionLogoutView,
@@ -40,6 +41,7 @@ urlpatterns = [
     path("app/exercises/", exercises, name="exercises"),
     path("app/aulas/", lessons, name="lessons"),
     path("app/instalar/", install_app, name="install_app"),
+    path("app/conheca-a-quality/", about_quality, name="about_quality"),
     path("app/assessment/", include("assessments.urls")),
     path("app/report/", include("reports.urls")),
     path("app/", include("wellbeing.urls")),
