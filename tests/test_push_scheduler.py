@@ -16,6 +16,7 @@ from django.test import TestCase, TransactionTestCase, override_settings
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
+from config import tips_calendar
 from identity.models import Membership, Organization, User
 from wellbeing import notifications, scheduler
 from wellbeing.models import PushSubscription, ReminderDispatch, ReminderSetting
@@ -30,6 +31,13 @@ NO_VAPID = {"VAPID_PUBLIC_KEY": "", "VAPID_PRIVATE_KEY": "", "VAPID_SUBJECT": ""
 SAO_PAULO = ZoneInfo("America/Sao_Paulo")
 # Monday 19/10/2026 (launch day); São Paulo is UTC-3 all year.
 MONDAY = datetime(2026, 10, 19, tzinfo=SAO_PAULO)
+
+
+def without_tips(test):
+    """Break reminders only: the weekly tips (spec 17) have their own tests."""
+    patcher = mock.patch.object(tips_calendar, "PUBLISHED", False)
+    patcher.start()
+    test.addCleanup(patcher.stop)
 
 
 def wait_for(condition, seconds=2):
@@ -66,6 +74,7 @@ def make_member(email, organization, **setting):
 @override_settings(**VAPID)
 class SchedulerTests(TestCase):
     def setUp(self):
+        without_tips(self)
         self.organization = Organization.objects.create(name="Empresa", slug="empresa")
         self.setting = make_member("dono@empresa.test", self.organization)
 
@@ -255,6 +264,7 @@ class PlanTests(TestCase):
     on refresh and at a due slot, so Neon Free can suspend in between."""
 
     def setUp(self):
+        without_tips(self)
         scheduler._wake.clear()
         self.addCleanup(scheduler._wake.clear)
         self.organization = Organization.objects.create(name="Empresa", slug="empresa")
@@ -514,6 +524,7 @@ class TwoWorkersTests(TransactionTestCase):
     connections: the unique dispatch row lets only one send."""
 
     def test_concurrent_workers_send_once(self):
+        without_tips(self)
         organization = Organization.objects.create(name="Empresa", slug="empresa")
         make_member("dono@empresa.test", organization)
         now = utc(MONDAY + timedelta(hours=9, seconds=5))

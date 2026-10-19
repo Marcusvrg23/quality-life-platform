@@ -9,16 +9,17 @@ COMO FUNCIONA
   nota, resposta ou dado de saúde.
 
 APROVAÇÃO
-Os textos abaixo são o rascunho do doc "Dicas Quality Life — calendário para
-aprovação". Nada aparece nem é enviado enquanto ``PUBLISHED`` for False; só
-ligue depois que a Quality Life aprovar os textos (e aplique aqui as
-correções dela).
+Textos aprovados pela Quality Life em 19/10/2026, sem alterações, no doc
+"Dicas Quality Life — calendário para aprovação" (incluindo a revisão das
+dicas de alongamento e postura por profissional de Educação Física). Horário
+de envio: qualquer horário comercial serve; ficou 10h. Mudou um texto?
+Só com nova aprovação. ``PUBLISHED = False`` desliga tudo de novo.
 """
 
 from dataclasses import dataclass
 from datetime import date, time, timedelta
 
-PUBLISHED = False
+PUBLISHED = True
 SEND_TIME = time(10, 0)
 WEEKLY_WEEKDAY = 0  # Monday
 

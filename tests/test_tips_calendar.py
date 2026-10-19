@@ -1,8 +1,8 @@
-"""Weekly tips and special dates (docs/specs/17-dicas-da-semana.md, aceite 1 a 7).
+"""Weekly tips and special dates (docs/specs/17-dicas-da-semana.md, aceite 1 a 8).
 
-The texts are a draft waiting for the Quality Life's approval: with
-``PUBLISHED`` False nothing shows on Hoje and nothing is sent. Every test that
-needs them on patches ``PUBLISHED``. pywebpush is simulated.
+The Quality Life approved the texts on 19/10/2026, so ``PUBLISHED`` is True;
+the tests still patch it both ways so each behaviour stays covered.
+pywebpush is simulated.
 """
 
 import json
@@ -36,6 +36,7 @@ SAO_PAULO = ZoneInfo("America/Sao_Paulo")
 MONDAY = date(2026, 10, 19)
 TUESDAY = date(2026, 10, 20)
 published = mock.patch.object(tips_calendar, "PUBLISHED", True)
+unpublished = mock.patch.object(tips_calendar, "PUBLISHED", False)
 
 
 def at_local(day, hour, minute=0, second=5):
@@ -63,8 +64,11 @@ class CalendarTests(TestCase):
                 self.assertEqual(words & set(notifications.RESULT_WORDS), set())
                 self.assertTrue(reverse(tip.route).startswith("/app/"))
 
+    def test_approved_texts_are_published(self):
+        self.assertTrue(tips_calendar.PUBLISHED)
+
+    @unpublished
     def test_unpublished_shows_and_sends_nothing(self):
-        self.assertFalse(tips_calendar.PUBLISHED)
         for day in (MONDAY, TUESDAY, date(2026, 9, 10)):
             self.assertIsNone(tips_calendar.tip_to_send(day))
             self.assertIsNone(tips_calendar.tip_to_show(day))
@@ -149,6 +153,7 @@ class ScreenTests(TestCase):
         with mock.patch("django.utils.timezone.localdate", return_value=day):
             return self.client.get(reverse("app"))
 
+    @unpublished
     def test_unpublished_home_has_no_weekly_tip(self):
         response = self.home(MONDAY)
         self.assertNotContains(response, "Dica da semana")
@@ -172,10 +177,9 @@ class ScreenTests(TestCase):
         self.assertContains(response, f'href="{reverse("wellbeing_gym")}">Abrir')
 
     def test_reminders_explain_whether_tips_are_sent(self):
-        unpublished = self.client.get(reverse("wellbeing_reminders"))
-        self.assertContains(
-            unpublished, "As dicas e datas especiais ainda não são enviadas"
-        )
+        with unpublished:
+            off = self.client.get(reverse("wellbeing_reminders"))
+        self.assertContains(off, "As dicas e datas especiais ainda não são enviadas")
         with published:
             on = self.client.get(reverse("wellbeing_reminders"))
         self.assertContains(
@@ -213,6 +217,7 @@ class TipSchedulerTests(TestCase):
     def payloads(self):
         return [json.loads(call.kwargs["data"]) for call in self.webpush.call_args_list]
 
+    @unpublished
     def test_unpublished_plan_never_holds_a_tip_and_adds_no_query(self):
         plan = scheduler.Plan()
         with CaptureQueriesContext(connection) as loading:

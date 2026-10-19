@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from assessments.models import Assessment, Pillar, QuestionnaireVersion
-from config import wellbeing_catalog
+from config import tips_calendar, wellbeing_catalog
 from identity.models import Membership, Organization
 from tests.test_assessment_result import answer_identification, completed_result
 from wellbeing.services import greeting
@@ -99,7 +99,9 @@ class HomeTests(TestCase):
         self.assertNotContains(response, "<b>Ana</b>")
         self.assertContains(response, "Boa noite, &lt;b&gt;Ana&lt;/b&gt;")
 
+    @mock.patch.object(tips_calendar, "PUBLISHED", False)
     def test_four_shortcuts_and_no_tip_while_catalog_is_empty(self):
+        # The daily catalog tip shows only while the weekly tips are off.
         response = self.home(local(9))
         for name in SHORTCUTS:
             self.assertContains(
