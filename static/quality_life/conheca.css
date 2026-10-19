@@ -250,6 +250,8 @@
 }
 
 .ql-main .qlc-logo3d[data-state="3d"] canvas { opacity: 1; }
+/* One logo at a time: the flat image leaves once the 3D coin is ready. */
+.ql-main .qlc-logo3d[data-state="3d"] .qlc-logo3d__fallback { display: none; }
 
 .ql-main .qlc-logo3d__fallback {
     position: absolute;
