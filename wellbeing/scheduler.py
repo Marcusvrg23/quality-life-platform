@@ -23,6 +23,13 @@ new slots.
 Two workers reach the same slot: ``ReminderDispatch`` is unique per
 (setting, slot), so the second insert fails and that worker skips it. A slot
 more than five minutes old is never sent.
+
+Weekly tips and special dates (docs/specs/17-dicas-da-semana.md) ride the same
+plan: on a day with a tip (``config.tips_calendar.tip_to_send``) the plan holds
+one more moment, ``SEND_TIME`` local, and at it every active person with a
+device gets the tip once (``TipDispatch`` is unique per person and day).
+While the tips are unpublished the plan never holds that moment, so nothing
+changes for the database.
 """
 
 import logging
@@ -35,8 +42,11 @@ from django.db import IntegrityError, close_old_connections, connection, transac
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import NotificationCategory, ReminderDispatch, ReminderSetting
-from .notifications import notify, push_configured
+from config import tips_calendar
+from identity.models import Membership
+
+from .models import NotificationCategory, ReminderDispatch, ReminderSetting, TipDispatch
+from .notifications import NotGeneric, notify, push_configured
 
 logger = logging.getLogger("wellbeing.scheduler")
 
@@ -111,6 +121,23 @@ def upcoming_slots(setting, after, until):
     return slots
 
 
+def tip_slot_on(day):
+    """The local moment the tip of ``day`` goes out."""
+    return datetime.combine(day, tips_calendar.SEND_TIME, tzinfo=_local_zone())
+
+
+def next_tip_slot(after, until):
+    """The first tip moment in ``[after, until]``, or None (none while unpublished)."""
+    day = after.astimezone(_local_zone()).date()
+    last = until.astimezone(_local_zone()).date()
+    while day <= last:
+        slot = tip_slot_on(day)
+        if after <= slot <= until and tips_calendar.tip_to_send(day) is not None:
+            return slot
+        day += timedelta(days=1)
+    return None
+
+
 def _candidates():
     return ReminderSetting.objects.filter(
         active=True,
@@ -137,6 +164,8 @@ class Plan:
         self.refresh_at = None  # None: load on the next step
         self.slots = {}  # slot -> ids of the settings due at it
         self.handled = None  # latest slot already handled by this plan
+        self.tip_slot = None  # next tip moment, when the plan holds one
+        self.tip_handled = None  # latest tip moment already handled
 
     def invalidate(self):
         self.refresh_at = None
@@ -145,7 +174,8 @@ class Plan:
         """When the next step has something to do."""
         if self.refresh_at is None:
             return now
-        return min([self.refresh_at, *self.slots])
+        tip = [self.tip_slot] if self.tip_slot is not None else []
+        return min([self.refresh_at, *self.slots, *tip])
 
     def step(self, now):
         """Do what is due at ``now``; returns how many reminders were sent."""
@@ -158,6 +188,11 @@ class Plan:
             if now - slot <= LATE:
                 dispatched += _dispatch(slot, ids, now)
             self.handled = slot if self.handled is None else max(self.handled, slot)
+        if self.tip_slot is not None and self.tip_slot <= now:
+            slot, self.tip_slot = self.tip_slot, None
+            if now - slot <= LATE:
+                dispatched += _dispatch_tips(slot, now)
+            self.tip_handled = slot
         return dispatched
 
     def _load(self, now):
@@ -172,6 +207,14 @@ class Plan:
                     slots.setdefault(slot, set()).add(setting.pk)
         ReminderDispatch.objects.filter(slot_at__lt=now - KEEP_DISPATCHES).delete()
         self.slots = slots
+        tip = next_tip_slot(after, until)
+        if tip is not None and (self.tip_handled is None or tip > self.tip_handled):
+            TipDispatch.objects.filter(
+                day__lt=(now - KEEP_DISPATCHES).astimezone(_local_zone()).date()
+            ).delete()
+            self.tip_slot = tip
+        else:
+            self.tip_slot = None
         self.refresh_at = until
 
 
@@ -192,6 +235,55 @@ def _dispatch(slot, ids, now):
         )
     if dispatched:
         logger.info("reminder slot dispatched=%s devices=%s", dispatched, devices)
+    return dispatched
+
+
+def _claim_tip(membership, day):
+    try:
+        with transaction.atomic():
+            TipDispatch.objects.create(membership=membership, day=day)
+    except IntegrityError:
+        return False
+    return True
+
+
+def _dispatch_tips(slot, now):
+    """Send the tip of ``slot``'s day once to every active person with a device."""
+    day = slot.astimezone(_local_zone()).date()
+    tip = tips_calendar.tip_to_send(day)
+    if tip is None:
+        return 0
+    url = reverse(tip.route)
+    members = (
+        Membership.objects.filter(
+            is_active=True,
+            organization__is_active=True,
+            push_subscriptions__isnull=False,
+        )
+        .distinct()
+        .select_related("organization", "user")
+    )
+    dispatched = devices = 0
+    for membership in members:
+        if not _claim_tip(membership, day):
+            continue
+        try:
+            devices += notify(
+                membership,
+                NotificationCategory.TIPS,
+                tip.title,
+                tip.text,
+                url,
+                now=now,
+            )
+        except NotGeneric:
+            # A tip word matches this person's name (e.g. "Rosa"): skip them,
+            # never stop the others.
+            logger.info("tip skipped not generic membership=%s", membership.pk)
+            continue
+        dispatched += 1
+    if dispatched:
+        logger.info("tip dispatched=%s devices=%s", dispatched, devices)
     return dispatched
 
 

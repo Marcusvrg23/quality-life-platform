@@ -16,7 +16,7 @@ from identity.eligibility import memberships_for_email
 from identity.models import Membership
 from wellbeing.services import first_name, greeting, personal_progress
 
-from . import wellbeing_catalog
+from . import tips_calendar, wellbeing_catalog
 from .calendar_highlights import active_highlight
 from .forms import EmailAuthenticationForm
 from .recommendations import build_recommendation
@@ -44,7 +44,10 @@ def _render_home(request: HttpRequest, tenant) -> HttpResponse:
             "highlight": active_highlight(),
             "greeting": greeting(),
             "first_name": first_name(request.user, tenant.organization),
-            "tip": wellbeing_catalog.tip_of_the_day(timezone.localdate()),
+            "tip": (
+                tips_calendar.tip_to_show(timezone.localdate())
+                or wellbeing_catalog.tip_of_the_day(timezone.localdate())
+            ),
             "progress": personal_progress(request.user, tenant.organization),
         },
     )
