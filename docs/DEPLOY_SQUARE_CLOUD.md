@@ -121,6 +121,23 @@ Como funciona por dentro, para quem for dar manutenção:
 > **Acompanhe o consumo do Neon depois de ligar as chaves VAPID.** O plano grátis do Neon tem **100 CU-hours de computação por mês**; quando acaba, o banco para até o mês seguinte e o site cai. Nos primeiros dias depois de configurar as três variáveis VAPID, abra o painel do Neon (projeto → **Monitoring** / uso de computação) uma vez por dia e confira que o banco aparece **suspenso** (Idle/Suspended) nos intervalos sem lembretes e que o consumo do mês não vai passar de 100 CU-hours. Se estiver subindo rápido demais, desligue o envio com `WEB_PUSH_SCHEDULER=false` e reinicie, ou aumente `WEB_PUSH_SCHEDULER_REFRESH_MINUTES` (por exemplo `360`).
 - Aparelhos cuja assinatura expirou (o serviço de push responde 404/410) são esquecidos sozinhos.
 
+### 3.2 Assistente Quality (chat com IA, piloto)
+
+O chat fica desligado até as duas variáveis abaixo existirem. Ligue primeiro só numa empresa de teste (docs/specs/18-assistente.md).
+
+1. No console do Groq (<https://console.groq.com/>), crie uma chave de API. Em **Data Controls**, ligue o **Zero Data Retention**.
+2. Na Square Cloud, acrescente:
+
+   ```
+   GROQ_API_KEY=<chave do Groq>
+   ASSISTANT_ORGANIZATIONS=<slug da empresa de teste>
+   ```
+
+   O slug é o identificador da empresa no Painel. Para mais de uma empresa, separe por vírgula. Opcionais: `ASSISTANT_DAILY_LIMIT` (padrão `30` mensagens por pessoa por dia) e `ASSISTANT_MODEL` (padrão `openai/gpt-oss-120b`).
+3. Reinicie. O item **Assistente** aparece no menu só para as empresas listadas.
+
+Antes de ligar para empresas clientes: atualizar a política de privacidade (o texto vai ao Groq, fora do Brasil, sem nome, e-mail nem empresa) e ter a aprovação da Quality Life.
+
 ### Se o navegador mostrar "redirecionamento em excesso"
 
 O site manda todo acesso por `http://` para `https://`. Para isso, ele precisa que a Square Cloud avise que a visita já chegou por HTTPS, e a documentação dela não garante esse aviso. Sem ele, o site fica redirecionando para si mesmo sem parar.

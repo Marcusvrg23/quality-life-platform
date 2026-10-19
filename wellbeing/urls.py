@@ -2,9 +2,15 @@
 
 from django.urls import path
 
-from . import views
+from . import assistant_views, views
 
 urlpatterns = [
+    path("assistente/", assistant_views.assistant_page, name="wellbeing_assistant"),
+    path(
+        "assistente/mensagem/",
+        assistant_views.assistant_message,
+        name="wellbeing_assistant_message",
+    ),
     path("ginastica/", views.gym, name="wellbeing_gym"),
     path("meditacao/", views.meditation, name="wellbeing_meditation"),
     path("relaxamento/", views.relax, name="wellbeing_relax"),

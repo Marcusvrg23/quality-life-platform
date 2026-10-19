@@ -257,3 +257,28 @@ class TipDispatch(models.Model):
 
     def __str__(self):
         return f"dica de {self.day:%Y-%m-%d} para membership {self.membership_id}"
+
+
+class AssistantUsage(models.Model):
+    """How many messages a person sent to the assistant on a local day (spec 18).
+
+    Only the count is kept, never the text: the conversation lives in the
+    person's browser tab and is gone when the page closes.
+    """
+
+    membership = models.ForeignKey(
+        Membership, on_delete=models.CASCADE, related_name="assistant_usage"
+    )
+    day = models.DateField()
+    messages = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        constraints = [  # noqa: RUF012 - Django model metadata convention.
+            models.UniqueConstraint(
+                fields=["membership", "day"],
+                name="wellbeing_assistant_usage_once_a_day",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.messages} mensagens em {self.day:%Y-%m-%d} (membership {self.membership_id})"

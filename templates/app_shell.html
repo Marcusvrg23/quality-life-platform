@@ -1,4 +1,4 @@
-{% load static %}
+{% load static assistant_tags %}
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -34,6 +34,7 @@
             <a href="{% url 'wellbeing_meditation' %}" {% if request.resolver_match.url_name == 'wellbeing_meditation' %}aria-current="page"{% endif %}><span aria-hidden="true">◎</span>Meditação</a>
             <a href="{% url 'wellbeing_relax' %}" {% if request.resolver_match.url_name == 'wellbeing_relax' %}aria-current="page"{% endif %}><span aria-hidden="true">≈</span>Relaxamento</a>
             <a href="{% url 'wellbeing_progress' %}" {% if request.resolver_match.url_name == 'wellbeing_progress' %}aria-current="page"{% endif %}><span aria-hidden="true">★</span>Meu Progresso</a>
+            {% if tenant|assistant_on %}<a href="{% url 'wellbeing_assistant' %}" {% if request.resolver_match.url_name == 'wellbeing_assistant' %}aria-current="page"{% endif %}><span aria-hidden="true">✉</span>Assistente</a>{% endif %}
             {% if tenant %}<a href="{% url 'wellbeing_reminders' %}" {% if request.resolver_match.url_name == 'wellbeing_reminders' %}aria-current="page"{% endif %}><span aria-hidden="true">◷</span>Lembretes</a>{% endif %}
             {% if tenant.role == 'COLLABORATOR' %}<a href="{% url 'assessment_hub' %}" {% if 'assessment' in request.resolver_match.url_name %}aria-current="page"{% endif %}><span aria-hidden="true">♡</span>Minha avaliação</a>{% endif %}
             {% if tenant.role == 'CORPORATE_MANAGER' or tenant.role == 'ADMIN' %}<a href="{% url 'executive_report' %}" {% if request.resolver_match.url_name == 'executive_report' %}aria-current="page"{% endif %}><span aria-hidden="true">▤</span>Relatório da empresa</a>{% endif %}
