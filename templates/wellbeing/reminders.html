@@ -50,6 +50,12 @@
         <p class="wb-note">Só você altera estas escolhas.{% if tips_published %} As dicas chegam às segundas, às 10h, e nas datas especiais.{% else %} As dicas e datas especiais ainda não são enviadas; a preferência já fica guardada.{% endif %}</p>
         <div class="ql-pwa-actions"><button type="submit" class="button button-secondary">Salvar preferências</button></div>
     </form>
+    <form method="post" action="{% url 'wellbeing_push_test' %}" class="card wb-card ql-pwa-prefs" aria-labelledby="push-test-title">
+        {% csrf_token %}
+        <h2 id="push-test-title">Testar notificação</h2>
+        <p class="wb-card__meta">Envia agora uma notificação de teste para os aparelhos onde você ativou os lembretes. Feche o app para ver como ela chega.</p>
+        <div class="ql-pwa-actions"><button type="submit" class="button button-secondary">Enviar notificação de teste</button></div>
+    </form>
     <p class="wb-note wb-footnote">Com as notificações ativas, o lembrete chega como notificação mesmo com o app fechado, a tela bloqueada ou outro app em uso. Sem elas, o aviso aparece enquanto o Quality Life estiver aberto no navegador ou no app da tela inicial. No iPhone, as notificações exigem o app adicionado à tela inicial e iOS 16.4 ou mais novo.</p>
     <p class="wb-note wb-footnote"><a href="{% url 'install_app' %}">Como adicionar o app à tela inicial</a></p>
 </section>
