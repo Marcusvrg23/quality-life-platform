@@ -144,3 +144,18 @@
 @media (min-width: 900px) {
     .wb-shortcuts { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+
+/* Assistente Quality (docs/specs/18-assistente.md). */
+.wb-assistant__notice p { margin: 0 0 0.5rem; color: var(--app-text-soft); font-size: 0.9rem; line-height: 1.6; }
+.wb-assistant__notice p:last-child { margin-bottom: 0; }
+.wb-assistant__notice strong { color: var(--app-text); }
+.wb-assistant__chat { display: grid; gap: 0.9rem; }
+.wb-assistant__log { display: grid; gap: 0.75rem; margin: 0; padding: 0; list-style: none; min-height: 3rem; }
+.wb-assistant__msg { max-width: min(42rem, 100%); padding: 0.75rem 0.95rem; border-radius: 14px; background: var(--app-sunken, rgb(3 14 18 / 45%)); border: 1px solid var(--app-line); }
+.wb-assistant__msg--user { justify-self: end; background: rgb(14 115 105 / 30%); }
+.wb-assistant__msg p { margin: 0.2rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--app-text); line-height: 1.55; }
+.wb-assistant__who { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--app-text-muted); }
+.wb-assistant__typing { margin: 0; color: var(--app-text-muted); font-size: 0.85rem; }
+.wb-assistant__form { display: grid; gap: 0.7rem; }
+.wb-assistant__form textarea { width: 100%; min-height: 4.5rem; resize: vertical; font: inherit; }
+.wb-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

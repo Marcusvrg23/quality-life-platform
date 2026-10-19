@@ -1,0 +1,34 @@
+{% extends 'app_shell.html' %}
+{% load static %}
+{% block title %}Assistente{% endblock %}
+{% block page_title %}Assistente{% endblock %}
+{% block header_title %}Assistente Quality{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'quality_life/wellbeing.css' %}">{% endblock %}
+{% block content %}
+<section class="wb-page wb-assistant" aria-labelledby="assistant-title">
+    <header class="wb-intro">
+        <p class="ql-eyebrow">ASSISTENTE AUTOMÁTICO</p>
+        <h1 id="assistant-title">Assistente Quality</h1>
+        <p>Tire dúvidas sobre pausas, postura, hidratação, respiração e uso do app.</p>
+    </header>
+    <aside class="card wb-card wb-assistant__notice" aria-label="Como funciona">
+        <p><strong>Você está conversando com uma inteligência artificial</strong>, não com um profissional. Ela dá dicas gerais e não substitui atendimento de saúde.</p>
+        <p>Não escreva nome, documentos, contatos nem detalhes da sua saúde. A conversa não fica salva: some quando você sai desta página. Até {{ daily_limit }} mensagens por dia.</p>
+        <p>Precisa conversar com alguém agora? CVV, ligue 188, 24 horas, gratuito.</p>
+    </aside>
+    <div class="card wb-card wb-assistant__chat">
+        <ol class="wb-assistant__log" id="assistant-log" aria-live="polite" aria-label="Conversa"></ol>
+        <p class="wb-assistant__typing" id="assistant-typing" hidden>Escrevendo…</p>
+        <form class="wb-assistant__form" id="assistant-form" data-endpoint="{% url 'wellbeing_assistant_message' %}">
+            {% csrf_token %}
+            <label class="wb-sr" for="assistant-input">Sua mensagem</label>
+            <textarea id="assistant-input" name="message" rows="2" maxlength="{{ max_chars }}" required placeholder="Escreva sua pergunta…"></textarea>
+            <div class="ql-pwa-actions">
+                <button type="submit" class="button">Enviar</button>
+                <button type="button" class="button button-secondary" id="assistant-clear">Limpar conversa</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'quality_life/assistant.js' %}" defer></script>{% endblock %}

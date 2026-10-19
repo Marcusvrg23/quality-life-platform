@@ -230,3 +230,21 @@ WEB_PUSH_SCHEDULER = _boolean("WEB_PUSH_SCHEDULER", default=True)
 WEB_PUSH_SCHEDULER_REFRESH_MINUTES = _integer(
     "WEB_PUSH_SCHEDULER_REFRESH_MINUTES", default=180, minimum=5
 )
+
+# Assistente Quality (docs/specs/18-assistente.md): chat with an
+# OpenAI-compatible API (Groq by default; an Ollama server works the same).
+# Off unless GROQ_API_KEY is set AND the company slug is listed in
+# ASSISTANT_ORGANIZATIONS (pilot company first).
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
+ASSISTANT_API_URL = (
+    os.environ.get("ASSISTANT_API_URL", "").strip()
+    or "https://api.groq.com/openai/v1/chat/completions"
+)
+ASSISTANT_MODEL = os.environ.get("ASSISTANT_MODEL", "").strip() or "openai/gpt-oss-120b"
+ASSISTANT_ORGANIZATIONS = _csv("ASSISTANT_ORGANIZATIONS")
+# Messages per person per day (local date); each one is a paid API call.
+ASSISTANT_DAILY_LIMIT = _integer("ASSISTANT_DAILY_LIMIT", default=30, minimum=1)
+if not ASSISTANT_API_URL.startswith("https://") and not ASSISTANT_API_URL.startswith(
+    "http://localhost"
+):
+    raise ImproperlyConfigured("ASSISTANT_API_URL must use https://.")
