@@ -105,7 +105,8 @@
         } catch (error) {
             return null;
         }
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        // 1.5x is sharp on phones and keeps weaker GPUs smooth.
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
         renderer.outputEncoding = T.sRGBEncoding;
         renderer.toneMapping = T.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.0;
@@ -152,6 +153,7 @@
 
         const texture = new T.TextureLoader().load(stage.dataset.logo, () => {
             stage.dataset.state = '3d';
+            document.getElementById('qlc-fallback').hidden = true;
             if (reduce) requestFrame();
         });
         texture.encoding = T.sRGBEncoding;
@@ -162,19 +164,19 @@
         const face = new T.MeshPhysicalMaterial({
             map: texture, roughness: 0.3, metalness: 0, clearcoat: 0.8, clearcoatRoughness: 0.12, envMapIntensity: 0.55,
         });
-        const front = new T.Mesh(new T.CircleGeometry(0.95, 128), face);
+        const front = new T.Mesh(new T.CircleGeometry(0.95, 96), face);
         front.position.z = 0.095;
         coin.add(front);
-        const back = new T.Mesh(new T.CircleGeometry(0.95, 128), face);
+        const back = new T.Mesh(new T.CircleGeometry(0.95, 96), face);
         back.position.z = -0.095;
         back.rotation.y = Math.PI;
         coin.add(back);
-        const side = new T.CylinderGeometry(0.95, 0.95, 0.19, 128, 1, true);
+        const side = new T.CylinderGeometry(0.95, 0.95, 0.19, 96, 1, true);
         side.rotateX(Math.PI / 2);
         coin.add(new T.Mesh(side, new T.MeshPhysicalMaterial({ color: linear('#f4f1f3'), roughness: 0.35, clearcoat: 0.6 })));
 
         // Rim: the logo's orange → magenta → purple ring, clockwise from the top.
-        const rim = new T.TorusGeometry(1, 0.115, 48, 260);
+        const rim = new T.TorusGeometry(1, 0.115, 32, 180);
         const positions = rim.attributes.position;
         const colors = new Float32Array(positions.count * 3);
         const stops = [
@@ -203,7 +205,7 @@
         // The three figures of the logo, as glossy spheres in orbit.
         const spheres = [['#7b2d8e', 0], ['#16b3a6', 2.094], ['#a8c43a', 4.189]].map(([hex, phase]) => {
             const mesh = new T.Mesh(
-                new T.SphereGeometry(0.15, 48, 32),
+                new T.SphereGeometry(0.15, 32, 24),
                 new T.MeshPhysicalMaterial({ color: linear(hex), roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.08, envMapIntensity: 0.9 }),
             );
             mesh.userData.phase = phase;
@@ -522,4 +524,8 @@
 
     // The contact block grows in.
     G.fromTo('#qlc-contactbox', { scale: 0.92, opacity: 0.6 }, { scale: 1, opacity: 1, ease: 'none', scrollTrigger: scrub('#qlc-contactbox', 'top bottom', 'top 75%') });
+
+    // Web fonts change the page height after load: measure the triggers again,
+    // or the last sections could wait for a scroll position that no longer exists.
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ST.refresh());
 })();

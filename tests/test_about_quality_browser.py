@@ -26,6 +26,12 @@ PASSWORD = "browser-test-password"
 PATH = "/app/conheca-a-quality/"
 VIEWPORTS = (("390", 390, 844), ("1280", 1280, 800))
 FITS = "document.documentElement.scrollWidth <= window.innerWidth"
+# Software WebGL so the 3D path runs headless.
+SOFTWARE_GL = [
+    "--use-gl=angle",
+    "--use-angle=swiftshader",
+    "--enable-unsafe-swiftshader",
+]
 LOGO_STATE = "document.getElementById('qlc-logo3d').dataset.state"
 # Texts that must end fully visible (opacity 1 up the tree) once scrolled to.
 HIDDEN_TEXTS = """() => {
@@ -107,9 +113,17 @@ class AboutQualityBrowserTests(StaticLiveServerTestCase):
         assert page.evaluate(LOGO_STATE) in ("3d", "image"), label
         if page.evaluate(LOGO_STATE) == "image":
             assert page.locator("#qlc-fallback").is_visible(), label
+        else:
+            # Only one logo on screen: the flat image leaves when the 3D coin shows.
+            assert not page.locator("#qlc-fallback").is_visible(), label
         assert page.evaluate(FITS), f"Horizontal overflow: {label}"
         page.evaluate(SCROLL_THROUGH)
         assert page.evaluate(FITS), f"Horizontal overflow after scroll: {label}"
+        # Reveals run on the animation clock; slow software GL can delay them.
+        try:
+            page.wait_for_function(f"({HIDDEN_TEXTS})().length === 0", timeout=10000)
+        except PlaywrightError:
+            pass
         assert page.evaluate(HIDDEN_TEXTS) == [], (label, page.evaluate(HIDDEN_TEXTS))
         assert page.errors == [], (label, page.errors)
 
@@ -122,6 +136,20 @@ class AboutQualityBrowserTests(StaticLiveServerTestCase):
                 page.evaluate("window.scrollTo(0, 0)")
                 page.wait_for_timeout(600)
                 self.screenshot(page, f"chromium-{name}")
+                page.context.close()
+            browser.close()
+
+    def test_3d_logo_replaces_the_image(self):
+        """With WebGL (software GL in CI) only the 3D coin shows, never both."""
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch(args=SOFTWARE_GL)
+            for name, width, height in VIEWPORTS:
+                page = self.open(browser, width, height)
+                try:
+                    page.wait_for_function(f"{LOGO_STATE} === '3d'", timeout=8000)
+                except PlaywrightError:
+                    self.skipTest("No WebGL in this browser build")
+                self.check_page(page, f"webgl-{name}")
                 page.context.close()
             browser.close()
 
