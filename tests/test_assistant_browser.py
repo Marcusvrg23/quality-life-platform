@@ -10,12 +10,13 @@ from pathlib import Path
 from unittest import mock, skipIf
 
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.core.cache import cache
 from django.test import override_settings
 
 from identity.models import Membership, Organization, User
 
 try:
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import expect, sync_playwright
 except ImportError:
     sync_playwright = None
 
@@ -39,6 +40,8 @@ class AssistantBrowserTests(StaticLiveServerTestCase):
         Membership.objects.create(
             user=self.user, organization=organization, role=Membership.Role.COLLABORATOR
         )
+        cache.clear()
+        self.addCleanup(cache.clear)
         patcher = mock.patch("urllib.request.urlopen")
         urlopen = patcher.start()
         self.addCleanup(patcher.stop)
@@ -68,10 +71,13 @@ class AssistantBrowserTests(StaticLiveServerTestCase):
                 page.goto(f"{self.live_server_url}/app/assistente/")
                 page.locator("#assistant-input").fill("Como cuidar da postura?")
                 page.get_by_role("button", name="Enviar").click()
-                answer = page.locator(".wb-assistant__msg--assistant p")
-                answer.wait_for()
-                assert answer.inner_text() == ANSWER, width
+                answers = page.locator(".wb-assistant__msg--assistant p")
+                # The greeting (suggestion) arrives on its own, then the answer.
+                expect(answers).to_have_count(2)
+                expect(answers.first).to_have_text(ANSWER)
+                expect(answers.last).to_have_text(ANSWER)
                 assert page.locator(".wb-assistant__msg--assistant b").count() == 0
+                assert page.locator(".wb-dot").count() == 0
                 assert page.evaluate(
                     "document.documentElement.scrollWidth <= window.innerWidth"
                 ), width
@@ -81,7 +87,14 @@ class AssistantBrowserTests(StaticLiveServerTestCase):
                     path.mkdir(parents=True, exist_ok=True)
                     page.screenshot(path=str(path / f"{width}.png"), full_page=True)
                 page.reload()
-                assert page.locator(".wb-assistant__msg").count() == 0
+                # Only the new greeting: the conversation was not kept.
+                expect(page.locator(".wb-assistant__msg--assistant")).to_have_count(1)
+                assert page.locator(".wb-assistant__msg--user").count() == 0
+                # Hoje shows the same suggestion in its card.
+                page.goto(f"{self.live_server_url}/app/")
+                expect(page.locator("[data-assistant-suggestion-text]")).to_have_text(
+                    ANSWER
+                )
                 assert errors == [], errors
                 context.close()
             browser.close()

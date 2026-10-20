@@ -6,9 +6,11 @@ reaches Groq. The server keeps only a per-day message count."""
 import io
 import json
 import urllib.error
-from datetime import date
+from datetime import date, datetime
 from unittest import mock
+from zoneinfo import ZoneInfo
 
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -18,6 +20,7 @@ from wellbeing import assistant
 from wellbeing.models import AssistantUsage
 
 PASSWORD = "assistant-password-18"
+SAO_PAULO = ZoneInfo("America/Sao_Paulo")
 PAGE = "/app/assistente/"
 ENDPOINT = "/app/assistente/mensagem/"
 ON = {
@@ -50,6 +53,8 @@ class AssistantTests(TestCase):
             user=user, organization=self.organization, role=Membership.Role.COLLABORATOR
         )
         self.client.force_login(user)
+        cache.clear()
+        self.addCleanup(cache.clear)
         patcher = mock.patch("urllib.request.urlopen")
         self.urlopen = patcher.start()
         self.addCleanup(patcher.stop)
@@ -253,6 +258,81 @@ class AssistantTests(TestCase):
         _, body = sent_body(self.urlopen)
         self.assertIn("Data de hoje: 10/09/2026.", body["messages"][0]["content"])
         self.assertIn("Setembro Amarelo", body["messages"][0]["content"])
+
+
+@override_settings(**ON)
+class SuggestionTests(AssistantTests):
+    """Proactive suggestion of the period of the day (spec 18, aceite 10)."""
+
+    URL = "/app/assistente/sugestao/"
+
+    def suggest(self, year, month, day, hour):
+        moment = datetime(year, month, day, hour, tzinfo=SAO_PAULO)
+        with mock.patch("django.utils.timezone.now", return_value=moment):
+            return self.client.get(self.URL)
+
+    def test_route_and_access(self):
+        self.assertEqual(reverse("wellbeing_assistant_suggestion"), self.URL)
+        self.assertEqual(self.client.post(self.URL).status_code, 405)
+        with override_settings(ASSISTANT_ORGANIZATIONS=[]):
+            self.assertEqual(self.client.get(self.URL).status_code, 404)
+        self.client.logout()
+        self.assertEqual(self.client.get(self.URL).status_code, 302)
+        self.urlopen.assert_not_called()
+
+    def test_prompt_knows_weekday_date_period_and_special_date(self):
+        response = self.suggest(2026, 9, 10, 9)  # Thursday morning
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(), {"suggestion": "Faça uma pausa de 5 minutos e beba água."}
+        )
+        self.assertEqual(response["Cache-Control"], "no-store")
+        _, body = sent_body(self.urlopen)
+        prompt = body["messages"][1]["content"]
+        for expected in (
+            "quinta-feira",
+            "10/09/2026",
+            "período da manhã",
+            "09h",
+            '"Bom dia!"',
+        ):
+            self.assertIn(expected, prompt)
+        self.assertIn("Setembro Amarelo", body["messages"][0]["content"])
+        raw = json.dumps(body, ensure_ascii=False)
+        for private in ("marcela", "souza", "empresa.test", "piloto"):
+            self.assertNotIn(private, raw)
+
+    def test_one_call_per_period_shared_by_everyone_and_not_counted(self):
+        self.suggest(2026, 10, 20, 9)
+        self.suggest(2026, 10, 20, 11)
+        self.assertEqual(self.urlopen.call_count, 1)
+        self.suggest(2026, 10, 20, 14)  # afternoon
+        self.assertEqual(self.urlopen.call_count, 2)
+        _, body = sent_body(self.urlopen)
+        self.assertIn('"Boa tarde!"', body["messages"][1]["content"])
+        self.assertFalse(AssistantUsage.objects.exists())
+
+    def test_failure_returns_503_and_is_not_cached(self):
+        self.urlopen.side_effect = urllib.error.URLError("sem rede")
+        self.assertEqual(self.suggest(2026, 10, 20, 9).status_code, 503)
+        self.urlopen.side_effect = None
+        self.assertEqual(self.suggest(2026, 10, 20, 9).status_code, 200)
+
+    def test_periods(self):
+        self.assertEqual(
+            [assistant.period_of(hour) for hour in (4, 5, 11, 12, 17, 18, 23)],
+            ["noite", "manhã", "manhã", "tarde", "tarde", "noite", "noite"],
+        )
+
+    def test_home_card_only_where_the_assistant_is_on(self):
+        home = self.client.get(reverse("app"))
+        self.assertContains(home, f'data-url="{self.URL}" hidden>')
+        self.assertContains(home, "quality_life/assistant-home")
+        with override_settings(ASSISTANT_ORGANIZATIONS=[]):
+            home = self.client.get(reverse("app"))
+        self.assertNotContains(home, "data-assistant-suggestion")
+        self.assertNotContains(home, "assistant-home")
+        self.urlopen.assert_not_called()
 
 
 class AssistantSettingsTests(TestCase):

@@ -18,8 +18,7 @@
     </aside>
     <div class="card wb-card wb-assistant__chat">
         <ol class="wb-assistant__log" id="assistant-log" aria-live="polite" aria-label="Conversa"></ol>
-        <p class="wb-assistant__typing" id="assistant-typing" hidden>Escrevendo…</p>
-        <form class="wb-assistant__form" id="assistant-form" data-endpoint="{% url 'wellbeing_assistant_message' %}">
+        <form class="wb-assistant__form" id="assistant-form" data-endpoint="{% url 'wellbeing_assistant_message' %}" data-suggestion="{% url 'wellbeing_assistant_suggestion' %}">
             {% csrf_token %}
             <label class="wb-sr" for="assistant-input">Sua mensagem</label>
             <textarea id="assistant-input" name="message" rows="2" maxlength="{{ max_chars }}" required placeholder="Escreva sua pergunta…"></textarea>

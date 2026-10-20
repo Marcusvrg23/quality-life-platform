@@ -1,5 +1,5 @@
 {% extends 'app_shell.html' %}
-{% load static %}
+{% load static assistant_tags %}
 {% block title %}Hoje{% endblock %}
 {% block page_title %}Hoje{% endblock %}
 {% block header_title %}Hoje{% endblock %}
@@ -32,6 +32,13 @@
         <a class="recommendation-link" href="{% url 'wellbeing_gym' %}">Começar a Ginástica Laboral <span aria-hidden="true">→</span></a>
         {% endif %}
     </section>
+    {% if tenant|assistant_on %}
+    <aside class="card wb-tip wb-suggestion" aria-labelledby="suggestion-title" data-assistant-suggestion data-url="{% url 'wellbeing_assistant_suggestion' %}" hidden>
+        <p class="ql-eyebrow" id="suggestion-title">Sugestão do assistente</p>
+        <p data-assistant-suggestion-text></p>
+        <a class="recommendation-link" href="{% url 'wellbeing_assistant' %}">Conversar com o assistente <span aria-hidden="true">→</span></a>
+    </aside>
+    {% endif %}
     {% if tip %}
     <aside class="card wb-tip" aria-labelledby="tip-title">
         <p class="ql-eyebrow" id="tip-title">{{ tip.label|default:"Dica do dia" }}</p>
@@ -88,3 +95,4 @@
     <p class="dashboard-note">Cada pausa é uma oportunidade de cuidar de você.</p>
 </section>
 {% endblock %}
+{% block extra_js %}{% if tenant|assistant_on %}<script src="{% static 'quality_life/assistant-home.js' %}" defer></script>{% endif %}{% endblock %}

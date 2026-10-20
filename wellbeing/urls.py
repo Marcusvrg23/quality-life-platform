@@ -7,6 +7,11 @@ from . import assistant_views, views
 urlpatterns = [
     path("assistente/", assistant_views.assistant_page, name="wellbeing_assistant"),
     path(
+        "assistente/sugestao/",
+        assistant_views.assistant_suggestion,
+        name="wellbeing_assistant_suggestion",
+    ),
+    path(
         "assistente/mensagem/",
         assistant_views.assistant_message,
         name="wellbeing_assistant_message",

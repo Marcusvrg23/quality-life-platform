@@ -32,6 +32,16 @@ ACEITE
    (spec 17), para a resposta acompanhar o calendário.
 9. Em 390×844 e 1280×800: resposta exibida como texto (sem HTML), sem scroll
    horizontal, sem erro de console; recarregar apaga a conversa.
+10. Sugestão sem pedir: ao abrir o Assistente ele cumprimenta com uma sugestão
+    do período (manhã, tarde, noite) que leva em conta o dia da semana, a data,
+    a hora e a data especial/dica da semana; a Hoje mostra a mesma sugestão num
+    cartão "Sugestão do assistente" (só nas empresas com o Assistente ligado).
+    O texto é igual para todos no mesmo período (sem dado pessoal), fica em
+    cache por período (uma chamada à API por período por worker) e não conta no
+    limite diário. Sem resposta da API → 503 e nenhum cartão. Enquanto espera,
+    a conversa mostra "digitando" (três pontos animados; parados com
+    movimento reduzido) e a resposta aparece aos poucos; itens "• " ficam um
+    por linha.
 
 INVARIANTES
 Isolamento e autorização no servidor; nada de dado de saúde ou identificação
