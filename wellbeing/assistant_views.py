@@ -72,3 +72,17 @@ def assistant_message(request):
     except assistant.AssistantError:
         return _answer(BUSY, status=502, error="unavailable")
     return _answer(text)
+
+
+@login_required
+@require_GET
+def assistant_suggestion(request):
+    """The suggestion of this period of the day, for Hoje and the chat (spec 18)."""
+    _tenant(request)
+    text = assistant.suggestion()
+    if text is None:
+        response = JsonResponse({"suggestion": None}, status=503)
+    else:
+        response = JsonResponse({"suggestion": text})
+    response["Cache-Control"] = "no-store"
+    return response

@@ -20,6 +20,7 @@ import urllib.error
 import urllib.request
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
@@ -153,23 +154,14 @@ def _context_line(today):
     return line
 
 
-def ask(history, membership, *, today=None):
-    """The assistant's answer to ``history`` (already cleaned)."""
-    today = today or timezone.localdate()
-    words = personal_words(membership)
-    messages = [
-        {"role": "system", "content": f"{SYSTEM_PROMPT}\n{_context_line(today)}"},
-        *(
-            {"role": item["role"], "content": scrub(item["content"], words)}
-            for item in history
-        ),
-    ]
+def _complete(messages, log_id, *, max_tokens=1200, timeout=TIMEOUT_SECONDS):
+    """POST to the chat API; the answer text or ``AssistantError``."""
     body = json.dumps(
         {
             "model": settings.ASSISTANT_MODEL,
             "messages": messages,
             "temperature": 0.5,
-            "max_tokens": 1200,
+            "max_tokens": max_tokens,
         }
     ).encode()
     request = urllib.request.Request(
@@ -185,22 +177,102 @@ def ask(history, membership, *, today=None):
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
             data = json.load(response)
     except urllib.error.HTTPError as error:
-        logger.warning(
-            "assistant api status=%s membership=%s", error.code, membership.pk
-        )
+        logger.warning("assistant api status=%s %s", error.code, log_id)
         raise AssistantError from error
     except (urllib.error.URLError, TimeoutError, OSError, ValueError) as error:
-        logger.warning("assistant api unreachable membership=%s", membership.pk)
+        logger.warning("assistant api unreachable %s", log_id)
         raise AssistantError from error
     try:
         answer = data["choices"][0]["message"]["content"].strip()
     except (KeyError, IndexError, TypeError, AttributeError) as error:
-        logger.warning("assistant api malformed membership=%s", membership.pk)
+        logger.warning("assistant api malformed %s", log_id)
         raise AssistantError from error
     if not answer:
         raise AssistantError
-    logger.info("assistant answered membership=%s", membership.pk)
+    logger.info("assistant answered %s", log_id)
     return answer
+
+
+def ask(history, membership, *, today=None):
+    """The assistant's answer to ``history`` (already cleaned)."""
+    today = today or timezone.localdate()
+    words = personal_words(membership)
+    messages = [
+        {"role": "system", "content": f"{SYSTEM_PROMPT}\n{_context_line(today)}"},
+        *(
+            {"role": item["role"], "content": scrub(item["content"], words)}
+            for item in history
+        ),
+    ]
+    return _complete(messages, f"membership={membership.pk}")
+
+
+# Proactive suggestion -----------------------------------------------------------
+# The same text for everyone in the same period of the day: no personal data
+# goes out, and one API call per period per worker (cached) keeps the cost low.
+WEEKDAYS = (
+    "segunda-feira",
+    "terça-feira",
+    "quarta-feira",
+    "quinta-feira",
+    "sexta-feira",
+    "sábado",
+    "domingo",
+)
+SUGGESTION_TIMEOUT_SECONDS = 15
+SUGGESTION_CACHE_SECONDS = 6 * 60 * 60
+
+
+def period_of(hour):
+    if 5 <= hour < 12:
+        return "manhã"
+    if 12 <= hour < 18:
+        return "tarde"
+    return "noite"
+
+
+def suggestion_prompt(now):
+    local = timezone.localtime(now)
+    today = local.date()
+    period = period_of(local.hour)
+    greeting = {"manhã": "Bom dia", "tarde": "Boa tarde", "noite": "Boa noite"}[period]
+    return (
+        "Sem que a pessoa tenha perguntado, escreva UMA sugestão curta de bem-estar "
+        "no trabalho para agora, em até 45 palavras, sem lista. "
+        f'Comece com "{greeting}!". '
+        f"Agora: {WEEKDAYS[today.weekday()]}, {today:%d/%m/%Y}, período da {period}, "
+        f"{local:%H}h. Adapte ao momento (início, meio ou fim do expediente, fim de "
+        "semana) e, se houver, à data especial ou à dica da semana abaixo. "
+        "Termine convidando a pessoa a perguntar o que quiser."
+    )
+
+
+def suggestion(now=None):
+    """The proactive suggestion for this period of the day, or None."""
+    now = now or timezone.now()
+    local = timezone.localtime(now)
+    key = f"ql:assistant:suggestion:{local:%Y-%m-%d}:{period_of(local.hour)}"
+    text = cache.get(key)
+    if text:
+        return text
+    messages = [
+        {
+            "role": "system",
+            "content": f"{SYSTEM_PROMPT}\n{_context_line(local.date())}",
+        },
+        {"role": "user", "content": suggestion_prompt(now)},
+    ]
+    try:
+        text = _complete(
+            messages,
+            "suggestion",
+            max_tokens=600,
+            timeout=SUGGESTION_TIMEOUT_SECONDS,
+        )
+    except AssistantError:
+        return None
+    cache.set(key, text, SUGGESTION_CACHE_SECONDS)
+    return text

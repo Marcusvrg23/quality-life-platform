@@ -155,7 +155,13 @@
 .wb-assistant__msg--user { justify-self: end; background: rgb(14 115 105 / 30%); }
 .wb-assistant__msg p { margin: 0.2rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--app-text); line-height: 1.55; }
 .wb-assistant__who { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--app-text-muted); }
-.wb-assistant__typing { margin: 0; color: var(--app-text-muted); font-size: 0.85rem; }
 .wb-assistant__form { display: grid; gap: 0.7rem; }
 .wb-assistant__form textarea { width: 100%; min-height: 4.5rem; resize: vertical; font: inherit; }
 .wb-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.wb-suggestion [data-assistant-suggestion-text] { white-space: pre-wrap; color: var(--app-text); }
+.wb-assistant__msg--typing p { display: flex; gap: 0.35rem; align-items: center; min-height: 1.4rem; }
+.wb-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--app-accent, #4fd8ca); opacity: 0.35; animation: wb-dot 1.2s ease-in-out infinite; }
+.wb-dot:nth-child(2) { animation-delay: 0.2s; }
+.wb-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes wb-dot { 30% { opacity: 1; transform: translateY(-3px); } 60% { opacity: 0.35; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .wb-dot { animation: none; opacity: 0.8; } }
