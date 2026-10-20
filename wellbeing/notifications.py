@@ -28,9 +28,9 @@ from .services import first_name
 
 logger = logging.getLogger("wellbeing.notifications")
 
-# Sends per person per local day; a category absent here has no daily cap
-# (break reminders are already paced by the person's own schedule).
-DAILY_LIMITS = {NotificationCategory.TIPS: 1}
+# Sends per person per local day; a category absent here has no daily cap.
+# Break reminders and tips are both paced by the person's own interval.
+DAILY_LIMITS = {}
 # The push service drops a message not delivered within this time: a reminder
 # that arrives an hour late is noise, not a reminder.
 TTL_SECONDS = 10 * 60

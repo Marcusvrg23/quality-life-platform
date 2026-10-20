@@ -28,6 +28,11 @@ urlpatterns = [
         name="wellbeing_push_subscribe",
     ),
     path(
+        "lembretes/push/estado/",
+        views.push_status,
+        name="wellbeing_push_status",
+    ),
+    path(
         "lembretes/push/cancelar/",
         views.push_unsubscribe,
         name="wellbeing_push_unsubscribe",

@@ -75,6 +75,7 @@ class ReminderTests(TestCase):
             {
                 "active": False,
                 "interval": 60,
+                "tips_interval": 60,
                 "start": "08:00",
                 "end": "18:00",
                 "days": [1, 2, 3, 4, 5],
@@ -100,6 +101,7 @@ class ReminderTests(TestCase):
             {
                 "active": True,
                 "interval": 90,
+                "tips_interval": 60,
                 "start": "09:00",
                 "end": "17:30",
                 "days": [1, 3, 5],
@@ -229,8 +231,11 @@ class ReminderTests(TestCase):
     def test_values_outside_options_are_rejected(self):
         self.login(self.owner)
         for invalid in (
-            {"interval_minutes": "45"},
+            {"interval_minutes": "2"},
+            {"interval_minutes": "481"},
             {"interval_minutes": "abc"},
+            {"tips_interval_minutes": "2"},
+            {"tips_interval_minutes": "481"},
             {"weekdays": ["8"]},
             {"weekdays": ["0"]},
             {"weekdays": []},
@@ -254,7 +259,10 @@ class ReminderTests(TestCase):
     def test_database_rejects_invalid_rows(self):
         membership = self.membership(self.owner)
         for invalid in (
-            {"interval_minutes": 45},
+            {"interval_minutes": 2},
+            {"interval_minutes": 481},
+            {"tips_interval_minutes": 2},
+            {"tips_interval_minutes": 481},
             {"weekdays": ""},
             {"weekdays": "8"},
             {"weekdays": "531"},
@@ -323,7 +331,14 @@ class ReminderTests(TestCase):
             ({"workday_end": "25:00"}, "Horário de fim inválido."),
             ({"workday_start": ""}, "Informe o início do expediente."),
             ({"weekdays": []}, "Escolha pelo menos um dia."),
-            ({"interval_minutes": "45"}, "Escolha um intervalo de 60, 90 ou 120 min."),
+            (
+                {"interval_minutes": "2"},
+                "Escolha um intervalo das pausas entre 3 e 480 minutos.",
+            ),
+            (
+                {"tips_interval_minutes": "500"},
+                "Escolha um intervalo das dicas entre 3 e 480 minutos.",
+            ),
             (
                 {"workday_start": "08:00", "workday_end": "08:00"},
                 "O início e o fim do expediente precisam ser diferentes.",
@@ -334,7 +349,16 @@ class ReminderTests(TestCase):
                     "workday_end": "10:00",
                     "interval_minutes": "120",
                 },
-                "O expediente precisa ser maior que o intervalo.",
+                "O expediente precisa ser maior que o intervalo das pausas.",
+            ),
+            (
+                {
+                    "workday_start": "09:00",
+                    "workday_end": "10:00",
+                    "interval_minutes": "30",
+                    "tips_interval_minutes": "90",
+                },
+                "O expediente precisa ser maior que o intervalo das dicas.",
             ),
         ):
             with self.subTest(invalid=invalid):
@@ -354,7 +378,7 @@ class ReminderTests(TestCase):
             reverse("wellbeing_reminders"),
             {
                 "action": "deactivate",
-                "interval_minutes": "45",
+                "interval_minutes": "2",
                 "workday_start": "manhã",
                 "workday_end": "",
                 "weekdays": [],
@@ -401,6 +425,44 @@ class ReminderTests(TestCase):
                 self.assertContains(response, 'role="status"')
         page = self.client.get(reverse("wellbeing_reminders"))
         self.assertNotContains(page, "Lembretes desativados.")
+
+    # Free intervals (spec 13, aceite 22) ------------------------------------------
+
+    def test_any_interval_from_3_to_480_minutes_is_saved(self):
+        self.login(self.owner)
+        for breaks, tips in (("3", "3"), ("45", "60"), ("480", "7")):
+            with self.subTest(breaks=breaks, tips=tips):
+                response = self.client.post(
+                    reverse("wellbeing_reminders"),
+                    {
+                        **VALID,
+                        "workday_start": "08:00",
+                        "workday_end": "18:00",
+                        "interval_minutes": breaks,
+                        "tips_interval_minutes": tips,
+                    },
+                )
+                self.assertEqual(response.status_code, 302)
+                setting = ReminderSetting.objects.get()
+                self.assertEqual(setting.interval_minutes, int(breaks))
+                self.assertEqual(setting.tips_interval_minutes, int(tips))
+        page = self.client.get(reverse("wellbeing_reminders"))
+        self.assertContains(
+            page, 'name="interval_minutes" value="480" min="3" max="480"'
+        )
+        self.assertContains(page, 'name="tips_interval_minutes" value="7" min="3"')
+        self.assertEqual(self.schedule()["tips_interval"], 7)
+
+    def test_save_without_activating_keeps_breaks_off(self):
+        self.login(self.owner)
+        response = self.client.post(
+            reverse("wellbeing_reminders"),
+            {**VALID, "action": "save", "tips_interval_minutes": "15"},
+        )
+        self.assertEqual(response.status_code, 302)
+        setting = ReminderSetting.objects.get()
+        self.assertFalse(setting.active)
+        self.assertEqual(setting.tips_interval_minutes, 15)
 
     # Night shift -----------------------------------------------------------------
 

@@ -117,6 +117,20 @@ class SchedulerTests(TestCase):
         # Between slots nothing happens either.
         self.assertEqual(self.run_once(self.at(hour=9, minute=30))[0], 0)
 
+    def test_three_minute_interval_sends_each_slot_once(self):
+        # Shorter than the 5-minute tolerance: the latest slot wins.
+        ReminderSetting.objects.filter(pk=self.setting.pk).update(interval_minutes=3)
+        self.assertEqual(self.run_once(self.at(hour=8, minute=3))[0], 1)
+        self.assertEqual(self.run_once(self.at(hour=8, minute=6))[0], 1)
+        self.assertEqual(self.run_once(self.at(hour=8, minute=7))[0], 0)
+        self.assertEqual(
+            sorted(ReminderDispatch.objects.values_list("slot_at", flat=True)),
+            [
+                MONDAY + timedelta(hours=8, minutes=3),
+                MONDAY + timedelta(hours=8, minutes=6),
+            ],
+        )
+
     def test_interval_defines_the_slots(self):
         ReminderSetting.objects.filter(pk=self.setting.pk).update(interval_minutes=90)
         for hour, minute, expected in ((9, 0, 0), (9, 30, 1), (11, 0, 1), (17, 0, 1)):
@@ -452,7 +466,7 @@ class PlanTests(TestCase):
         with self.captureOnCommitCallbacks(execute=True):
             response = self.client.post(
                 reverse("wellbeing_reminders"),
-                {"action": "save", "interval_minutes": "45"},
+                {"action": "save", "interval_minutes": "2"},
             )
         self.assertEqual(response.status_code, 400)
         self.assertFalse(scheduler._wake.is_set())

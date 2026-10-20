@@ -2,7 +2,7 @@
 
 from django import forms
 
-from .models import REMINDER_INTERVALS, shift_minutes
+from .models import INTERVAL_MAX, INTERVAL_MIN, shift_minutes
 
 WEEKDAYS = (
     ("1", "Seg"),
@@ -36,19 +36,34 @@ def _time_field(label):
     )
 
 
+INTERVAL_MESSAGE = (
+    f"Escolha um intervalo {{}} entre {INTERVAL_MIN} e {INTERVAL_MAX} minutos."
+)
+
+
+def _interval_field(which, *, required=True):
+    message = INTERVAL_MESSAGE.format(which)
+    return forms.IntegerField(
+        required=required,
+        min_value=INTERVAL_MIN,
+        max_value=INTERVAL_MAX,
+        error_messages={
+            "required": message,
+            "invalid": message,
+            "min_value": message,
+            "max_value": message,
+        },
+    )
+
+
 class ReminderForm(forms.Form):
     action = forms.ChoiceField(
         choices=[(action, action) for action in ACTIONS],
         error_messages={"invalid_choice": "Ação inválida."},
     )
-    interval_minutes = forms.TypedChoiceField(
-        choices=[(str(minutes), f"{minutes} min") for minutes in REMINDER_INTERVALS],
-        coerce=int,
-        error_messages={
-            "required": "Escolha um intervalo de 60, 90 ou 120 min.",
-            "invalid_choice": "Escolha um intervalo de 60, 90 ou 120 min.",
-        },
-    )
+    interval_minutes = _interval_field("das pausas")
+    # Optional: a POST without it keeps the saved value.
+    tips_interval_minutes = _interval_field("das dicas", required=False)
     workday_start = _time_field("início")
     workday_end = _time_field("fim")
     weekdays = forms.MultipleChoiceField(
@@ -63,6 +78,7 @@ class ReminderForm(forms.Form):
         data = super().clean()
         start, end = data.get("workday_start"), data.get("workday_end")
         interval = data.get("interval_minutes")
+        tips_interval = data.get("tips_interval_minutes")
         if start and end:
             if start == end:
                 raise forms.ValidationError(
@@ -72,7 +88,11 @@ class ReminderForm(forms.Form):
             # one reminder must fall strictly between start and end.
             if interval and shift_minutes(start, end) <= interval:
                 raise forms.ValidationError(
-                    "O expediente precisa ser maior que o intervalo."
+                    "O expediente precisa ser maior que o intervalo das pausas."
+                )
+            if tips_interval and shift_minutes(start, end) <= tips_interval:
+                raise forms.ValidationError(
+                    "O expediente precisa ser maior que o intervalo das dicas."
                 )
         return data
 
