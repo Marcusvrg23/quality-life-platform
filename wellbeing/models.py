@@ -70,7 +70,9 @@ class ActivitySession(models.Model):
         return f"{self.kind}/{self.slug} ({self.duration_seconds}s)"
 
 
-REMINDER_INTERVALS = (60, 90, 120)
+# Free interval in minutes (spec 13, aceite 22): breaks and tips alike.
+INTERVAL_MIN = 3
+INTERVAL_MAX = 480
 # ISO weekdays (1 = Monday), stored as ordered unique digits: "12345".
 WEEKDAYS_PATTERN = r"^1?2?3?4?5?6?7?$"
 
@@ -93,10 +95,10 @@ class ReminderSetting(models.Model):
         Membership, on_delete=models.CASCADE, related_name="reminder_setting"
     )
     active = models.BooleanField(default=False)
-    interval_minutes = models.PositiveSmallIntegerField(
-        choices=[(minutes, f"{minutes} min") for minutes in REMINDER_INTERVALS],
-        default=60,
-    )
+    interval_minutes = models.PositiveSmallIntegerField(default=60)
+    # Approved tips (spec 17) go out at this pace inside the same workday,
+    # while the person keeps "Dicas e datas especiais" on and has a device.
+    tips_interval_minutes = models.PositiveSmallIntegerField(default=60)
     workday_start = models.TimeField(default=time(8, 0))
     workday_end = models.TimeField(default=time(18, 0))
     weekdays = models.CharField(max_length=7, default="12345")
@@ -105,8 +107,14 @@ class ReminderSetting(models.Model):
     class Meta:
         constraints = [  # noqa: RUF012 - Django model metadata convention.
             models.CheckConstraint(
-                condition=Q(interval_minutes__in=REMINDER_INTERVALS),
-                name="wellbeing_reminder_valid_interval",
+                condition=Q(interval_minutes__gte=INTERVAL_MIN)
+                & Q(interval_minutes__lte=INTERVAL_MAX),
+                name="wellbeing_reminder_interval_range",
+            ),
+            models.CheckConstraint(
+                condition=Q(tips_interval_minutes__gte=INTERVAL_MIN)
+                & Q(tips_interval_minutes__lte=INTERVAL_MAX),
+                name="wellbeing_reminder_tips_interval_range",
             ),
             models.CheckConstraint(
                 condition=Q(weekdays__regex=WEEKDAYS_PATTERN) & ~Q(weekdays=""),
@@ -131,20 +139,30 @@ class PushSubscription(models.Model):
     """One device of one person in one organization, subscribed to Web Push.
 
     Created and removed only by its owner (``wellbeing.views.push_subscribe``
-    and ``push_unsubscribe``); the endpoint identifies the device, so a device
-    that signs in as someone else moves to the new Membership. It holds the
-    push service address and the browser's encryption keys, never health data.
+    and ``push_unsubscribe``). The same device (endpoint) may serve several
+    accounts, one row each: turning notifications off, deactivating or
+    signing out removes only that account's row, never the others'. It holds
+    the push service address and the browser's encryption keys, never health
+    data.
     """
 
     membership = models.ForeignKey(
         Membership, on_delete=models.CASCADE, related_name="push_subscriptions"
     )
-    endpoint = models.CharField(max_length=1000, unique=True)
+    endpoint = models.CharField(max_length=1000)
     p256dh = models.CharField(max_length=200)
     auth = models.CharField(max_length=100)
     user_agent = models.CharField(max_length=120, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     last_success_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [  # noqa: RUF012 - Django model metadata convention.
+            models.UniqueConstraint(
+                fields=["membership", "endpoint"],
+                name="wellbeing_push_membership_endpoint_unique",
+            ),
+        ]
 
     def __str__(self):
         return f"aparelho {self.pk} da membership {self.membership_id}"
@@ -234,29 +252,29 @@ class ReminderDispatch(models.Model):
 
 
 class TipDispatch(models.Model):
-    """One day's tip handed to a person by the scheduler (spec 17).
+    """One tip slot handed to a person by the scheduler (spec 17).
 
-    Unique per (membership, day), so two gunicorn workers that wake up at the
-    same send time never deliver the same tip twice. Only ids and the date are
+    Unique per (membership, slot), so two gunicorn workers that wake up at the
+    same slot never deliver the same tip twice. Only ids and the time are
     kept, never the text.
     """
 
     membership = models.ForeignKey(
         Membership, on_delete=models.CASCADE, related_name="tip_dispatches"
     )
-    day = models.DateField()
+    slot_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [  # noqa: RUF012 - Django model metadata convention.
             models.UniqueConstraint(
-                fields=["membership", "day"],
-                name="wellbeing_tip_dispatch_once_a_day",
+                fields=["membership", "slot_at"],
+                name="wellbeing_tip_dispatch_membership_slot_unique",
             ),
         ]
 
     def __str__(self):
-        return f"dica de {self.day:%Y-%m-%d} para membership {self.membership_id}"
+        return f"dica de {self.slot_at:%Y-%m-%d %H:%M} para membership {self.membership_id}"
 
 
 class AssistantUsage(models.Model):

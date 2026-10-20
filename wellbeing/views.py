@@ -27,8 +27,9 @@ from identity.models import Membership
 from . import scheduler
 from .forms import WEEKDAYS, ReminderForm
 from .models import (
+    INTERVAL_MAX,
+    INTERVAL_MIN,
     MIN_RECORD_SECONDS,
-    REMINDER_INTERVALS,
     ActivitySession,
     NotificationCategory,
     NotificationPreference,
@@ -294,6 +295,8 @@ def reminders(request):
                 if data["action"] == "activate":
                     setting.active = True
                 setting.interval_minutes = data["interval_minutes"]
+                if data["tips_interval_minutes"] is not None:
+                    setting.tips_interval_minutes = data["tips_interval_minutes"]
                 setting.workday_start = data["workday_start"]
                 setting.workday_end = data["workday_end"]
                 setting.weekdays = form.weekday_digits()
@@ -309,6 +312,7 @@ def reminders(request):
             return redirect("wellbeing_reminders")
         current = {
             "interval": request.POST.get("interval_minutes", ""),
+            "tips_interval": request.POST.get("tips_interval_minutes", ""),
             "start": request.POST.get("workday_start", ""),
             "end": request.POST.get("workday_end", ""),
             "days": request.POST.getlist("weekdays"),
@@ -316,6 +320,7 @@ def reminders(request):
     else:
         current = {
             "interval": str(setting.interval_minutes),
+            "tips_interval": str(setting.tips_interval_minutes),
             "start": setting.workday_start.strftime("%H:%M"),
             "end": setting.workday_end.strftime("%H:%M"),
             "days": list(setting.weekdays),
@@ -329,7 +334,8 @@ def reminders(request):
             "form": form,
             "error": form.first_error() if form.errors else "",
             "current": current,
-            "intervals": [str(minutes) for minutes in REMINDER_INTERVALS],
+            "interval_min": INTERVAL_MIN,
+            "interval_max": INTERVAL_MAX,
             "weekdays": WEEKDAYS,
             "preference": preference_for(tenant.membership),
             "categories": NotificationCategory.choices,
@@ -353,6 +359,8 @@ def notification_preferences(request):
                 for category in NotificationCategory.values
             },
         )
+        # Turning tips on or off changes this worker's plan (spec 17).
+        transaction.on_commit(scheduler.wake)
     messages.success(request, "Preferências salvas.")
     return redirect("wellbeing_reminders")
 
@@ -367,6 +375,7 @@ def reminder_schedule(request):
         {
             "active": setting.active,
             "interval": setting.interval_minutes,
+            "tips_interval": setting.tips_interval_minutes,
             "start": setting.workday_start.strftime("%H:%M"),
             "end": setting.workday_end.strftime("%H:%M"),
             "days": [int(day) for day in setting.weekdays],
@@ -425,9 +434,9 @@ def _json(payload, status=200):
 def push_subscribe(request):
     """Save this device's push subscription on the caller's own Membership.
 
-    The endpoint identifies the device: a device that signs in as someone
-    else (or in another company) moves to that Membership. The client never
-    chooses the Membership.
+    One row per (Membership, device): another account on the same device
+    keeps its own row. The client never chooses the Membership. The person's
+    agenda row is created with its defaults, so the tips have a workday.
     """
     tenant = _tenant(request)
     body = _json_body(request)
@@ -437,10 +446,11 @@ def push_subscribe(request):
     auth = _key(keys, "auth", AUTH_MAX)
     if not (endpoint and p256dh and auth):
         return HttpResponseBadRequest("Invalid push subscription.")
+    ReminderSetting.objects.get_or_create(membership=tenant.membership)
     _, created = PushSubscription.objects.update_or_create(
+        membership=tenant.membership,
         endpoint=endpoint,
         defaults={
-            "membership": tenant.membership,
             "p256dh": p256dh,
             "auth": auth,
             "user_agent": request.META.get("HTTP_USER_AGENT", "")[:USER_AGENT_MAX],
@@ -448,6 +458,21 @@ def push_subscribe(request):
     )
     transaction.on_commit(scheduler.wake)
     return _json({"status": "subscribed"}, status=201 if created else 200)
+
+
+@login_required
+@require_POST
+def push_status(request):
+    """Whether this device receives this account's notifications."""
+    tenant = _tenant(request)
+    body = _json_body(request)
+    endpoint = body.get("endpoint") if body else None
+    if not isinstance(endpoint, str) or not endpoint:
+        return HttpResponseBadRequest("Invalid push subscription.")
+    registered = PushSubscription.objects.filter(
+        membership=tenant.membership, endpoint=endpoint
+    ).exists()
+    return _json({"registered": registered})
 
 
 @login_required
@@ -490,8 +515,8 @@ def push_test(request):
     if not PushSubscription.objects.filter(membership=membership).exists():
         messages.info(
             request,
-            "Nenhum aparelho ativado. Toque em Ativar lembretes neste aparelho "
-            "e aceite as notificações; depois envie o teste.",
+            "Este aparelho não está recebendo notificações desta conta. Toque "
+            "em Ativar notificações neste aparelho, aceite e envie o teste.",
         )
         return redirect("wellbeing_reminders")
     if not cache.add(f"ql:push-test:{membership.pk}", True, PUSH_TEST_COOLDOWN_SECONDS):

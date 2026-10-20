@@ -1,12 +1,14 @@
-/* Break reminders (docs/specs/13-pwa-lembretes.md). While any Quality Life
-   page is open, schedules the next slot of the owner's agenda and shows a
-   notification, or an in-page notice when notifications are unavailable.
-   With the notification permission granted and the server able to push, the
-   device is subscribed to Web Push: the server sends the reminder even with
-   the app closed and this script shows nothing (it would be a duplicate).
-   Deactivating the reminders or signing out cancels this device's push
-   subscription. Notification permission is requested only by the "Ativar
-   lembretes" click. */
+/* Break reminders and per-account notifications (docs/specs/13-pwa-lembretes.md).
+   While any Quality Life page is open, schedules the next slot of the owner's
+   agenda and shows a notification, or an in-page notice when this device does
+   not receive the server's push for this account.
+   A device receives an account's push only after "Ativar notificações neste
+   aparelho" (or "Ativar lembretes") on that account. "Desativar
+   notificações neste aparelho" removes only this account's row on the
+   server: the browser subscription is never cancelled, so other accounts on
+   the same device keep receiving theirs. Signing out and deactivating the
+   break reminders keep the device (tips keep arriving). Notification
+   permission is requested only by a click. */
 (() => {
   'use strict';
   const script = document.querySelector('script[data-schedule]');
@@ -187,41 +189,63 @@
     return (await withTimeout(ready, 5000)) || null;
   }
 
-  async function cancelPush() {
-    // Forgets this device on the server and at the push service (best effort).
-    try {
-      const reg = await registration();
-      const subscription = reg && (await reg.pushManager.getSubscription());
-      if (!subscription) return;
-      await withTimeout(post(script.dataset.unsubscribe, { endpoint: subscription.endpoint }).catch(() => null), CANCEL_TIMEOUT_MS);
-      await withTimeout(subscription.unsubscribe().catch(() => false), CANCEL_TIMEOUT_MS);
-    } catch (error) {
-      // Nothing to cancel.
-    }
+  async function currentSubscription() {
+    const reg = await registration();
+    return reg ? { reg, subscription: await reg.pushManager.getSubscription() } : null;
   }
 
-  async function syncPush() {
+  // Why this device cannot receive push at all, or null when it can.
+  function blocker() {
     if (!schedule) return 'unavailable';
     if (!supported) return 'unsupported';
     if (Notification.permission === 'denied') return 'denied';
-    if (Notification.permission !== 'granted') return 'default';
-    if (!schedule.active) {
-      // Deactivated (maybe on another device): this one stops receiving push.
-      await cancelPush();
-      return 'inactive';
-    }
     if (!schedule.push_key) return 'server';
     if (!pushSupported) return 'nopush';
+    return null;
+  }
+
+  async function registered(subscription) {
     try {
-      const reg = await registration();
-      if (!reg) return 'failed';
-      let subscription = await reg.pushManager.getSubscription();
+      const response = await post(script.dataset.status, { endpoint: subscription.endpoint });
+      if (!response.ok) return false;
+      return (await response.json()).registered === true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Load: only reads the state, never subscribes on its own.
+  async function syncPush() {
+    const blocked = blocker();
+    if (blocked) return blocked;
+    if (Notification.permission !== 'granted') return 'default';
+    try {
+      const current = await currentSubscription();
+      if (!current) return 'failed';
+      const { subscription } = current;
+      if (!subscription || !sameKey(subscription, schedule.push_key)) return 'off';
+      return (await registered(subscription)) ? 'active' : 'off';
+    } catch (error) {
+      return 'failed';
+    }
+  }
+
+  async function enablePush() {
+    const blocked = blocker();
+    if (blocked) return blocked;
+    if (Notification.permission === 'denied') return 'denied';
+    if (Notification.permission !== 'granted') return 'default';
+    try {
+      const current = await currentSubscription();
+      if (!current) return 'failed';
+      let { subscription } = current;
       if (subscription && !sameKey(subscription, schedule.push_key)) {
+        // The server key changed: the old subscription can no longer receive.
         await subscription.unsubscribe().catch(() => false);
         subscription = null;
       }
       if (!subscription) {
-        subscription = await reg.pushManager.subscribe({
+        subscription = await current.reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: toKeyBytes(schedule.push_key),
         });
@@ -233,70 +257,139 @@
     }
   }
 
-  // Reminders page: status text and the deactivate form -----------------------
+  // Removes only this account's row: never subscription.unsubscribe(), which
+  // would silence every account on this device.
+  async function disablePush() {
+    try {
+      const current = await currentSubscription();
+      const subscription = current && current.subscription;
+      if (subscription) {
+        const response = await withTimeout(post(script.dataset.unsubscribe, { endpoint: subscription.endpoint }), CANCEL_TIMEOUT_MS * 2);
+        if (response && !response.ok && response.status !== 404) return 'active';
+      }
+    } catch (error) {
+      return 'failed';
+    }
+    return 'off';
+  }
 
-  const status = document.querySelector('[data-reminder-status]');
+  // Reminders page: status text and the two buttons ---------------------------
+
+  const status = document.querySelector('[data-push-status]');
+  const enableButton = document.querySelector('[data-push-enable]');
+  const disableButton = document.querySelector('[data-push-disable]');
+  const ENABLE_AFTER_RELOAD = 'ql-push-enable';
 
   function describe(state) {
-    const active = status.dataset.active === '1';
     switch (state) {
       case 'active':
-        return 'Notificações ativas neste aparelho, mesmo com o app fechado.';
+        return 'Notificações ativas neste aparelho para esta conta, mesmo com o app fechado. As outras contas deste aparelho têm a própria escolha.';
+      case 'off':
+        return 'Este aparelho não recebe as notificações desta conta. Toque em Ativar notificações neste aparelho.';
+      case 'default':
+        return 'Este aparelho não recebe as notificações desta conta. Ao tocar em Ativar notificações neste aparelho, o navegador pergunta se pode mostrar notificações.';
       case 'unsupported':
         return isIphone && !standalone
           ? 'No iPhone, adicione o app à tela de início (iOS 16.4 ou mais novo) para receber notificações. Até lá, o aviso aparece dentro da página.'
           : 'Este navegador não mostra notificações: o aviso aparece dentro da página.';
       case 'denied':
-        return 'As notificações estão bloqueadas neste navegador: o aviso aparece dentro da página.';
-      case 'default':
-        return active
-          ? 'Sem permissão de notificação: o aviso aparece dentro da página.'
-          : 'Ao ativar, o navegador pergunta se pode mostrar notificações.';
-      case 'inactive':
-        return 'Notificações permitidas neste aparelho. Ative os lembretes para recebê-las mesmo com o app fechado.';
+        return 'As notificações deste site estão bloqueadas nas configurações do navegador ou do celular. Libere-as lá e volte a esta página.';
       case 'server':
         return 'Este servidor ainda não envia notificações com o app fechado: o aviso aparece com o app aberto.';
       case 'nopush':
         return 'Este navegador não recebe notificações com o app fechado: o aviso aparece com o app aberto.';
       case 'failed':
-        return 'Não foi possível ativar as notificações neste aparelho: o aviso aparece com o app aberto.';
+        return 'Não foi possível ativar as notificações neste aparelho. Tente de novo em instantes.';
+      case 'working':
+        return 'Um instante…';
       default:
         return 'Verificando as notificações deste aparelho…';
     }
   }
 
   function showStatus(state) {
-    if (!status) return;
-    status.textContent = describe(state);
-    status.dataset.push = state;
+    pushState = state;
+    if (status) {
+      status.textContent = describe(state);
+      status.dataset.push = state;
+    }
+    if (enableButton) {
+      enableButton.hidden = !['off', 'default', 'failed'].includes(state);
+      enableButton.disabled = false;
+    }
+    if (disableButton) {
+      disableButton.hidden = state !== 'active';
+      disableButton.disabled = false;
+    }
+  }
+
+  function run(action) {
+    if (enableButton) enableButton.disabled = true;
+    if (disableButton) disableButton.disabled = true;
+    return action().then(showStatus, () => showStatus('failed'));
   }
 
   if (status) {
     // Provisional text before the agenda arrives.
     if (!supported) showStatus('unsupported');
     else if (Notification.permission === 'denied') showStatus('denied');
-    else if (Notification.permission !== 'granted') showStatus('default');
     else showStatus('pending');
   }
 
-  fetch(script.dataset.schedule, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } })
+  function takeEnableFlag() {
+    try {
+      const flag = sessionStorage.getItem(ENABLE_AFTER_RELOAD) === '1';
+      sessionStorage.removeItem(ENABLE_AFTER_RELOAD);
+      return flag;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  const loaded = fetch(script.dataset.schedule, { credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json' } })
     .then(response => (response.ok ? response.json() : null))
     .then(data => {
       schedule = data;
       plan();
+      // "Ativar lembretes" asked for the permission before the reload.
+      if (takeEnableFlag() && supported && Notification.permission === 'granted') return enablePush();
       return syncPush();
     })
-    .then(state => {
-      pushState = state || 'failed';
-      showStatus(pushState);
-    })
-    .catch(() => {})
+    .then(state => showStatus(state || 'failed'))
+    .catch(() => showStatus('failed'))
     .finally(() => { script.dataset.state = 'loaded'; });
 
+  if (enableButton) {
+    enableButton.addEventListener('click', () => {
+      // The permission prompt must start inside the click, before any await.
+      let asking = Promise.resolve();
+      if (supported && Notification.permission === 'default') {
+        try {
+          asking = Promise.resolve(Notification.requestPermission()).catch(() => null);
+        } catch (error) {
+          // Nothing to ask: enablePush reports the state.
+        }
+      }
+      run(() => Promise.all([asking, loaded]).then(enablePush));
+    });
+  }
+  if (disableButton) {
+    disableButton.addEventListener('click', () => {
+      loaded.then(() => run(disablePush));
+    });
+  }
+
+  // "Ativar lembretes" also turns on this device for this account.
   const activate = document.querySelector('[data-reminder-activate]');
   if (activate) {
     activate.addEventListener('click', event => {
-      if (activate.dataset.asked || !supported || Notification.permission !== 'default') return;
+      if (activate.dataset.asked || !supported || Notification.permission === 'denied') return;
+      try {
+        sessionStorage.setItem(ENABLE_AFTER_RELOAD, '1');
+      } catch (error) {
+        // Storage blocked: the person uses the device button instead.
+      }
+      if (Notification.permission !== 'default') return;
       event.preventDefault();
       activate.dataset.asked = '1';
       const submit = () => activate.click();
@@ -307,17 +400,4 @@
       }
     });
   }
-
-  // Deactivating the reminders or signing out cancels this device's push first.
-  function cancelBeforeSubmit(form) {
-    if (!form) return;
-    form.addEventListener('submit', event => {
-      if (form.dataset.pushCancelled) return;
-      event.preventDefault();
-      form.dataset.pushCancelled = '1';
-      withTimeout(cancelPush(), CANCEL_TIMEOUT_MS * 2).then(() => form.submit(), () => form.submit());
-    });
-  }
-  cancelBeforeSubmit(document.getElementById('reminder-deactivate'));
-  cancelBeforeSubmit(document.querySelector('form.ql-logout'));
 })();

@@ -4,9 +4,7 @@ preference and the daily limits, never leaves the active tenant and logs only
 ids. pywebpush is simulated; no request leaves the test."""
 
 import json
-from datetime import datetime
 from unittest import mock
-from zoneinfo import ZoneInfo
 
 from django.test import TestCase, override_settings
 from pywebpush import WebPushException
@@ -29,7 +27,6 @@ NO_VAPID = {"VAPID_PUBLIC_KEY": "", "VAPID_PRIVATE_KEY": "", "VAPID_SUBJECT": ""
 TITLE = "Hora da pausa"
 BODY = "Que tal alguns minutos de Ginástica Laboral?"
 URL = "/app/ginastica/"
-ZONE = ZoneInfo("America/Sao_Paulo")
 
 
 def failure(status):
@@ -156,26 +153,13 @@ class NotifyTests(TestCase):
         self.assertEqual(sent, 0)
         webpush.assert_not_called()
 
-    def test_tips_are_limited_to_one_per_local_day(self):
-        # 23:30 in São Paulo on the 19th is 02:30 UTC on the 20th.
-        late_evening = datetime(2026, 10, 19, 23, 30, tzinfo=ZONE)
-        sent, _ = self.notify(
-            "dicas", title="Dica", body="Beba água.", now=late_evening
-        )
-        self.assertEqual(sent, 2)
-        sent, webpush = self.notify(
-            "dicas", title="Dica", body="Respire fundo.", now=late_evening
-        )
-        self.assertEqual(sent, 0)
-        webpush.assert_not_called()
-        # Still the 19th in UTC terms? No: the local day changed at 00:00 São Paulo.
-        next_morning = datetime(2026, 10, 20, 0, 10, tzinfo=ZONE)
-        sent, _ = self.notify(
-            "dicas", title="Dica", body="Alongue-se.", now=next_morning
-        )
-        self.assertEqual(sent, 2)
+    def test_tips_have_no_daily_limit(self):
+        # Paced by each person's own interval (spec 17, aceite 5).
+        for body in ("Beba água.", "Respire fundo.", "Alongue-se."):
+            sent, _ = self.notify("dicas", title="Dica", body=body)
+            self.assertEqual(sent, 2)
         self.assertEqual(
-            NotificationDelivery.objects.filter(category="dicas").count(), 2
+            NotificationDelivery.objects.filter(category="dicas").count(), 3
         )
 
     def test_breaks_have_no_daily_limit(self):

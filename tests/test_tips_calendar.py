@@ -23,6 +23,7 @@ from wellbeing.models import (
     NotificationDelivery,
     NotificationPreference,
     PushSubscription,
+    ReminderSetting,
     TipDispatch,
 )
 
@@ -70,7 +71,9 @@ class CalendarTests(TestCase):
     @unpublished
     def test_unpublished_shows_and_sends_nothing(self):
         for day in (MONDAY, TUESDAY, date(2026, 9, 10)):
-            self.assertIsNone(tips_calendar.tip_to_send(day))
+            self.assertIsNone(
+                tips_calendar.tip_for_slot(day, first_of_day=True, sequence=0)
+            )
             self.assertIsNone(tips_calendar.tip_to_show(day))
 
     def test_send_day_rules(self):
@@ -119,14 +122,18 @@ class CalendarTests(TestCase):
         )
 
     @published
-    def test_published_sends_on_mondays_and_special_dates_only(self):
-        self.assertEqual(
-            tips_calendar.tip_to_send(MONDAY), tips_calendar.weekly_tip(MONDAY)
-        )
-        self.assertIsNone(tips_calendar.tip_to_send(TUESDAY))
-        setembro = tips_calendar.tip_to_send(date(2026, 9, 10))  # a Thursday
+    def test_slots_walk_the_tips_and_the_first_of_a_special_day_is_the_date(self):
+        tips = tips_calendar.WEEKLY_TIPS
+        tip_for_slot = tips_calendar.tip_for_slot
+        self.assertEqual(tip_for_slot(MONDAY, first_of_day=True, sequence=5), tips[5])
+        self.assertEqual(tip_for_slot(MONDAY, first_of_day=False, sequence=27), tips[1])
+        setembro = tip_for_slot(date(2026, 9, 10), first_of_day=True, sequence=3)
         self.assertEqual(setembro.title, "Setembro Amarelo")
         self.assertIn("CVV, ligue 188", setembro.text)
+        # Later slots of that day carry the approved weekly tips.
+        self.assertEqual(
+            tip_for_slot(date(2026, 9, 10), first_of_day=False, sequence=3), tips[3]
+        )
         # Hoje shows the week's tip on any day and the special one on its day.
         self.assertEqual(
             tips_calendar.tip_to_show(TUESDAY), tips_calendar.weekly_tip(TUESDAY)
@@ -182,17 +189,18 @@ class ScreenTests(TestCase):
         self.assertContains(off, "As dicas e datas especiais ainda não são enviadas")
         with published:
             on = self.client.get(reverse("wellbeing_reminders"))
-        self.assertContains(
-            on, "As dicas chegam às segundas, às 10h, e nas datas especiais."
-        )
+        self.assertContains(on, "As dicas chegam no intervalo que você escolheu")
+        self.assertContains(on, 'name="tips_interval_minutes" value="60"')
         self.assertNotContains(on, "ainda não são enviadas")
 
 
-def make_member(email, organization, *, device=True):
+def make_member(email, organization, *, device=True, **agenda):
+    """A person with the default agenda (08:00-18:00, Mon-Fri, tips every 60 min)."""
     user = User.objects.create_user(email, PASSWORD)
     membership = Membership.objects.create(
         user=user, organization=organization, role=Membership.Role.COLLABORATOR
     )
+    ReminderSetting.objects.create(membership=membership, **agenda)
     if device:
         PushSubscription.objects.create(
             membership=membership,
@@ -201,6 +209,9 @@ def make_member(email, organization, *, device=True):
             auth="auth",
         )
     return membership
+
+
+SATURDAY = date(2026, 10, 24)
 
 
 @override_settings(**VAPID)
@@ -217,77 +228,137 @@ class TipSchedulerTests(TestCase):
     def payloads(self):
         return [json.loads(call.kwargs["data"]) for call in self.webpush.call_args_list]
 
+    def titles(self):
+        return [payload["title"] for payload in self.payloads()]
+
     @unpublished
     def test_unpublished_plan_never_holds_a_tip_and_adds_no_query(self):
         plan = scheduler.Plan()
         with CaptureQueriesContext(connection) as loading:
             plan.step(at_local(MONDAY, 8))
-        self.assertIsNone(plan.tip_slot)
+        self.assertEqual(plan.tip_slots, {})
         self.assertEqual(len(loading), 2)  # the reminders, the old dispatches
-        self.assertEqual(plan.step(at_local(MONDAY, 10)), 0)
+        self.assertEqual(plan.step(at_local(MONDAY, 9)), 0)
         self.webpush.assert_not_called()
 
     @published
-    def test_monday_tip_goes_out_at_ten_once_to_each_person(self):
-        other = make_member("outra@empresa.test", self.organization)
+    def test_tips_follow_each_person_interval_once_each(self):
+        other = make_member(
+            "outra@empresa.test", self.organization, tips_interval_minutes=120
+        )
         make_member("semaparelho@empresa.test", self.organization, device=False)
         plan = scheduler.Plan()
         plan.step(at_local(MONDAY, 8))
-        self.assertEqual(plan.tip_slot, at_local(MONDAY, 10, second=0))
+        nine = at_local(MONDAY, 9, second=0)
+        ten = at_local(MONDAY, 10, second=0)
+        self.assertEqual(plan.tip_slots[nine], {self.member.reminder_setting.pk})
         self.assertEqual(
-            plan.wake_at(at_local(MONDAY, 8)), at_local(MONDAY, 10, second=0)
+            plan.tip_slots[ten],
+            {self.member.reminder_setting.pk, other.reminder_setting.pk},
         )
+        self.assertEqual(plan.wake_at(at_local(MONDAY, 8)), nine)
         with CaptureQueriesContext(connection) as idle:
-            self.assertEqual(plan.step(at_local(MONDAY, 9, 59)), 0)
+            self.assertEqual(plan.step(at_local(MONDAY, 8, 59)), 0)
         self.assertEqual(len(idle), 0)
+        self.assertEqual(plan.step(at_local(MONDAY, 9, second=1)), 1)
         self.assertEqual(plan.step(at_local(MONDAY, 10, second=1)), 2)
-        tip = tips_calendar.weekly_tip(MONDAY)
+        tips = tips_calendar.WEEKLY_TIPS
+        mine = [
+            json.loads(c.kwargs["data"])["title"]
+            for c in self.webpush.call_args_list
+            if c.kwargs["subscription_info"]["endpoint"].endswith(f"/{self.member.pk}")
+        ]
+        index = next(i for i, tip in enumerate(tips) if tip.title == mine[0])
+        # The next slot of the same person carries the next approved tip.
+        self.assertEqual(mine[1], tips[(index + 1) % 26].title)
+        for payload in self.payloads():
+            tip = next(tip for tip in tips if tip.title == payload["title"])
+            self.assertEqual(
+                (payload["body"], payload["url"], payload["tag"]),
+                (tip.text, reverse(tip.route), "ql-dicas"),
+            )
         self.assertEqual(
-            [(p["title"], p["body"], p["url"], p["tag"]) for p in self.payloads()],
-            [(tip.title, tip.text, reverse(tip.route), "ql-dicas")] * 2,
-        )
-        self.assertEqual(
-            set(TipDispatch.objects.values_list("membership", flat=True)),
-            {self.member.pk, other.pk},
+            sorted(TipDispatch.objects.values_list("membership", flat=True)),
+            sorted([self.member.pk, self.member.pk, other.pk]),
         )
         # The same worker, a second worker and a restart all send nothing more.
         self.assertEqual(plan.step(at_local(MONDAY, 10, 1)), 0)
         self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 10, 2)), 0)
-        self.assertEqual(self.webpush.call_count, 2)
+        self.assertEqual(self.webpush.call_count, 3)
 
     @published
-    def test_tuesday_has_no_tip_and_late_tip_is_skipped(self):
-        self.assertEqual(scheduler.run_once(now=at_local(TUESDAY, 10)), 0)
-        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 10, 6)), 0)
+    def test_three_minutes_is_allowed(self):
+        ReminderSetting.objects.filter(membership=self.member).update(
+            tips_interval_minutes=3
+        )
+        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 8, 3)), 1)
+        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 8, 6)), 1)
+        first, second = self.titles()
+        self.assertNotEqual(first, second)
+
+    @published
+    def test_nothing_outside_the_workday_on_unmarked_days_or_late(self):
+        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 8)), 0)
+        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 18)), 0)
+        self.assertEqual(scheduler.run_once(now=at_local(SATURDAY, 9)), 0)
+        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 9, 6)), 0)
         self.webpush.assert_not_called()
         self.assertFalse(TipDispatch.objects.exists())
 
     @published
-    def test_special_date_goes_out_on_its_weekday(self):
-        self.assertEqual(scheduler.run_once(now=at_local(date(2026, 9, 10), 10)), 1)
-        self.assertEqual(self.payloads()[0]["title"], "Setembro Amarelo")
+    def test_tips_arrive_with_break_reminders_on_or_off(self):
+        self.assertFalse(self.member.reminder_setting.active)
+        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 9)), 1)
+        ReminderSetting.objects.filter(membership=self.member).update(active=True)
+        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 10)), 2)
+        self.assertEqual(self.titles()[1:].count("Hora da pausa"), 1)
 
     @published
-    def test_turned_off_inactive_or_over_the_daily_limit_get_nothing(self):
-        off = make_member("desligou@empresa.test", self.organization)
-        NotificationPreference.objects.create(membership=off, dicas=False)
+    def test_special_date_is_the_first_tip_of_its_day(self):
+        thursday = date(2026, 9, 10)
+        scheduler.run_once(now=at_local(thursday, 9))
+        scheduler.run_once(now=at_local(thursday, 10))
+        self.assertEqual(self.titles()[0], "Setembro Amarelo")
+        self.assertNotEqual(self.titles()[1], "Setembro Amarelo")
+
+    @published
+    def test_turned_off_inactive_or_without_device_get_nothing(self):
+        NotificationPreference.objects.create(membership=self.member, dicas=False)
         inactive = make_member("saiu@empresa.test", self.organization)
         Membership.objects.filter(pk=inactive.pk).update(is_active=False)
-        NotificationDelivery.objects.create(
-            membership=self.member,
-            category="dicas",
-            devices=1,
-            sent_at=at_local(MONDAY, 8),
-        )
-        scheduler.run_once(now=at_local(MONDAY, 10))
+        make_member("semaparelho@empresa.test", self.organization, device=False)
+        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 9)), 0)
         self.webpush.assert_not_called()
+
+    @published
+    def test_no_daily_cap_for_tips(self):
+        for _ in range(9):
+            NotificationDelivery.objects.create(
+                membership=self.member,
+                category="dicas",
+                devices=1,
+                sent_at=at_local(MONDAY, 8),
+            )
+        self.assertEqual(scheduler.run_once(now=at_local(MONDAY, 9)), 1)
+        self.webpush.assert_called_once()
+
+    @published
+    def test_changed_interval_after_the_plan_is_not_sent_at_the_old_slot(self):
+        plan = scheduler.Plan()
+        plan.step(at_local(MONDAY, 8))
+        ReminderSetting.objects.filter(membership=self.member).update(
+            tips_interval_minutes=90
+        )
+        self.assertEqual(plan.step(at_local(MONDAY, 9, second=1)), 0)
+        plan.invalidate()
+        self.assertEqual(plan.step(at_local(MONDAY, 9, 30, second=1)), 1)
 
     @published
     def test_a_name_inside_the_tip_skips_only_that_person(self):
         # "Outubro Rosa": rosa@… would see her own name on the lock screen.
         rosa = make_member("rosa@empresa.test", self.organization)
         october = date(2026, 10, 1)  # a Thursday, first business day
-        self.assertEqual(scheduler.run_once(now=at_local(october, 10)), 1)
+        self.assertEqual(scheduler.run_once(now=at_local(october, 9)), 1)
         endpoints = [
             c.kwargs["subscription_info"]["endpoint"]
             for c in self.webpush.call_args_list
@@ -298,7 +369,19 @@ class TipSchedulerTests(TestCase):
     @published
     def test_old_tip_rows_are_pruned_when_a_tip_is_planned(self):
         TipDispatch.objects.create(
-            membership=self.member, day=MONDAY - timedelta(days=7)
+            membership=self.member, slot_at=at_local(MONDAY, 9) - timedelta(days=7)
         )
         scheduler.Plan().step(at_local(MONDAY, 8))
-        self.assertFalse(TipDispatch.objects.filter(day__lt=MONDAY).exists())
+        self.assertFalse(
+            TipDispatch.objects.filter(slot_at__lt=at_local(MONDAY, 0)).exists()
+        )
+
+    @published
+    def test_changing_the_tips_preference_wakes_the_scheduler(self):
+        self.client.force_login(self.member.user)
+        with (
+            mock.patch.object(scheduler, "wake") as wake,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            self.client.post(reverse("wellbeing_notification_preferences"), {})
+        wake.assert_called_once()

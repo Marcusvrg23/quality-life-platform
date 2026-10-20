@@ -24,12 +24,14 @@ Two workers reach the same slot: ``ReminderDispatch`` is unique per
 (setting, slot), so the second insert fails and that worker skips it. A slot
 more than five minutes old is never sent.
 
-Weekly tips and special dates (docs/specs/17-dicas-da-semana.md) ride the same
-plan: on a day with a tip (``config.tips_calendar.tip_to_send``) the plan holds
-one more moment, ``SEND_TIME`` local, and at it every active person with a
-device gets the tip once (``TipDispatch`` is unique per person and day).
-While the tips are unpublished the plan never holds that moment, so nothing
-changes for the database.
+Approved tips and special dates (docs/specs/17-dicas-da-semana.md) ride the
+same plan, paced per person: inside the same workday and weekdays, every
+``tips_interval_minutes`` (whether or not the break reminders are on), for
+each person with a device on that account who keeps "Dicas e datas
+especiais" on. ``TipDispatch`` is unique per (person, slot). The first tip of
+a day is that day's special date when there is one
+(``config.tips_calendar.tip_for_slot``). While the tips are unpublished the
+plan holds no tip slot, so nothing changes for the database.
 """
 
 import logging
@@ -43,7 +45,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from config import tips_calendar
-from identity.models import Membership
 
 from .models import NotificationCategory, ReminderDispatch, ReminderSetting, TipDispatch
 from .notifications import NotGeneric, notify, push_configured
@@ -76,8 +77,12 @@ def _minutes(value):
     return value.hour * 60 + value.minute
 
 
-def slots_on(setting, day):
-    """Wall-clock slots of the shift that starts on ``day`` (a local date)."""
+def slots_on(setting, day, interval=None):
+    """Wall-clock slots of the shift that starts on ``day`` (a local date).
+
+    ``interval`` defaults to the break interval; tips pass their own.
+    """
+    interval = interval or setting.interval_minutes
     if str(day.isoweekday()) not in setting.weekdays:
         return []
     start = _minutes(setting.workday_start)
@@ -87,55 +92,49 @@ def slots_on(setting, day):
     midnight = datetime.combine(day, time.min)
     return [
         (midnight + timedelta(minutes=at)).replace(tzinfo=_local_zone())
-        for at in range(start + setting.interval_minutes, end, setting.interval_minutes)
+        for at in range(start + interval, end, interval)
     ]
 
 
-def due_slot(setting, now):
+def _due(setting, now, interval):
+    """(shift day, slot, is first slot of that shift) due at ``now``, or None."""
+    # With intervals shorter than LATE several slots fit the window: the
+    # latest one wins, so an older one is never sent late.
+    today = now.astimezone(_local_zone()).date()
+    due = None
+    for day in (today - timedelta(days=1), today):
+        for index, slot in enumerate(slots_on(setting, day, interval)):
+            if timedelta(0) <= now - slot <= LATE:
+                due = day, slot, index == 0
+    return due
+
+
+def due_slot(setting, now, interval=None):
     """The slot due at ``now`` (started at most ``LATE`` ago), or None.
 
     Yesterday's shift may still be running past midnight, so both days are
     checked.
     """
-    today = now.astimezone(_local_zone()).date()
-    for day in (today - timedelta(days=1), today):
-        for slot in slots_on(setting, day):
-            if timedelta(0) <= now - slot <= LATE:
-                return slot
-    return None
+    due = _due(setting, now, interval or setting.interval_minutes)
+    return due[1] if due else None
 
 
 def refresh_interval():
     return timedelta(minutes=settings.WEB_PUSH_SCHEDULER_REFRESH_MINUTES)
 
 
-def upcoming_slots(setting, after, until):
+def upcoming_slots(setting, after, until, interval=None):
     """Slots of ``setting`` in ``[after, until]``, oldest first."""
     first = after.astimezone(_local_zone()).date() - timedelta(days=1)
     last = until.astimezone(_local_zone()).date()
     slots = []
     day = first
     while day <= last:
-        slots.extend(slot for slot in slots_on(setting, day) if after <= slot <= until)
+        slots.extend(
+            slot for slot in slots_on(setting, day, interval) if after <= slot <= until
+        )
         day += timedelta(days=1)
     return slots
-
-
-def tip_slot_on(day):
-    """The local moment the tip of ``day`` goes out."""
-    return datetime.combine(day, tips_calendar.SEND_TIME, tzinfo=_local_zone())
-
-
-def next_tip_slot(after, until):
-    """The first tip moment in ``[after, until]``, or None (none while unpublished)."""
-    day = after.astimezone(_local_zone()).date()
-    last = until.astimezone(_local_zone()).date()
-    while day <= last:
-        slot = tip_slot_on(day)
-        if after <= slot <= until and tips_calendar.tip_to_send(day) is not None:
-            return slot
-        day += timedelta(days=1)
-    return None
 
 
 def _candidates():
@@ -145,6 +144,21 @@ def _candidates():
         membership__organization__is_active=True,
         membership__push_subscriptions__isnull=False,
     ).distinct()
+
+
+def _tip_candidates():
+    """People who get tips: a device on the account and "dicas" not turned off."""
+    if not tips_calendar.PUBLISHED:
+        return ReminderSetting.objects.none()
+    return (
+        ReminderSetting.objects.filter(
+            membership__is_active=True,
+            membership__organization__is_active=True,
+            membership__push_subscriptions__isnull=False,
+        )
+        .exclude(membership__notification_preference__dicas=False)
+        .distinct()
+    )
 
 
 def _claim(setting, slot):
@@ -164,8 +178,8 @@ class Plan:
         self.refresh_at = None  # None: load on the next step
         self.slots = {}  # slot -> ids of the settings due at it
         self.handled = None  # latest slot already handled by this plan
-        self.tip_slot = None  # next tip moment, when the plan holds one
-        self.tip_handled = None  # latest tip moment already handled
+        self.tip_slots = {}  # slot -> ids of the settings with a tip due at it
+        self.tip_handled = None  # latest tip slot already handled
 
     def invalidate(self):
         self.refresh_at = None
@@ -174,8 +188,7 @@ class Plan:
         """When the next step has something to do."""
         if self.refresh_at is None:
             return now
-        tip = [self.tip_slot] if self.tip_slot is not None else []
-        return min([self.refresh_at, *self.slots, *tip])
+        return min([self.refresh_at, *self.slots, *self.tip_slots])
 
     def step(self, now):
         """Do what is due at ``now``; returns how many reminders were sent."""
@@ -188,11 +201,13 @@ class Plan:
             if now - slot <= LATE:
                 dispatched += _dispatch(slot, ids, now)
             self.handled = slot if self.handled is None else max(self.handled, slot)
-        if self.tip_slot is not None and self.tip_slot <= now:
-            slot, self.tip_slot = self.tip_slot, None
+        for slot in sorted(slot for slot in self.tip_slots if slot <= now):
+            ids = self.tip_slots.pop(slot)
             if now - slot <= LATE:
-                dispatched += _dispatch_tips(slot, now)
-            self.tip_handled = slot
+                dispatched += _dispatch_tips(slot, ids, now)
+            self.tip_handled = (
+                slot if self.tip_handled is None else max(self.tip_handled, slot)
+            )
         return dispatched
 
     def _load(self, now):
@@ -207,14 +222,18 @@ class Plan:
                     slots.setdefault(slot, set()).add(setting.pk)
         ReminderDispatch.objects.filter(slot_at__lt=now - KEEP_DISPATCHES).delete()
         self.slots = slots
-        tip = next_tip_slot(after, until)
-        if tip is not None and (self.tip_handled is None or tip > self.tip_handled):
-            TipDispatch.objects.filter(
-                day__lt=(now - KEEP_DISPATCHES).astimezone(_local_zone()).date()
-            ).delete()
-            self.tip_slot = tip
-        else:
-            self.tip_slot = None
+        tip_slots = {}
+        for setting in _tip_candidates().only(
+            "id", "tips_interval_minutes", "workday_start", "workday_end", "weekdays"
+        ):
+            for slot in upcoming_slots(
+                setting, after, until, setting.tips_interval_minutes
+            ):
+                if self.tip_handled is None or slot > self.tip_handled:
+                    tip_slots.setdefault(slot, set()).add(setting.pk)
+        if tip_slots:
+            TipDispatch.objects.filter(slot_at__lt=now - KEEP_DISPATCHES).delete()
+        self.tip_slots = tip_slots
         self.refresh_at = until
 
 
@@ -238,48 +257,48 @@ def _dispatch(slot, ids, now):
     return dispatched
 
 
-def _claim_tip(membership, day):
+def _claim_tip(membership, slot):
     try:
         with transaction.atomic():
-            TipDispatch.objects.create(membership=membership, day=day)
+            TipDispatch.objects.create(membership=membership, slot_at=slot)
     except IntegrityError:
         return False
     return True
 
 
-def _dispatch_tips(slot, now):
-    """Send the tip of ``slot``'s day once to every active person with a device."""
-    day = slot.astimezone(_local_zone()).date()
-    tip = tips_calendar.tip_to_send(day)
-    if tip is None:
-        return 0
-    url = reverse(tip.route)
-    members = (
-        Membership.objects.filter(
-            is_active=True,
-            organization__is_active=True,
-            push_subscriptions__isnull=False,
-        )
-        .distinct()
-        .select_related("organization", "user")
-    )
+def _dispatch_tips(slot, ids, now):
+    """Send one approved tip to the settings in ``ids`` that still have ``slot`` due."""
+    candidates = _tip_candidates().filter(pk__in=ids)
     dispatched = devices = 0
-    for membership in members:
-        if not _claim_tip(membership, day):
+    for setting in candidates.select_related(
+        "membership__organization", "membership__user"
+    ):
+        interval = setting.tips_interval_minutes
+        due = _due(setting, now, interval)
+        # Changed since the plan was loaded: not sent.
+        if due is None or due[1] != slot:
+            continue
+        day, _, first_of_day = due
+        tip = tips_calendar.tip_for_slot(
+            day,
+            first_of_day=first_of_day,
+            sequence=int(slot.timestamp()) // 60 // interval,
+        )
+        if tip is None or not _claim_tip(setting.membership, slot):
             continue
         try:
             devices += notify(
-                membership,
+                setting.membership,
                 NotificationCategory.TIPS,
                 tip.title,
                 tip.text,
-                url,
+                reverse(tip.route),
                 now=now,
             )
         except NotGeneric:
             # A tip word matches this person's name (e.g. "Rosa"): skip them,
             # never stop the others.
-            logger.info("tip skipped not generic membership=%s", membership.pk)
+            logger.info("tip skipped not generic membership=%s", setting.membership_id)
             continue
         dispatched += 1
     if dispatched:

@@ -66,6 +66,9 @@ class PushEndpointTests(TestCase):
             "wellbeing_push_unsubscribe", {"endpoint": endpoint}, **extra
         )
 
+    def status(self, endpoint=SUBSCRIPTION["endpoint"]):
+        return self.post_json("wellbeing_push_status", {"endpoint": endpoint})
+
     # Subscribe -------------------------------------------------------------------
 
     def test_owner_subscribes_device(self):
@@ -95,13 +98,43 @@ class PushEndpointTests(TestCase):
         self.assertEqual(subscription.auth, "newAuth")
         self.assertEqual(len(subscription.user_agent), 120)
 
-    def test_device_moves_to_whoever_is_signed_in(self):
+    def test_same_device_keeps_one_row_per_account(self):
+        # Spec 13, aceite 23: turning one account off never touches the other.
         self.login(self.owner)
         self.subscribe()
         self.login(self.colleague)
         self.subscribe()
-        subscription = PushSubscription.objects.get()
-        self.assertEqual(subscription.membership, self.membership(self.colleague))
+        self.assertEqual(
+            set(PushSubscription.objects.values_list("membership", flat=True)),
+            {self.membership(self.owner).pk, self.membership(self.colleague).pk},
+        )
+        self.assertEqual(self.unsubscribe().status_code, 200)
+        self.assertEqual(
+            PushSubscription.objects.get().membership, self.membership(self.owner)
+        )
+        self.login(self.owner)
+        self.assertEqual(self.status().json(), {"registered": True})
+        self.login(self.colleague)
+        self.assertEqual(self.status().json(), {"registered": False})
+
+    def test_subscribing_creates_the_agenda_with_defaults(self):
+        self.login(self.owner)
+        self.subscribe()
+        setting = self.membership(self.owner).reminder_setting
+        self.assertFalse(setting.active)
+        self.assertEqual(setting.tips_interval_minutes, 60)
+
+    def test_status_is_own_post_only_and_needs_an_endpoint(self):
+        self.login(self.owner)
+        self.assertEqual(self.status().json(), {"registered": False})
+        self.assertEqual(self.status().status_code, 200)
+        self.assertEqual(self.status()["Cache-Control"], "no-store, private")
+        self.assertEqual(self.post_json("wellbeing_push_status", {}).status_code, 400)
+        self.assertEqual(
+            self.client.get(reverse("wellbeing_push_status")).status_code, 405
+        )
+        self.client.logout()
+        self.assertEqual(self.status().status_code, 302)
 
     def test_same_person_has_separate_devices_per_company(self):
         Membership.objects.create(

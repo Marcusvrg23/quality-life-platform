@@ -103,11 +103,17 @@ FAKE_PUSH = """(() => {
     });
     if (!('PushManager' in window)) window.PushManager = function PushManager() {};
 })();""".replace("ENDPOINT_PLACEHOLDER", FAKE_ENDPOINT)
-PUSH_ACTIVE = "Notificações ativas neste aparelho, mesmo com o app fechado."
-PUSH_INACTIVE = (
-    "Notificações permitidas neste aparelho. Ative os lembretes para recebê-las "
-    "mesmo com o app fechado."
+PUSH_ACTIVE = (
+    "Notificações ativas neste aparelho para esta conta, mesmo com o app fechado. "
+    "As outras contas deste aparelho têm a própria escolha."
 )
+PUSH_OFF = (
+    "Este aparelho não recebe as notificações desta conta. Toque em Ativar "
+    "notificações neste aparelho."
+)
+ENABLE = "Ativar notificações neste aparelho"
+DISABLE = "Desativar notificações neste aparelho"
+STORED_SUBSCRIPTION = "JSON.parse(sessionStorage.getItem('__qlFakePush') || 'null')"
 INSTALL_OFFER = """() => {
     const offer = new Event('beforeinstallprompt', { cancelable: true });
     offer.prompt = () => Promise.resolve();
@@ -181,14 +187,17 @@ class PwaBrowserTests(StaticLiveServerTestCase):
             ),
         )
         page.on("pageerror", lambda error: page.errors.append(str(error)))
+        self.login(page, self.user)
+        return page
+
+    def login(self, page, user):
         page.goto(f"{self.live_server_url}/login/")
-        page.locator("#id_username").fill(self.user.email)
+        page.locator("#id_username").fill(user.email)
         page.locator("#id_password").fill(PASSWORD)
         page.get_by_role("button", name="Entrar").click()
         # The login POST must finish before the next goto, or WebKit cancels it.
         page.wait_for_url(lambda url: "/login/" not in url)
         page.wait_for_load_state("load")
-        return page
 
     def visit(self, page, path):
         page.goto(f"{self.live_server_url}{path}")
@@ -336,62 +345,138 @@ class PwaBrowserTests(StaticLiveServerTestCase):
         VAPID_PRIVATE_KEY="private-key-for-the-test",
         VAPID_SUBJECT="mailto:contato@example.test",
     )
-    def test_activating_subscribes_the_device_and_deactivating_cancels(self):
+    def test_device_button_asks_permission_only_on_its_click(self):
+        key = vapid_public_key()
+        with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = self.open(browser)
+            self.visit(page, "/app/lembretes/")
+            status = page.locator("[data-push-status]")
+            expect(status).to_have_attribute("data-push", "default")
+            assert page.evaluate(PERMISSION_REQUESTS) == 0
+            page.get_by_role("button", name=ENABLE, exact=True).click()
+            page.wait_for_function(f"{PERMISSION_REQUESTS} === 1")
+            # Not granted: nothing is saved and the button stays.
+            expect(status).to_have_attribute("data-push", "default")
+            expect(page.get_by_role("button", name=ENABLE, exact=True)).to_be_visible()
+            assert self.subscriptions() == []
+            browser.close()
+
+    def all_subscriptions(self):
+        return in_thread(
+            lambda: sorted(
+                PushSubscription.objects.values_list(
+                    "membership__user__email", "endpoint"
+                )
+            )
+        )
+
+    @override_settings(
+        VAPID_PRIVATE_KEY="private-key-for-the-test",
+        VAPID_SUBJECT="mailto:contato@example.test",
+    )
+    def test_device_buttons_turn_only_this_account_on_and_off(self):
         key = vapid_public_key()
         with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:
             browser = playwright.chromium.launch()
             page = self.open(browser, init=(FAKE_PUSH,))
             self.visit(page, "/app/lembretes/")
-            status = page.locator("[data-reminder-status]")
-            expect(status).to_have_text(PUSH_INACTIVE)
+            status = page.locator("[data-push-status]")
+            expect(status).to_have_text(PUSH_OFF)
+            expect(page.get_by_role("button", name=DISABLE, exact=True)).to_be_hidden()
             assert self.subscriptions() == []
-            page.get_by_role("button", name="Ativar lembretes").click()
-            expect(
-                page.get_by_role("button", name="Desativar lembretes")
-            ).to_be_visible()
+            self.screenshot(page, "390-push-desligado")
+            page.get_by_role("button", name=ENABLE, exact=True).click()
             expect(status).to_have_text(PUSH_ACTIVE)
             assert status.get_attribute("data-push") == "active"
+            expect(page.get_by_role("button", name=ENABLE, exact=True)).to_be_hidden()
             # Permission was already granted: nothing asked again.
             assert page.evaluate(PERMISSION_REQUESTS) == 0
             assert self.subscriptions() == [FAKE_ENDPOINT]
             self.assert_fits(page, "lembretes-push-ativo")
             self.screenshot(page, "390-push-ativo")
-            # Another page keeps the subscription and shows no in-page notice.
+            # Another page and a new visit keep it on.
             self.visit(page, "/app/")
-            assert self.subscriptions() == [FAKE_ENDPOINT]
             self.visit(page, "/app/lembretes/")
-            page.get_by_role("button", name="Desativar lembretes").click()
-            expect(
-                page.get_by_role("status").filter(has_text="Lembretes desativados.")
-            ).to_be_visible()
-            expect(status).to_have_text(PUSH_INACTIVE)
+            expect(status).to_have_text(PUSH_ACTIVE)
+            page.get_by_role("button", name=DISABLE, exact=True).click()
+            expect(status).to_have_text(PUSH_OFF)
             assert self.subscriptions() == []
-            assert (
-                page.evaluate(
-                    "JSON.parse(sessionStorage.getItem('__qlFakePush') || 'null')"
-                )
-                is None
-            )
-            self.assert_fits(page, "lembretes-push-cancelado")
+            # The browser subscription stays for the other accounts.
+            assert page.evaluate(STORED_SUBSCRIPTION) is not None
+            self.visit(page, "/app/lembretes/")
+            expect(status).to_have_text(PUSH_OFF)
+            self.assert_fits(page, "lembretes-push-desativado")
             browser.close()
 
     @override_settings(
         VAPID_PRIVATE_KEY="private-key-for-the-test",
         VAPID_SUBJECT="mailto:contato@example.test",
     )
-    def test_signing_out_cancels_the_device_subscription(self):
+    def test_activating_reminders_turns_the_device_on_and_deactivating_keeps_it(self):
+        key = vapid_public_key()
+        with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = self.open(browser, init=(FAKE_PUSH,))
+            self.visit(page, "/app/lembretes/")
+            page.get_by_role("button", name="Ativar lembretes de pausa").click()
+            expect(
+                page.get_by_role("button", name="Desativar lembretes de pausa")
+            ).to_be_visible()
+            status = page.locator("[data-push-status]")
+            expect(status).to_have_text(PUSH_ACTIVE)
+            assert self.subscriptions() == [FAKE_ENDPOINT]
+            # Tips keep coming with the break reminders off.
+            page.get_by_role("button", name="Desativar lembretes de pausa").click()
+            expect(
+                page.get_by_role("status").filter(has_text="Lembretes desativados.")
+            ).to_be_visible()
+            expect(status).to_have_text(PUSH_ACTIVE)
+            assert self.subscriptions() == [FAKE_ENDPOINT]
+            assert page.errors == [], page.errors
+            browser.close()
+
+    @override_settings(
+        VAPID_PRIVATE_KEY="private-key-for-the-test",
+        VAPID_SUBJECT="mailto:contato@example.test",
+    )
+    def test_two_accounts_on_one_device_choose_separately(self):
+        other = User.objects.create_user("outra-pwa@example.test", PASSWORD)
+        Membership.objects.create(
+            user=other,
+            organization=self.membership.organization,
+            role=Membership.Role.COLLABORATOR,
+        )
         key = vapid_public_key()
         with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:
             browser = playwright.chromium.launch()
             # Desktop: the menu with "Sair" is always visible.
             page = self.open(browser, 1280, 800, init=(FAKE_PUSH,))
             self.visit(page, "/app/lembretes/")
-            page.get_by_role("button", name="Ativar lembretes").click()
-            expect(page.locator("[data-reminder-status]")).to_have_text(PUSH_ACTIVE)
-            assert self.subscriptions() == [FAKE_ENDPOINT]
+            page.get_by_role("button", name=ENABLE, exact=True).click()
+            status = page.locator("[data-push-status]")
+            expect(status).to_have_text(PUSH_ACTIVE)
+            # Signing out keeps this account's notifications on this device.
             page.get_by_role("button", name="Sair").click()
             page.wait_for_url(lambda url: "/login/" in url)
-            assert self.subscriptions() == []
+            assert self.all_subscriptions() == [("pwa@example.test", FAKE_ENDPOINT)]
+            self.login(page, other)
+            self.visit(page, "/app/lembretes/")
+            expect(status).to_have_text(PUSH_OFF)
+            page.get_by_role("button", name=ENABLE, exact=True).click()
+            expect(status).to_have_text(PUSH_ACTIVE)
+            assert self.all_subscriptions() == [
+                ("outra-pwa@example.test", FAKE_ENDPOINT),
+                ("pwa@example.test", FAKE_ENDPOINT),
+            ]
+            page.get_by_role("button", name=DISABLE, exact=True).click()
+            expect(status).to_have_text(PUSH_OFF)
+            assert self.all_subscriptions() == [("pwa@example.test", FAKE_ENDPOINT)]
+            page.get_by_role("button", name="Sair").click()
+            page.wait_for_url(lambda url: "/login/" in url)
+            self.login(page, self.user)
+            self.visit(page, "/app/lembretes/")
+            expect(status).to_have_text(PUSH_ACTIVE)
             assert page.errors == [], page.errors
             browser.close()
 
@@ -401,6 +486,12 @@ class PwaBrowserTests(StaticLiveServerTestCase):
     )
     def test_no_in_page_notice_when_the_device_receives_push(self):
         ReminderSetting.objects.create(membership=self.membership, active=True)
+        PushSubscription.objects.create(
+            membership=self.membership,
+            endpoint=FAKE_ENDPOINT,
+            p256dh="BFakeP256dhKeyForTheTest",
+            auth="fakeAuthForTheTest",
+        )
         key = vapid_public_key()
         zone = ZoneInfo(TIMEZONE)
         with override_settings(VAPID_PUBLIC_KEY=key), sync_playwright() as playwright:
@@ -411,8 +502,6 @@ class PwaBrowserTests(StaticLiveServerTestCase):
                 init=(FAKE_PUSH, presubscribed(key)),
             )
             self.visit(page, "/app/")
-            # The existing device subscription was sent to the server.
-            assert self.subscriptions() == [FAKE_ENDPOINT]
             page.clock.pause_at(datetime(2026, 10, 19, 9, 59, 30, tzinfo=zone))
             page.clock.fast_forward("01:00")
             page.wait_for_timeout(500)

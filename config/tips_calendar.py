@@ -1,8 +1,10 @@
 """Weekly tips and special dates (docs/specs/17-dicas-da-semana.md).
 
 COMO FUNCIONA
-- Toda segunda-feira às 10h (America/Sao_Paulo) sai a dica da semana; numa
-  data especial sai a dica da data. No máximo uma dica por pessoa por dia.
+- Por notificação: no intervalo que cada pessoa escolhe em Lembretes (padrão
+  60 min, de 3 a 480), dentro dos dias e do horário do expediente dela, as
+  dicas aprovadas saem em sequência; na data especial, a primeira dica do dia
+  é a da data (spec 17, aceite 9).
 - A tela Hoje mostra a dica da data no dia dela e, nos outros dias, a dica da
   semana.
 - Os textos são genéricos (podem aparecer na tela bloqueada): nunca nome,
@@ -17,11 +19,9 @@ Só com nova aprovação. ``PUBLISHED = False`` desliga tudo de novo.
 """
 
 from dataclasses import dataclass
-from datetime import date, time, timedelta
+from datetime import date, timedelta
 
 PUBLISHED = True
-SEND_TIME = time(10, 0)
-WEEKLY_WEEKDAY = 0  # Monday
 
 
 @dataclass(frozen=True)
@@ -296,16 +296,21 @@ def weekly_tip(day):
     return WEEKLY_TIPS[(day.isocalendar().week - 1) % len(WEEKLY_TIPS)]
 
 
-def tip_to_send(day):
-    """What goes out by push on ``day`` at ``SEND_TIME``, or None."""
+def tip_for_slot(day, *, first_of_day, sequence):
+    """The tip a person's slot sends, or None while unpublished.
+
+    ``first_of_day``: the first tip slot of the person's workday on ``day``,
+    which carries the special date when there is one. ``sequence``: a number
+    that grows by one per slot (the scheduler uses minutes // interval), so
+    consecutive slots walk through the 26 approved tips in order.
+    """
     if not PUBLISHED:
         return None
-    special = special_tip_on(day)
-    if special is not None:
-        return special
-    if day.weekday() == WEEKLY_WEEKDAY:
-        return weekly_tip(day)
-    return None
+    if first_of_day:
+        special = special_tip_on(day)
+        if special is not None:
+            return special
+    return WEEKLY_TIPS[sequence % len(WEEKLY_TIPS)]
 
 
 def tip_to_show(day):
